@@ -20,16 +20,19 @@ export default class Game extends Phaser.Scene {
     public isInstrumentPlaying: boolean = false;
     public autoScroll = false;
     public prevVoiceIdx = -1;
+    public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
+    public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
-        // marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
+        marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
     }
 
     create() {
         // var shapes = this.cache.json.get('shapes') as any;
         var prodShapes = this.cache.json.get("prod_shapes");
+        var mini14Shape = this.cache.json.get("14_mini_shape");
 
         // NOT WORKING
         // Create a Matter body with the custom shape
@@ -62,6 +65,112 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        // Stars
+        startOffset += 600;
+        const barWidth = 47;
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(100 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(35)
+        );
+
+        this.rightRotatableStars.push(
+            this.matter.add.sprite(
+                300 + barWidth,
+                startOffset,
+                "mini_star",
+                undefined,
+                {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                }
+            )
+        );
+        startOffset += 170;
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(20 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(-10)
+        );
+        this.rightRotatableStars.push(
+            this.matter.add.sprite(
+                206 + barWidth,
+                startOffset,
+                "mini_star",
+                undefined,
+                {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                }
+            )
+        );
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(35)
+        );
+        startOffset += 170;
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(110 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(-0)
+        );
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(290 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(-25)
+        );
+        startOffset += 160;
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(20 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(-28)
+        );
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(206 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(10)
+        );
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: mini14Shape["14"],
+                    isStatic: true,
+                })
+                .setAngle(35)
+        );
+
+        // this.matter.add.sprite(
+        //     400,
+        //     startOffset,
+        //     "prod_texture_loaded_14",
+        //     undefined,
+        //     {
+        //         shape: mini14Shape["14"],
+        //         isStatic: true,
+        //     }
+        // );
         startOffset += 850;
         this.matter.add.sprite(
             xOffset,
@@ -70,6 +179,17 @@ export default class Game extends Phaser.Scene {
             undefined,
             {
                 shape: prodShapes["03"],
+                isStatic: true,
+            }
+        );
+        startOffset += 850;
+        this.matter.add.sprite(
+            252,
+            startOffset,
+            "prod_texture_loaded_11",
+            undefined,
+            {
+                shape: prodShapes["11"],
                 isStatic: true,
             }
         );
@@ -92,17 +212,6 @@ export default class Game extends Phaser.Scene {
             undefined,
             {
                 shape: prodShapes["07"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850;
-        this.matter.add.sprite(
-            252,
-            startOffset,
-            "prod_texture_loaded_11",
-            undefined,
-            {
-                shape: prodShapes["11"],
                 isStatic: true,
             }
         );
@@ -138,9 +247,9 @@ export default class Game extends Phaser.Scene {
             circleImage.setOrigin(0.5, 0.5);
             this.voicesImages.push(circleImage);
         });
-        // marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
-        //     () => (this.isInstrumentPlaying = true)
-        // );
+        marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
+            () => (this.isInstrumentPlaying = true)
+        );
     }
     update(time: number, delta: number): void {
         if (this.voices.length) {
@@ -185,6 +294,8 @@ export default class Game extends Phaser.Scene {
             //     this.sky.rotation += 0.005;
             //     this.sky.y = this.sky.y + Math.sin(time / 1000 * 2)
         }
+        this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
+        this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
     }
 }
 

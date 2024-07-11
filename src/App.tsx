@@ -16,7 +16,7 @@ function App() {
     //  References to the PhaserGame component (game and scene are exposed)
     const phaserRef = useRef<IRefPhaserGame | null>(null);
     const [isDownloading, setIsDownloading] = useState(false);
-    const [ready, setReady] = useState(true);
+    const [ready, setReady] = useState(false);
 
     const fetchCoverDoc = async () => {
         setIsDownloading(true);
