@@ -54,6 +54,11 @@ export default class Preloader extends Phaser.Scene {
             "assets/sprite/16.png",
             "assets/sprite/screen_sprite.json"
         );
+        this.load.atlas(
+            "prod_texture_loaded_11",
+            "assets/sprite/11.png",
+            "assets/sprite/screen_sprite.json"
+        );
         this.load.json("prod_shapes", "assets/physics/new_shapes.json");
     }
 

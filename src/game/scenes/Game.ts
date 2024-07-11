@@ -29,7 +29,7 @@ export default class Game extends Phaser.Scene {
 
     create() {
         // var shapes = this.cache.json.get('shapes') as any;
-        var prodShapes = this.cache.json.get("prod_shapes") as any;
+        var prodShapes = this.cache.json.get("prod_shapes");
 
         // NOT WORKING
         // Create a Matter body with the custom shape
@@ -95,7 +95,18 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 864;
+        startOffset += 850;
+        this.matter.add.sprite(
+            252,
+            startOffset,
+            "prod_texture_loaded_11",
+            undefined,
+            {
+                shape: prodShapes["11"],
+                isStatic: true,
+            }
+        );
+        startOffset += 880;
         this.matter.add.sprite(
             258,
             startOffset,
