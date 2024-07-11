@@ -6,7 +6,6 @@ export default class Preloader extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("ball", "assets/red_circle.png");
         this.load.image(
             "voice1",
             "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Farthur-morgan_rdr2-_200x200?alt=media&token=330a3b59-e78d-4b88-81a8-94142b3b4182"
@@ -45,7 +44,17 @@ export default class Preloader extends Phaser.Scene {
             "assets/sprite/03.png",
             "assets/sprite/screen_sprite.json"
         );
-        this.load.json("prod_shapes", "assets/physics/prod_shapes.json");
+        this.load.atlas(
+            "prod_texture_loaded_06",
+            "assets/sprite/06.png",
+            "assets/sprite/screen_sprite.json"
+        );
+        this.load.atlas(
+            "prod_texture_loaded_16",
+            "assets/sprite/16.png",
+            "assets/sprite/screen_sprite.json"
+        );
+        this.load.json("prod_shapes", "assets/physics/new_shapes.json");
     }
 
     create() {

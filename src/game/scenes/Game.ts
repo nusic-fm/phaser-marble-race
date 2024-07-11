@@ -24,12 +24,13 @@ export default class Game extends Phaser.Scene {
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
-        marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
+        // marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
     }
 
     create() {
         // var shapes = this.cache.json.get('shapes') as any;
         var prodShapes = this.cache.json.get("prod_shapes") as any;
+
         // NOT WORKING
         // Create a Matter body with the custom shape
         // const crateBody = this.matter.add.fromVertices(200, 50, shapes.small_skel.fixtures[0].vertices, {isStatic: true});
@@ -38,45 +39,24 @@ export default class Game extends Phaser.Scene {
         // this.matter.add.gameObject(crateSprite, crateBody);
 
         // var ground = this.matter.add.sprite(200, 200, 'small', 'ground', {shape: shapes.small_skel, isStatic: true});
-        let startOffset = 800;
+        let startOffset = 500;
+        const xOffset = 256;
         this.matter.add.sprite(
-            206,
+            xOffset,
             startOffset,
-            "prod_texture_loaded_03",
-            "2",
+            "prod_texture_loaded_06",
+            undefined,
             {
-                shape: prodShapes["03"],
+                shape: prodShapes["06"],
                 isStatic: true,
             }
         );
         startOffset += 850;
         this.matter.add.sprite(
-            206,
-            startOffset,
-            "prod_texture_loaded_01",
-            "2",
-            {
-                shape: prodShapes["01"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850;
-        this.matter.add.sprite(
-            170,
-            startOffset,
-            "prod_texture_loaded_07",
-            "1",
-            {
-                shape: prodShapes["07"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850;
-        this.matter.add.sprite(
-            206,
+            xOffset,
             startOffset,
             "prod_texture_loaded_21",
-            "0",
+            undefined,
             {
                 shape: prodShapes["21"],
                 isStatic: true,
@@ -84,10 +64,10 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 850;
         this.matter.add.sprite(
-            206,
+            xOffset,
             startOffset,
             "prod_texture_loaded_03",
-            "2",
+            undefined,
             {
                 shape: prodShapes["03"],
                 isStatic: true,
@@ -95,10 +75,10 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 850;
         this.matter.add.sprite(
-            206,
+            xOffset,
             startOffset,
             "prod_texture_loaded_01",
-            "2",
+            undefined,
             {
                 shape: prodShapes["01"],
                 isStatic: true,
@@ -106,86 +86,26 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 850;
         this.matter.add.sprite(
-            170,
+            xOffset,
             startOffset,
             "prod_texture_loaded_07",
-            "1",
+            undefined,
             {
                 shape: prodShapes["07"],
                 isStatic: true,
             }
         );
-        startOffset += 850;
+        startOffset += 864;
         this.matter.add.sprite(
-            206,
+            258,
             startOffset,
-            "prod_texture_loaded_21",
-            "0",
+            "prod_texture_loaded_16",
+            "ground",
             {
-                shape: prodShapes["21"],
+                shape: prodShapes["16"],
                 isStatic: true,
             }
         );
-        startOffset += 850;
-        this.matter.add.sprite(
-            206,
-            startOffset,
-            "prod_texture_loaded_03",
-            "2",
-            {
-                shape: prodShapes["03"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850;
-        this.matter.add.sprite(
-            206,
-            startOffset,
-            "prod_texture_loaded_01",
-            "2",
-            {
-                shape: prodShapes["01"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850;
-        this.matter.add.sprite(
-            170,
-            startOffset,
-            "prod_texture_loaded_07",
-            "1",
-            {
-                shape: prodShapes["07"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850;
-        this.matter.add.sprite(
-            206,
-            startOffset,
-            "prod_texture_loaded_21",
-            "0",
-            {
-                shape: prodShapes["21"],
-                isStatic: true,
-            }
-        );
-        startOffset += 850; // NOT WORKING
-        // var ground = this.matter.add.sprite(0, 0, 'sheet', 'ground', {shape: (shapes as any).ground});
-        // ground.setPosition(0 + ground.centerOfMass.x, 280 + ground.centerOfMass.y);  // position (0,280)
-
-        // const ball = this.matter.add.image(150, 100, 'ball', '', {density: 0.2})
-        // // ball.setCircle(30)
-
-        // // ball.setTint(0xff0000)
-        // ball.scaleX = 0.01
-        // ball.scaleY = 0.01
-        // // ball.setVelocity(10, 10)
-        // const body = ball.body as MatterJS.BodyType;
-        // this.matter.body.setInertia(body, Infinity)
-        // // ball.setFriction(0, 0);
-        // ball.setBounce(1);
-        // // this.matter.add.image(300, 300, 'shape', undefined, {isStatic: true});
         const marbleRadius = 23;
         ["voice1", "voice2", "voice3", "voice4"].map((v, i) => {
             const circleBody = this.matter.add.circle(206, 50, marbleRadius, {
@@ -206,21 +126,10 @@ export default class Game extends Phaser.Scene {
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2); // Adjust size to match the physics body
             circleImage.setOrigin(0.5, 0.5);
             this.voicesImages.push(circleImage);
-            // // Make the image follow the physics body
-            // this.matter.world.on('beforeupdate', function () {
-            //     circleImage.setPosition(circleBody.position.x, circleBody.position.y);
-            //     circleImage.setRotation(circleBody.angle);
-            // });
         });
-        // console.log(this.voices[0].scale)
-        // this.matter.body.scale(this.voices[0], 1.2, 1.2);
-        // setTimeout(() => {
-        //     console.log('test');
-        // this.matter.body.scale(this.voices[0], 0.8, 0.8);
-        // }, 1000)
-        marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
-            () => (this.isInstrumentPlaying = true)
-        );
+        // marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
+        //     () => (this.isInstrumentPlaying = true)
+        // );
     }
     update(time: number, delta: number): void {
         if (this.voices.length) {
