@@ -18,10 +18,13 @@ export default class Game extends Phaser.Scene {
     public voices: MatterJS.BodyType[] = [];
     public voicesImages: Phaser.GameObjects.Image[] = [];
     public isInstrumentPlaying: boolean = false;
-    public autoScroll = false;
+    public autoScroll = true;
     public prevVoiceIdx = -1;
     public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
     public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
+    public reduceSizeScreenOffset = 0;
+    public increaseSizeScreenOffset = 0;
+    public heightReducedIndices: number[] = [];
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
@@ -42,11 +45,11 @@ export default class Game extends Phaser.Scene {
         // this.matter.add.gameObject(crateSprite, crateBody);
 
         // var ground = this.matter.add.sprite(200, 200, 'small', 'ground', {shape: shapes.small_skel, isStatic: true});
-        let startOffset = 500;
+        let startOffset = 400;
         const xOffset = 256;
         this.matter.add.sprite(
             xOffset,
-            startOffset,
+            startOffset + 835 / 2,
             "prod_texture_loaded_06",
             undefined,
             {
@@ -54,10 +57,10 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 850;
+        startOffset += 840;
         this.matter.add.sprite(
             xOffset,
-            startOffset,
+            startOffset + 833 / 2,
             "prod_texture_loaded_21",
             undefined,
             {
@@ -65,8 +68,8 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        startOffset += 980;
         // Stars
-        startOffset += 600;
         const barWidth = 47;
         this.matter.add.sprite(
             barWidth / 2,
@@ -180,21 +183,11 @@ export default class Game extends Phaser.Scene {
                 })
                 .setAngle(35)
         );
-
-        // this.matter.add.sprite(
-        //     400,
-        //     startOffset,
-        //     "prod_texture_loaded_14",
-        //     undefined,
-        //     {
-        //         shape: mini14Shape["14"],
-        //         isStatic: true,
-        //     }
-        // );
-        startOffset += 850;
+        // Triangle
+        startOffset += 149;
         this.matter.add.sprite(
-            xOffset,
-            startOffset,
+            xOffset + 0,
+            startOffset + 833 / 2,
             "prod_texture_loaded_03",
             undefined,
             {
@@ -202,10 +195,23 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 850;
+        startOffset += 854;
+        this.reduceSizeScreenOffset = startOffset;
         this.matter.add.sprite(
-            252,
-            startOffset,
+            258,
+            startOffset + 835 / 2,
+            "prod_texture_loaded_16",
+            "ground",
+            {
+                shape: prodShapes["16"],
+                isStatic: true,
+            }
+        );
+        startOffset += 810;
+        this.increaseSizeScreenOffset = startOffset;
+        this.matter.add.sprite(
+            xOffset - 4,
+            startOffset + 833 / 2,
             "prod_texture_loaded_11",
             undefined,
             {
@@ -213,10 +219,10 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 850;
+        startOffset += 842;
         this.matter.add.sprite(
             xOffset,
-            startOffset,
+            startOffset + 833 / 2,
             "prod_texture_loaded_01",
             undefined,
             {
@@ -224,10 +230,10 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 850;
+        startOffset += 832;
         this.matter.add.sprite(
             xOffset,
-            startOffset,
+            startOffset + 833 / 2,
             "prod_texture_loaded_07",
             undefined,
             {
@@ -236,16 +242,6 @@ export default class Game extends Phaser.Scene {
             }
         );
         startOffset += 880;
-        this.matter.add.sprite(
-            258,
-            startOffset,
-            "prod_texture_loaded_16",
-            "ground",
-            {
-                shape: prodShapes["16"],
-                isStatic: true,
-            }
-        );
         const marbleRadius = 23;
         ["voice1", "voice2", "voice3", "voice4"].map((v, i) => {
             const circleBody = this.matter.add.circle(206, 50, marbleRadius, {
@@ -274,25 +270,33 @@ export default class Game extends Phaser.Scene {
     update(time: number, delta: number): void {
         if (this.voices.length) {
             this.voicesImages.map((v, i) => {
-                v.setPosition(
-                    this.voices[i].position.x,
-                    this.voices[i].position.y
-                );
-                v.setRotation(this.voices[i].angle);
-                // TODO: De-Throttle
-                // if (this.voices[i].position.y > 1350 && this.voices[i].position.y < 2100) {
-                //     this.matter.body.scale(this.voices[i], 1.2, 1.2);
-                // } else {
-                //     console.log('de-scalling')
-                //     this.matter.body.scale(this.voices[i], 0.8, 0.8);
-                // }
+                const voiceBody = this.voices[i];
+                v.setPosition(voiceBody.position.x, voiceBody.position.y);
+                v.setRotation(voiceBody.angle);
+                if (
+                    this.heightReducedIndices.includes(i) &&
+                    voiceBody.position.y > this.increaseSizeScreenOffset
+                ) {
+                    this.matter.body.scale(voiceBody, 2, 2);
+                    v.setDisplaySize(46, 46);
+                    this.heightReducedIndices =
+                        this.heightReducedIndices.filter((idx) => idx !== i);
+                } else if (
+                    this.heightReducedIndices.includes(i) === false &&
+                    voiceBody.position.y > this.reduceSizeScreenOffset &&
+                    voiceBody.position.y < this.increaseSizeScreenOffset
+                ) {
+                    this.heightReducedIndices.push(i);
+                    this.matter.body.scale(voiceBody, 0.5, 0.5);
+                    v.setDisplaySize(23, 23);
+                }
             });
         }
         if (this.isInstrumentPlaying) {
             const voicesPositions = this.voices.map((m) => m.position.y);
             const largest = Math.max(...voicesPositions);
             const index = voicesPositions.findIndex((v) => v === largest);
-            console.log("First: ", index);
+            // console.log("First: ", index);
             if (this.prevVoiceIdx !== index) this.throttledUpdate(index);
             const container = document.getElementById("app");
             if (
