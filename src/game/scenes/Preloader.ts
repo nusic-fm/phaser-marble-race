@@ -68,7 +68,8 @@ export default class Preloader extends Phaser.Scene {
             "assets/sprite/14_mini.png",
             "assets/sprite/screen_sprite.json"
         );
-        this.load.json("14_mini_shape", "assets/physics/14_mini.json");
+        this.load.image("bar", "assets/sprite/bar.png");
+        this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
     }
 
     create() {

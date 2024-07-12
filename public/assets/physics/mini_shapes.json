@@ -120,6 +120,38 @@
             }
         ]
     },
-    "generator_info": "Shape definitions generated with PhysicsEditor. Visit https://www.codeandweb.com/physicseditor"
+    "generator_info": "Shape definitions generated with PhysicsEditor. Visit https://www.codeandweb.com/physicseditor",
+    "bar": {
+        "type": "fromPhysicsEditor",
+        "label": "bar",
+        "isStatic": false,
+        "density": 0.10000000149011612,
+        "restitution": 0,
+        "friction": 0.10000000149011612,
+        "frictionAir": 0.009999999776482582,
+        "frictionStatic": 0.5,
+        "collisionFilter": {
+            "group": 0,
+            "category": 1,
+            "mask": 255
+        },
+        "fixtures": [
+            {
+                "label": "",
+                "isSensor": false,
+                "vertices": [
+                    [
+                        { "x": -0.5, "y": 832 },
+                        { "x": 47, "y": 832.5 },
+                        { "x": 48.5, "y": 832 },
+                        { "x": 48.5, "y": 1 },
+                        { "x": 48, "y": -0.5 },
+                        { "x": 1, "y": -0.5 },
+                        { "x": -0.5, "y": 0 }
+                    ]
+                ]
+            }
+        ]
+    }
 }
 

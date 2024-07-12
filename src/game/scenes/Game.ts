@@ -32,7 +32,7 @@ export default class Game extends Phaser.Scene {
     create() {
         // var shapes = this.cache.json.get('shapes') as any;
         var prodShapes = this.cache.json.get("prod_shapes");
-        var mini14Shape = this.cache.json.get("14_mini_shape");
+        var miniShapes = this.cache.json.get("mini_shapes");
 
         // NOT WORKING
         // Create a Matter body with the custom shape
@@ -68,10 +68,26 @@ export default class Game extends Phaser.Scene {
         // Stars
         startOffset += 600;
         const barWidth = 47;
+        this.matter.add.sprite(
+            barWidth / 2,
+            startOffset + 270,
+            "bar",
+            undefined,
+            {
+                shape: miniShapes["bar"],
+                isStatic: true,
+            }
+        );
+        this.matter.add.sprite(487, startOffset + 270, "bar", undefined, {
+            shape: miniShapes["bar"],
+            isStatic: true,
+        });
+
+        // First Row
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(100 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                .sprite(115 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
                 .setAngle(35)
@@ -79,24 +95,25 @@ export default class Game extends Phaser.Scene {
 
         this.rightRotatableStars.push(
             this.matter.add.sprite(
-                300 + barWidth,
+                305 + barWidth,
                 startOffset,
                 "mini_star",
                 undefined,
                 {
-                    shape: mini14Shape["14"],
+                    shape: miniShapes["14"],
                     isStatic: true,
                 }
             )
         );
-        startOffset += 170;
+        // Second Row
+        startOffset += 180;
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(20 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
-                .setAngle(-10)
+                .setAngle(5)
         );
         this.rightRotatableStars.push(
             this.matter.add.sprite(
@@ -105,57 +122,60 @@ export default class Game extends Phaser.Scene {
                 "mini_star",
                 undefined,
                 {
-                    shape: mini14Shape["14"],
+                    shape: miniShapes["14"],
                     isStatic: true,
                 }
             )
+            // .setAngle()
         );
         this.leftRotatableStars.push(
             this.matter.add
                 .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
                 .setAngle(35)
         );
-        startOffset += 170;
+        // Third Row
+        startOffset += 180;
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(110 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                .sprite(115 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
-                .setAngle(-0)
+                .setAngle(30)
         );
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(290 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                .sprite(305 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
-                .setAngle(-25)
+                .setAngle(5)
         );
-        startOffset += 160;
+        // Fourth Row
+        startOffset += 180;
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(20 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
-                .setAngle(-28)
+                .setAngle(8)
         );
         this.leftRotatableStars.push(
             this.matter.add
                 .sprite(206 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
-                .setAngle(10)
+                .setAngle(30)
         );
         this.leftRotatableStars.push(
             this.matter.add
                 .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: mini14Shape["14"],
+                    shape: miniShapes["14"],
                     isStatic: true,
                 })
                 .setAngle(35)
