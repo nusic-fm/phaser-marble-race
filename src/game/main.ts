@@ -6,15 +6,15 @@ import GameScene from "./scenes/Game";
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
-    width: 512,
-    height: 9 * 850 + 500,
+    width: 512 - 94,
+    height: window.innerHeight - 10,
     parent: "game-container",
-    backgroundColor: "#028af8",
+    // backgroundColor: "#028af8",
     physics: {
         default: "matter",
         matter: {
-            gravity: { x: 0, y: 0.6 },
-            setBounds: true,
+            gravity: { x: 0, y: 0.3 },
+            // setBounds: true
             // debug: true,
         },
     },

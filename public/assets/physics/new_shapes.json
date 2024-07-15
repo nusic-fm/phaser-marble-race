@@ -7,7 +7,7 @@
         "restitution": 0,
         "friction": 0.1,
         "frictionAir": 0.01,
-        "frictionStatic": 0.5,
+        "frictionStatic": 0,
         "collisionFilter": {
             "group": 0,
             "category": 1,
@@ -509,8 +509,8 @@
         "isStatic": false,
         "density": 0.10000000149011612,
         "restitution": 0,
-        "friction": 0.10000000149011612,
-        "frictionAir": 0.009999999776482582,
+        "friction": 0,
+        "frictionAir": 0,
         "frictionStatic": 0,
         "collisionFilter": {
             "group": 0,
@@ -2172,7 +2172,7 @@
         "restitution": 0,
         "friction": 0.10000000149011612,
         "frictionAir": 0.009999999776482582,
-        "frictionStatic": 0.5,
+        "frictionStatic": 0,
         "collisionFilter": {
             "group": 0,
             "category": 1,
@@ -2325,7 +2325,7 @@
         "restitution": 0,
         "friction": 0.10000000149011612,
         "frictionAir": 0.009999999776482582,
-        "frictionStatic": 0.5,
+        "frictionStatic": 0,
         "collisionFilter": {
             "group": 0,
             "category": 1,
@@ -2758,7 +2758,7 @@
         "restitution": 0,
         "friction": 0.10000000149011612,
         "frictionAir": 0.009999999776482582,
-        "frictionStatic": 0.5,
+        "frictionStatic": 0,
         "collisionFilter": {
             "group": 0,
             "category": 1,
@@ -3576,7 +3576,7 @@
         "restitution": 0,
         "friction": 0.1,
         "frictionAir": 0.01,
-        "frictionStatic": 0.5,
+        "frictionStatic": 0,
         "collisionFilter": {
             "group": 0,
             "category": 1,

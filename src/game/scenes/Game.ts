@@ -1,5 +1,5 @@
 import Phaser from "phaser";
-import { voices } from "../../App";
+import { voiceNames, voices } from "../../App";
 import {
     marbleRaceOnlyInstrument,
     marbleRacePlayVocals,
@@ -25,6 +25,8 @@ export default class Game extends Phaser.Scene {
     public reduceSizeScreenOffset = 0;
     public increaseSizeScreenOffset = 0;
     public heightReducedIndices: number[] = [];
+    public upDownMotionElems: Phaser.Physics.Matter.Image[] = [];
+    public labels: Phaser.GameObjects.Text[] = [];
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
@@ -33,20 +35,18 @@ export default class Game extends Phaser.Scene {
     }
 
     create() {
-        // var shapes = this.cache.json.get('shapes') as any;
+        // Set the background image
+        this.add.image(400, 300, "background").setScrollFactor(0);
+        // Enable camera scrolling
+        this.cameras.main.setBounds(0, 0, 512 - 94, 9 * 850 - 700);
+        this.matter.world.setBounds(0, 0, 512 - 94, 9 * 850 + 500);
+
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
 
-        // NOT WORKING
-        // Create a Matter body with the custom shape
-        // const crateBody = this.matter.add.fromVertices(200, 50, shapes.small_skel.fixtures[0].vertices, {isStatic: true});
-        // // Add a sprite and attach it to the Matter body
-        // const crateSprite = this.add.sprite(0, 0, 'sheet', 'texture_out');
-        // this.matter.add.gameObject(crateSprite, crateBody);
-
-        // var ground = this.matter.add.sprite(200, 200, 'small', 'ground', {shape: shapes.small_skel, isStatic: true});
         let startOffset = 400;
-        const xOffset = 256;
+        // Screen 1
+        const xOffset = (512 - 94) / 2;
         this.matter.add.sprite(
             xOffset,
             startOffset + 835 / 2,
@@ -57,6 +57,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        // Screen 2
         startOffset += 840;
         this.matter.add.sprite(
             xOffset,
@@ -70,21 +71,21 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 980;
         // Stars
-        const barWidth = 47;
-        this.matter.add.sprite(
-            barWidth / 2,
-            startOffset + 270,
-            "bar",
-            undefined,
-            {
-                shape: miniShapes["bar"],
-                isStatic: true,
-            }
-        );
-        this.matter.add.sprite(487, startOffset + 270, "bar", undefined, {
-            shape: miniShapes["bar"],
-            isStatic: true,
-        });
+        const barWidth = 0;
+        // this.matter.add.sprite(
+        //     barWidth / 2,
+        //     startOffset + 270,
+        //     "bar",
+        //     undefined,
+        //     {
+        //         shape: miniShapes["bar"],
+        //         isStatic: true,
+        //     }
+        // );
+        // this.matter.add.sprite(487, startOffset + 270, "bar", undefined, {
+        //     shape: miniShapes["bar"],
+        //     isStatic: true,
+        // });
 
         // First Row
         this.leftRotatableStars.push(
@@ -109,7 +110,7 @@ export default class Game extends Phaser.Scene {
             )
         );
         // Second Row
-        startOffset += 180;
+        startOffset += 165;
         this.rightRotatableStars.push(
             this.matter.add
                 .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
@@ -158,7 +159,7 @@ export default class Game extends Phaser.Scene {
                 .setAngle(5)
         );
         // Fourth Row
-        startOffset += 180;
+        startOffset += 160;
         this.rightRotatableStars.push(
             this.matter.add
                 .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
@@ -169,7 +170,7 @@ export default class Game extends Phaser.Scene {
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(206 + barWidth, startOffset, "mini_star", undefined, {
+                .sprite(210 + barWidth, startOffset, "mini_star", undefined, {
                     shape: miniShapes["14"],
                     isStatic: true,
                 })
@@ -198,10 +199,10 @@ export default class Game extends Phaser.Scene {
         startOffset += 854;
         this.reduceSizeScreenOffset = startOffset;
         this.matter.add.sprite(
-            258,
+            xOffset,
             startOffset + 835 / 2,
             "prod_texture_loaded_16",
-            "ground",
+            undefined,
             {
                 shape: prodShapes["16"],
                 isStatic: true,
@@ -219,6 +220,13 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        // this.upDownMotionElems.push(
+        //     this.matter.add
+        //         .image(366, startOffset + 117, "left_block", undefined, {
+        //             isStatic: true,
+        //         })
+        //         .setScale(0.18, 0.18)
+        // );
         startOffset += 842;
         this.matter.add.sprite(
             xOffset,
@@ -262,6 +270,19 @@ export default class Game extends Phaser.Scene {
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2); // Adjust size to match the physics body
             circleImage.setOrigin(0.5, 0.5);
             this.voicesImages.push(circleImage);
+            // Create label for each circle
+            let label = this.add.text(
+                circleImage.x,
+                circleImage.y - 80,
+                voiceNames[i],
+                {
+                    fontSize: "32px",
+                    color: "#ffffff",
+                    stroke: "#000",
+                    strokeThickness: 10,
+                }
+            );
+            this.labels.push(label);
         });
         marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
             () => (this.isInstrumentPlaying = true)
@@ -273,6 +294,10 @@ export default class Game extends Phaser.Scene {
                 const voiceBody = this.voices[i];
                 v.setPosition(voiceBody.position.x, voiceBody.position.y);
                 v.setRotation(voiceBody.angle);
+                this.labels[i].setPosition(
+                    voiceBody.position.x - 100,
+                    voiceBody.position.y - 80
+                );
                 if (
                     this.heightReducedIndices.includes(i) &&
                     voiceBody.position.y > this.increaseSizeScreenOffset
@@ -304,8 +329,10 @@ export default class Game extends Phaser.Scene {
                 container
                 // &&
                 // largest - 300 > (container.scrollTop || 0)
-            )
-                container.scrollTo(0, largest - 300);
+            ) {
+                this.cameras.main.scrollY = largest - 300;
+                // container.scrollTo(0, largest - 300);
+            }
             // const index = voicesCircles.findIndex((v) => v === largest);
             // if (voiceIdxRef.current !== index) {
             //     voiceIdxRef.current = index;
@@ -320,6 +347,16 @@ export default class Game extends Phaser.Scene {
         }
         this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
         this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
+        // const amplitude = 0.12; // 200 pixels, which is 20 cm
+        // const frequency = 0.001; // Adjust frequency to control the speed of oscillation
+
+        // this.upDownMotionElems.map((elem) => {
+        //     // Update the rectangle's y position using a sine wave
+        //     elem.setPosition(
+        //         elem.x,
+        //         elem.y + amplitude * Math.sin(frequency * time)
+        //     );
+        // });
     }
 }
 

@@ -6,6 +6,7 @@ export default class Preloader extends Phaser.Scene {
     }
 
     preload() {
+        this.load.image("background", "assets/bg.webp");
         this.load.image(
             "voice1",
             "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Farthur-morgan_rdr2-_200x200?alt=media&token=330a3b59-e78d-4b88-81a8-94142b3b4182"
@@ -62,6 +63,8 @@ export default class Preloader extends Phaser.Scene {
         this.load.json("prod_shapes", "assets/physics/new_shapes.json");
 
         this.load.image("mini_star", "assets/sprite/14_mini.png");
+        this.load.image("left_block", "assets/sprite/left_block.png");
+        this.load.image("right_block", "assets/sprite/right_block.png");
         // Mini
         this.load.atlas(
             "14_mini",
@@ -73,6 +76,18 @@ export default class Preloader extends Phaser.Scene {
     }
 
     create() {
+        // this.input.on(
+        //     "wheel",
+        //     (
+        //         pointer: any,
+        //         gameObjects: any,
+        //         deltaX: any,
+        //         deltaY: any,
+        //         deltaZ: any
+        //     ) => {
+        //         this.cameras.main.scrollY += deltaY * 0.5; // Adjust the scroll speed
+        //     }
+        // );
         // this.matter.add.image(400, 300, 'sky')
         this.scene.start("game");
 

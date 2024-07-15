@@ -10,6 +10,14 @@ export const voices = [
     "trevor_gta-v",
     "eric-cartman",
 ];
+export const voiceNames = [
+    "Snoop Dogg",
+    "Cardi B",
+    "Morgan Freeman",
+    "Franklin GTA V",
+    "Trevor GTA V",
+    "Eric Cartman",
+];
 const coverDocId = "f0pmE4twBXnJmVrJzh18";
 
 function App() {
