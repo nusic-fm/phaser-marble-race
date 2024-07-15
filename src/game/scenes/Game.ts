@@ -25,8 +25,15 @@ export default class Game extends Phaser.Scene {
     public reduceSizeScreenOffset = 0;
     public increaseSizeScreenOffset = 0;
     public heightReducedIndices: number[] = [];
-    public upDownMotionElems: Phaser.Physics.Matter.Image[] = [];
+    public upDownMotionElems: {
+        matter: Phaser.Physics.Matter.Image;
+        startY: number;
+        maxTop: number;
+        maxBottom: number;
+        moveSpeed: number;
+    }[] = [];
     public labels: Phaser.GameObjects.Text[] = [];
+    public motionTimeForUpDownWard = 0;
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
@@ -38,15 +45,15 @@ export default class Game extends Phaser.Scene {
         // Set the background image
         this.add.image(400, 300, "background").setScrollFactor(0);
         // Enable camera scrolling
-        this.cameras.main.setBounds(0, 0, 512 - 94, 9 * 850 - 700);
-        this.matter.world.setBounds(0, 0, 512 - 94, 9 * 850 + 500);
+        this.cameras.main.setBounds(0, 0, 512 - 94, 9 * 850);
+        this.matter.world.setBounds(0, 0, 512 - 94, 9 * 850 + 800);
 
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
 
-        let startOffset = 400;
-        // Screen 1
+        let startOffset = 500;
         const xOffset = (512 - 94) / 2;
+        // Screen 1
         this.matter.add.sprite(
             xOffset,
             startOffset + 835 / 2,
@@ -220,13 +227,76 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        // this.upDownMotionElems.push(
-        //     this.matter.add
-        //         .image(366, startOffset + 117, "left_block", undefined, {
-        //             isStatic: true,
-        //         })
-        //         .setScale(0.18, 0.18)
-        // );
+        this.upDownMotionElems.push(
+            {
+                matter: this.matter.add
+                    .image(315, startOffset + 100, "left_block", undefined, {
+                        isStatic: true,
+                    })
+                    .setScale(0.18, 0.18),
+                startY: startOffset + 100,
+                maxTop: 1,
+                maxBottom: 38,
+                moveSpeed: 0.3,
+            }
+            // .setAngle(7.1)
+        );
+        this.upDownMotionElems.push(
+            {
+                matter: this.matter.add
+                    .image(106, startOffset + 259, "right_block", undefined, {
+                        isStatic: true,
+                    })
+                    .setScale(0.18, 0.18),
+                startY: startOffset + 259,
+                maxTop: 1,
+                maxBottom: 28,
+                moveSpeed: 0.4,
+            }
+            // .setAngle(7.1)
+        );
+        this.upDownMotionElems.push(
+            {
+                matter: this.matter.add
+                    .image(316, startOffset + 418, "left_block", undefined, {
+                        isStatic: true,
+                    })
+                    .setScale(0.18, 0.18),
+                startY: startOffset + 418,
+                maxTop: 15,
+                maxBottom: -18,
+                moveSpeed: 0.3,
+            }
+            // .setAngle(7.1)
+        );
+        this.upDownMotionElems.push(
+            {
+                matter: this.matter.add
+                    .image(105, startOffset + 550, "right_block", undefined, {
+                        isStatic: true,
+                    })
+                    .setScale(0.18, 0.18),
+                startY: startOffset + 550,
+                maxTop: 1,
+                maxBottom: 28,
+                moveSpeed: 0.3,
+            }
+            // .setAngle(7.1)
+        );
+        this.upDownMotionElems.push(
+            {
+                matter: this.matter.add
+                    .image(316, startOffset + 695, "left_block", undefined, {
+                        isStatic: true,
+                    })
+                    .setScale(0.18, 0.18),
+                startY: startOffset + 705,
+                maxTop: 20,
+                maxBottom: -18,
+                moveSpeed: 0.4,
+            }
+            // .setAngle(7.1)
+        );
         startOffset += 842;
         this.matter.add.sprite(
             xOffset,
@@ -253,7 +323,7 @@ export default class Game extends Phaser.Scene {
         const marbleRadius = 23;
         ["voice1", "voice2", "voice3", "voice4"].map((v, i) => {
             const circleBody = this.matter.add.circle(206, 50, marbleRadius, {
-                restitution: 0.6,
+                restitution: 0.8,
                 // density: 0.02,
                 friction: 0,
                 frictionAir: 0,
@@ -347,16 +417,22 @@ export default class Game extends Phaser.Scene {
         }
         this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
         this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
-        // const amplitude = 0.12; // 200 pixels, which is 20 cm
-        // const frequency = 0.001; // Adjust frequency to control the speed of oscillation
-
-        // this.upDownMotionElems.map((elem) => {
-        //     // Update the rectangle's y position using a sine wave
-        //     elem.setPosition(
-        //         elem.x,
-        //         elem.y + amplitude * Math.sin(frequency * time)
-        //     );
-        // });
+        // Bars up/down motion
+        this.motionTimeForUpDownWard += delta;
+        this.upDownMotionElems.map(
+            ({ matter, startY, moveSpeed, maxBottom, maxTop }) => {
+                // Calculate new y position using a sine wave for smooth up and down movement
+                const range = maxBottom - maxTop;
+                const midPoint = maxTop + range / 2;
+                // Update the rectangle's y position using a sine wave
+                matter.setPosition(
+                    matter.x,
+                    startY +
+                        midPoint +
+                        (range / 2) * Math.sin(time * 0.005 * moveSpeed)
+                );
+            }
+        );
     }
 }
 
