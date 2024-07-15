@@ -34,6 +34,8 @@ export default class Game extends Phaser.Scene {
     }[] = [];
     public labels: Phaser.GameObjects.Text[] = [];
     public motionTimeForUpDownWard = 0;
+    public crossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
+    public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
@@ -41,19 +43,94 @@ export default class Game extends Phaser.Scene {
         marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
     }
 
-    create() {
-        // Set the background image
-        this.add.image(400, 300, "background").setScrollFactor(0);
-        // Enable camera scrolling
-        this.cameras.main.setBounds(0, 0, 512 - 94, 9 * 850);
-        this.matter.world.setBounds(0, 0, 512 - 94, 9 * 850 + 800);
-
-        var prodShapes = this.cache.json.get("prod_shapes");
-        var miniShapes = this.cache.json.get("mini_shapes");
-
-        let startOffset = 500;
-        const xOffset = (512 - 94) / 2;
-        // Screen 1
+    createCrossScreen = (
+        startOffset: number,
+        canvasWidth: number,
+        miniShapes: any
+    ) => {
+        startOffset += 151;
+        this.crossRightRotation.push(
+            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+                shape: miniShapes["02"],
+                isStatic: true,
+            })
+        );
+        this.crossLeftRotation.push(
+            this.matter.add.sprite(
+                canvasWidth - 18,
+                startOffset,
+                "02_cross",
+                undefined,
+                {
+                    shape: miniShapes["02"],
+                    isStatic: true,
+                }
+            )
+        );
+        startOffset += 151 + 40;
+        this.crossLeftRotation.push(
+            this.matter.add.sprite(135, startOffset, "02_cross", undefined, {
+                shape: miniShapes["02"],
+                isStatic: true,
+            })
+        );
+        this.crossRightRotation.push(
+            this.matter.add.sprite(
+                canvasWidth - 135,
+                startOffset,
+                "02_cross",
+                undefined,
+                {
+                    shape: miniShapes["02"],
+                    isStatic: true,
+                }
+            )
+        );
+        startOffset += 151 + 40;
+        this.crossRightRotation.push(
+            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+                shape: miniShapes["02"],
+                isStatic: true,
+            })
+        );
+        this.crossLeftRotation.push(
+            this.matter.add.sprite(
+                canvasWidth - 18,
+                startOffset,
+                "02_cross",
+                undefined,
+                {
+                    shape: miniShapes["02"],
+                    isStatic: true,
+                }
+            )
+        );
+        startOffset += 151 + 40;
+        this.crossLeftRotation.push(
+            this.matter.add.sprite(122, startOffset, "02_cross", undefined, {
+                shape: miniShapes["02"],
+                isStatic: true,
+            })
+        );
+        this.crossRightRotation.push(
+            this.matter.add.sprite(
+                canvasWidth - 122,
+                startOffset,
+                "02_cross",
+                undefined,
+                {
+                    shape: miniShapes["02"],
+                    isStatic: true,
+                }
+            )
+        );
+        return startOffset + 250;
+    };
+    createSeesawScreen = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.matter.add.sprite(
             xOffset,
             startOffset + 835 / 2,
@@ -64,8 +141,13 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        // Screen 2
-        startOffset += 840;
+        return startOffset + 840;
+    };
+    createCircleBlockers = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.matter.add.sprite(
             xOffset,
             startOffset + 833 / 2,
@@ -76,7 +158,9 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 980;
+        return startOffset + 880;
+    };
+    createStarRotations = (startOffset: number, miniShapes: any) => {
         // Stars
         const barWidth = 0;
         // this.matter.add.sprite(
@@ -191,8 +275,14 @@ export default class Game extends Phaser.Scene {
                 })
                 .setAngle(35)
         );
-        // Triangle
-        startOffset += 149;
+        return startOffset + 149;
+    };
+
+    createStaticTriangles = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.matter.add.sprite(
             xOffset + 0,
             startOffset + 833 / 2,
@@ -203,7 +293,14 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 854;
+        return startOffset + 1000;
+    };
+
+    createReduceSizeSlider = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.reduceSizeScreenOffset = startOffset;
         this.matter.add.sprite(
             xOffset,
@@ -215,8 +312,15 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 810;
+        startOffset += 1400;
         this.increaseSizeScreenOffset = startOffset;
+        return startOffset;
+    };
+    createStopperSlider = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.matter.add.sprite(
             xOffset - 4,
             startOffset + 833 / 2,
@@ -227,6 +331,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        // Motion parts
         this.upDownMotionElems.push(
             {
                 matter: this.matter.add
@@ -297,7 +402,13 @@ export default class Game extends Phaser.Scene {
             }
             // .setAngle(7.1)
         );
-        startOffset += 842;
+        return startOffset + 842;
+    };
+    createStaticCircles = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.matter.add.sprite(
             xOffset,
             startOffset + 833 / 2,
@@ -308,7 +419,13 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 832;
+        return startOffset + 832;
+    };
+    createZigzagSlider = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
         this.matter.add.sprite(
             xOffset,
             startOffset + 833 / 2,
@@ -319,7 +436,9 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 880;
+        return startOffset + 880;
+    };
+    createMarbles = () => {
         const marbleRadius = 23;
         ["voice1", "voice2", "voice3", "voice4"].map((v, i) => {
             const circleBody = this.matter.add.circle(206, 50, marbleRadius, {
@@ -354,6 +473,58 @@ export default class Game extends Phaser.Scene {
             );
             this.labels.push(label);
         });
+    };
+
+    create() {
+        // Set the background image
+        this.add.image(400, 300, "background").setScrollFactor(0);
+        // Enable camera scrolling
+        const canvasWidth = 512 - 94;
+        this.cameras.main.setBounds(0, 0, canvasWidth, 10 * 850);
+        this.matter.world.setBounds(0, 0, canvasWidth, 10 * 850 + 800);
+
+        var prodShapes = this.cache.json.get("prod_shapes");
+        var miniShapes = this.cache.json.get("mini_shapes");
+
+        // let startOffset = 500;
+        let startOffset = 500;
+
+        const xOffset = (512 - 94) / 2;
+        startOffset = this.createStaticCircles(
+            xOffset,
+            startOffset,
+            prodShapes
+        );
+        startOffset = this.createStopperSlider(
+            xOffset,
+            startOffset,
+            prodShapes
+        );
+        startOffset = this.createCrossScreen(
+            startOffset,
+            canvasWidth,
+            miniShapes
+        );
+        startOffset = this.createCircleBlockers(
+            xOffset,
+            startOffset,
+            prodShapes
+        );
+        startOffset = this.createReduceSizeSlider(
+            xOffset,
+            startOffset,
+            prodShapes
+        );
+        startOffset = this.createSeesawScreen(xOffset, startOffset, prodShapes);
+        startOffset = this.createStaticTriangles(
+            xOffset,
+            startOffset,
+            prodShapes
+        );
+        startOffset = this.createStarRotations(startOffset, miniShapes);
+        startOffset = this.createZigzagSlider(xOffset, startOffset, prodShapes);
+        this.createMarbles();
+
         marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
             () => (this.isInstrumentPlaying = true)
         );
@@ -387,6 +558,8 @@ export default class Game extends Phaser.Scene {
                 }
             });
         }
+        this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
+        this.crossLeftRotation.map((c) => c.setAngle(c.angle - 2));
         if (this.isInstrumentPlaying) {
             const voicesPositions = this.voices.map((m) => m.position.y);
             const largest = Math.max(...voicesPositions);
