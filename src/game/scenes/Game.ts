@@ -36,6 +36,8 @@ export default class Game extends Phaser.Scene {
     public motionTimeForUpDownWard = 0;
     public crossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
     public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
+    public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
+    public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
@@ -69,14 +71,14 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 151 + 40;
         this.crossLeftRotation.push(
-            this.matter.add.sprite(135, startOffset, "02_cross", undefined, {
+            this.matter.add.sprite(138, startOffset, "02_cross", undefined, {
                 shape: miniShapes["02"],
                 isStatic: true,
             })
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 135,
+                canvasWidth - 138,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -107,14 +109,14 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 151 + 40;
         this.crossLeftRotation.push(
-            this.matter.add.sprite(122, startOffset, "02_cross", undefined, {
+            this.matter.add.sprite(128, startOffset, "02_cross", undefined, {
                 shape: miniShapes["02"],
                 isStatic: true,
             })
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 122,
+                canvasWidth - 128,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -474,22 +476,84 @@ export default class Game extends Phaser.Scene {
             this.labels.push(label);
         });
     };
+    createHorizontalCrosses = (
+        canvasWidth: number,
+        _startOffset: number,
+        miniShapes: any
+    ) => {
+        let startOffset = _startOffset + 200;
+        let leftOffset = 20;
+        let rightOffset = canvasWidth - 20;
+        new Array(5).fill("").map(() => {
+            this.horizontalCrossRightRotation.push(
+                this.matter.add
+                    .sprite(leftOffset, startOffset, "02_cross", undefined, {
+                        shape: miniShapes["02"],
+                        isStatic: true,
+                    })
+                    .setScale(0.8, 0.8)
+            );
+            leftOffset += 80;
+        });
+        startOffset += 250;
+        new Array(5).fill("").map(() => {
+            this.horizontalCrossLeftRotation.push(
+                this.matter.add
+                    .sprite(rightOffset, startOffset, "02_cross", undefined, {
+                        shape: miniShapes["02"],
+                        isStatic: true,
+                    })
+                    .setScale(0.8, 0.8)
+            );
+            rightOffset -= 80;
+        });
+        leftOffset = 20;
+        startOffset += 250;
+        new Array(5).fill("").map(() => {
+            this.horizontalCrossRightRotation.push(
+                this.matter.add
+                    .sprite(leftOffset, startOffset, "02_cross", undefined, {
+                        shape: miniShapes["02"],
+                        isStatic: true,
+                    })
+                    .setScale(0.8, 0.8)
+            );
+            leftOffset += 80;
+        });
+        rightOffset = canvasWidth - 20;
+        startOffset += 250;
+        new Array(5).fill("").map(() => {
+            this.horizontalCrossLeftRotation.push(
+                this.matter.add
+                    .sprite(rightOffset, startOffset, "02_cross", undefined, {
+                        shape: miniShapes["02"],
+                        isStatic: true,
+                    })
+                    .setScale(0.8, 0.8)
+            );
+            rightOffset -= 80;
+        });
+        return startOffset + 230;
+    };
 
     create() {
         // Set the background image
         this.add.image(400, 300, "background").setScrollFactor(0);
         // Enable camera scrolling
         const canvasWidth = 512 - 94;
-        this.cameras.main.setBounds(0, 0, canvasWidth, 10 * 850);
-        this.matter.world.setBounds(0, 0, canvasWidth, 10 * 850 + 800);
+        this.cameras.main.setBounds(0, 0, canvasWidth, 11 * 850);
+        this.matter.world.setBounds(0, 0, canvasWidth, 11 * 850 + 800);
 
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
 
-        // let startOffset = 500;
         let startOffset = 500;
-
         const xOffset = (512 - 94) / 2;
+        startOffset = this.createHorizontalCrosses(
+            canvasWidth,
+            startOffset,
+            miniShapes
+        );
         startOffset = this.createStaticCircles(
             xOffset,
             startOffset,
@@ -590,6 +654,13 @@ export default class Game extends Phaser.Scene {
         }
         this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
         this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
+        this.horizontalCrossRightRotation.map((rs) =>
+            rs.setAngle(rs.angle + 2.5)
+        );
+        this.horizontalCrossLeftRotation.map((rs) =>
+            rs.setAngle(rs.angle - 2.5)
+        );
+
         // Bars up/down motion
         this.motionTimeForUpDownWard += delta;
         this.upDownMotionElems.map(
