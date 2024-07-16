@@ -38,6 +38,12 @@ export default class Game extends Phaser.Scene {
     public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
     public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
     public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
+    public trails: { x: number; y: number }[][] = [];
+    public trailGraphics: Phaser.GameObjects.Graphics[] = [];
+    public trailsGroup: Phaser.GameObjects.Group[] = [];
+    public trailLength: number;
+    public trailPoints: { x: number; y: number; angle: number }[][] = [];
+    // public shape: any;
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
@@ -78,7 +84,7 @@ export default class Game extends Phaser.Scene {
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 138,
+                canvasWidth - 120,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -109,14 +115,14 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 151 + 40;
         this.crossLeftRotation.push(
-            this.matter.add.sprite(128, startOffset, "02_cross", undefined, {
+            this.matter.add.sprite(132, startOffset, "02_cross", undefined, {
                 shape: miniShapes["02"],
                 isStatic: true,
             })
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 128,
+                canvasWidth - 135,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -314,8 +320,9 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        startOffset += 1400;
+        startOffset += 800;
         this.increaseSizeScreenOffset = startOffset;
+        startOffset += 300;
         return startOffset;
     };
     createStopperSlider = (
@@ -440,8 +447,7 @@ export default class Game extends Phaser.Scene {
         );
         return startOffset + 880;
     };
-    createMarbles = () => {
-        const marbleRadius = 23;
+    createMarbles = (marbleRadius: number) => {
         ["voice1", "voice2", "voice3", "voice4"].map((v, i) => {
             const circleBody = this.matter.add.circle(206, 50, marbleRadius, {
                 restitution: 0.8,
@@ -451,6 +457,9 @@ export default class Game extends Phaser.Scene {
                 frictionStatic: 0,
             });
             this.voices.push(circleBody);
+            this.trailsGroup.push(this.add.group());
+            this.trailGraphics.push(this.add.graphics());
+            this.trailPoints.push([]);
             // // Create an image and attach it to the circle body
             const circleImage = this.add.image(
                 circleBody.position.x,
@@ -587,7 +596,29 @@ export default class Game extends Phaser.Scene {
         );
         startOffset = this.createStarRotations(startOffset, miniShapes);
         startOffset = this.createZigzagSlider(xOffset, startOffset, prodShapes);
-        this.createMarbles();
+
+        const marbleRadius = 23;
+        this.createMarbles(marbleRadius);
+        // const shape1 = new Phaser.Geom.Circle(0, 0, 30);
+        // this.shape = shape1;
+        // const emitter = this.add.particles(400, 300, "flares", {
+        //     frame: {
+        //         frames: ["red", "green", "blue", "white", "yellow"],
+        //         cycle: true,
+        //     },
+        //     blendMode: "ADD",
+        //     lifespan: 500,
+        //     quantity: 4,
+        //     scale: { start: 0.5, end: 0.1 },
+        // });
+
+        // emitter.addEmitZone({
+        //     type: "edge",
+        //     source: shape1,
+        //     quantity: 64,
+        //     total: 1,
+        // });
+        // shape1.setPosition(400, 400);
 
         marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
             () => (this.isInstrumentPlaying = true)
@@ -595,8 +626,81 @@ export default class Game extends Phaser.Scene {
     }
     update(time: number, delta: number): void {
         if (this.voices.length) {
+            // ------------------------------------------------------------------------------------------------------------------------------
+            this.voices.map((voiceSprite, i) => {
+                const velocity = Math.sqrt(
+                    voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
+                );
+                // If velocity is zero, do not draw the trail
+                if (velocity > 0.5) {
+                    // Calculate the position directly behind the circle relative to its velocity vector
+                    const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
+                    const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
+                    const trailX = voiceSprite.position.x + offsetX;
+                    const trailY = voiceSprite.position.y + offsetY;
+                    //     // Calculate the angle of the trail image
+                    const angle =
+                        Math.atan2(
+                            voiceSprite.velocity.y,
+                            voiceSprite.velocity.x
+                        ) *
+                        (180 / Math.PI);
+                    // Add the current trail position to the trail points array
+                    this.trailPoints[i].push({
+                        x: trailX,
+                        y: trailY,
+                        angle,
+                    });
+                    // Adjust trail length based on velocity
+                    this.trailLength = Phaser.Math.Clamp(velocity * 4, 10, 100);
+                    // Limit the number of points in the trail to the trail length
+                    if (this.trailPoints[i].length > this.trailLength) {
+                        this.trailPoints[i].shift();
+                    }
+                    // Clear the previous trail
+                    this.trailGraphics[i].clear();
+                    //     this.trailsGroup[i].clear(true, true);
+                    //     // Draw the trail
+                    for (let j = 0; j < this.trailPoints[i].length; j++) {
+                        const point = this.trailPoints[i][j];
+                        const alpha = (j + 0.01) / this.trailPoints[i].length; // Gradually decrease alpha
+                        this.trailGraphics[i].fillStyle(
+                            0x0cffffff,
+                            alpha * 0.01
+                        );
+                        // this.trailGraphics.fillCircle(point.x, point.y, 20);
+                        this.trailGraphics[i].fillRoundedRect(
+                            point.x - 20,
+                            point.y - 20,
+                            40,
+                            40
+                        );
+                        // .setAngle(point.angle);
+                        // Draw rectangles centered at the trail points
+                        // this.trailGraphics.beginPath();
+                        // this.trailGraphics.moveTo(point.x, point.y);
+                        // this.trailGraphics.lineTo(point.x - 5, point.y - 20);
+                        // this.trailGraphics.lineTo(point.x + 5, point.y - 20);
+                        // this.trailGraphics.closePath();
+                        // this.trailGraphics.fillPath();
+                        // console.log(point.angle);
+                        // const flame = this.add
+                        //     .image(point.x, point.y, "flame")
+                        //     .setAlpha(alpha * 0.5)
+                        //     .setRotation(((point.angle || 0) * Math.PI) / 180)
+                        //     .setScale(2, 2);
+                        // this.trailsGroup[i].add(flame);
+                    }
+                } else {
+                    // Clear the trail if velocity is zero
+                    this.trailGraphics[i].clear();
+                    // this.trailsGroup[i].clear(true, true);
+                }
+            });
+            // ------------------------------------------------------------------------------------------------------------------------------
             this.voicesImages.map((v, i) => {
                 const voiceBody = this.voices[i];
+
                 v.setPosition(voiceBody.position.x, voiceBody.position.y);
                 v.setRotation(voiceBody.angle);
                 this.labels[i].setPosition(
@@ -621,6 +725,39 @@ export default class Game extends Phaser.Scene {
                     v.setDisplaySize(23, 23);
                 }
             });
+
+            //   const ctx = render.context;
+            //   ctx.beginPath();
+            //   ctx.lineWidth = 50;
+            //   ctx.lineCap = "round";
+            //   this.trails.map((trail) => {
+            //     for (let i = 1; i < trail.length; i++) {
+            //       ctx.moveTo(trail[i - 1].x, trail[i - 1].y);
+            //       ctx.lineTo(trail[i].x, trail[i].y);
+            //     }
+            //   });
+            //   ctx.strokeStyle = "rgba(0, 0, 0, 0.05)";
+            //   ctx.stroke();
+
+            //   // for (let i = 1; i < trails.length; i++) {
+            //   //   ctx.beginPath();
+            //   //   ctx.moveTo(trails[i - 1].x, trails[i - 1].y);
+            //   //   ctx.lineTo(trails[i].x, trails[i].y);
+
+            //   //   const gradient = ctx.createLinearGradient(
+            //   //     trails[i - 1].x,
+            //   //     trails[i - 1].y,
+            //   //     trails[i].x,
+            //   //     trails[i].y
+            //   //   );
+            //   //   // gradient.addColorStop(0, marbleColor);
+            //   //   gradient.addColorStop(1, "rgba(255, 0, 0, 0)"); // Transparent end
+
+            //   //   ctx.strokeStyle = gradient;
+            //   //   ctx.lineWidth = marbleRadius * 2; // Set line width to match marble diameter
+            //   //   ctx.stroke();
+            //   // }
+            // });
         }
         this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
         this.crossLeftRotation.map((c) => c.setAngle(c.angle - 2));
