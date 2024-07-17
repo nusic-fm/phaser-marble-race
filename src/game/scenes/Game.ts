@@ -42,7 +42,12 @@ export default class Game extends Phaser.Scene {
     public trailGraphics: Phaser.GameObjects.Graphics[] = [];
     public trailsGroup: Phaser.GameObjects.Group[] = [];
     public trailLength: number;
-    public trailPoints: { x: number; y: number; angle: number }[][] = [];
+    public trailPoints: {
+        x: number;
+        y: number;
+        angle: number;
+        // size: number;
+    }[][] = [];
     // public shape: any;
 
     throttledUpdate(index: number) {
@@ -50,6 +55,22 @@ export default class Game extends Phaser.Scene {
         // Logic that should be throttled
         marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
     }
+
+    createTextureMask = (
+        xOffset: number,
+        yOffset: number,
+        baseSprite: Phaser.Physics.Matter.Sprite | Phaser.Physics.Matter.Image
+    ) => {
+        // Create the texture sprite
+        const textureSprite = this.add.sprite(xOffset, yOffset, "textureImage");
+
+        // Use the base sprite's texture as a mask for the texture sprite
+        const mask = new Phaser.Display.Masks.BitmapMask(this, baseSprite);
+        textureSprite.setMask(mask);
+
+        // Optionally, hide the base sprite if you only want to show the texture
+        baseSprite.setVisible(false);
+    };
 
     createCrossScreen = (
         startOffset: number,
@@ -132,6 +153,12 @@ export default class Game extends Phaser.Scene {
                 }
             )
         );
+        this.crossLeftRotation.map((baseSprite) =>
+            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
+        this.crossRightRotation.map((baseSprite) =>
+            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
         return startOffset + 250;
     };
     createSeesawScreen = (
@@ -139,9 +166,10 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.matter.add.sprite(
+        const yOffset = startOffset + 835 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset,
-            startOffset + 835 / 2,
+            yOffset,
             "prod_texture_loaded_06",
             undefined,
             {
@@ -149,6 +177,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 840;
     };
     createCircleBlockers = (
@@ -156,9 +185,10 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.matter.add.sprite(
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset,
-            startOffset + 833 / 2,
+            yOffset,
             "prod_texture_loaded_21",
             undefined,
             {
@@ -166,6 +196,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 880;
     };
     createStarRotations = (startOffset: number, miniShapes: any) => {
@@ -283,6 +314,10 @@ export default class Game extends Phaser.Scene {
                 })
                 .setAngle(35)
         );
+        [...this.leftRotatableStars, ...this.rightRotatableStars].map(
+            (baseSprite) =>
+                this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
         return startOffset + 149;
     };
 
@@ -291,9 +326,10 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.matter.add.sprite(
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset + 0,
-            startOffset + 833 / 2,
+            yOffset,
             "prod_texture_loaded_03",
             undefined,
             {
@@ -301,6 +337,8 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        this.createTextureMask(xOffset, yOffset, baseSprite);
+
         return startOffset + 1000;
     };
 
@@ -310,9 +348,10 @@ export default class Game extends Phaser.Scene {
         prodShapes: any
     ) => {
         this.reduceSizeScreenOffset = startOffset;
-        this.matter.add.sprite(
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset,
-            startOffset + 835 / 2,
+            yOffset,
             "prod_texture_loaded_16",
             undefined,
             {
@@ -320,6 +359,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        this.createTextureMask(xOffset, yOffset, baseSprite);
         startOffset += 800;
         this.increaseSizeScreenOffset = startOffset;
         startOffset += 300;
@@ -330,9 +370,10 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.matter.add.sprite(
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset - 4,
-            startOffset + 833 / 2,
+            yOffset,
             "prod_texture_loaded_11",
             undefined,
             {
@@ -411,6 +452,11 @@ export default class Game extends Phaser.Scene {
             }
             // .setAngle(7.1)
         );
+        //TODO for the right & left blocks
+        this.upDownMotionElems
+            .map((e) => e.matter)
+            .map((image) => this.createTextureMask(image.x, image.y, image));
+        this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite);
         return startOffset + 842;
     };
     createStaticCircles = (
@@ -418,9 +464,10 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.matter.add.sprite(
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset,
-            startOffset + 833 / 2,
+            yOffset,
             "prod_texture_loaded_01",
             undefined,
             {
@@ -428,6 +475,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 832;
     };
     createZigzagSlider = (
@@ -435,9 +483,10 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.matter.add.sprite(
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add.sprite(
             xOffset,
-            startOffset + 833 / 2,
+            yOffset,
             "prod_texture_loaded_07",
             undefined,
             {
@@ -445,6 +494,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 880;
     };
     createMarbles = (marbleRadius: number) => {
@@ -542,6 +592,12 @@ export default class Game extends Phaser.Scene {
             );
             rightOffset -= 80;
         });
+        [
+            ...this.horizontalCrossLeftRotation,
+            ...this.horizontalCrossRightRotation,
+        ].map((baseSprite) =>
+            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
         return startOffset + 230;
     };
 
@@ -550,7 +606,7 @@ export default class Game extends Phaser.Scene {
         this.add.image(400, 300, "background").setScrollFactor(0);
         // Enable camera scrolling
         const canvasWidth = 512 - 94;
-        this.cameras.main.setBounds(0, 0, canvasWidth, 11 * 850);
+        this.cameras.main.setBounds(0, 0, canvasWidth, 11 * 850 + 300);
         this.matter.world.setBounds(0, 0, canvasWidth, 11 * 850 + 800);
 
         var prodShapes = this.cache.json.get("prod_shapes");
@@ -632,7 +688,7 @@ export default class Game extends Phaser.Scene {
                     voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
                 );
                 // If velocity is zero, do not draw the trail
-                if (velocity > 0.5) {
+                if (velocity > 0.1) {
                     // Calculate the position directly behind the circle relative to its velocity vector
                     const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
                     const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
