@@ -96,7 +96,7 @@ function App() {
                         alignItems={"center"}
                         justifyContent={"center"}
                     >
-                        Choose from your left Covers menu
+                        Select a cover to start
                     </Typography>
                 )}
             </Box>
