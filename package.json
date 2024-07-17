@@ -25,11 +25,18 @@
         "build": "vite build --config vite/config.prod.mjs"
     },
     "dependencies": {
+        "@emotion/react": "^11.11.4",
+        "@emotion/styled": "^11.11.5",
+        "@mui/icons-material": "^5.16.4",
+        "@mui/lab": "^5.0.0-alpha.172",
+        "@mui/material": "^5.16.4",
+        "firebase": "^10.12.3",
         "idb": "^8.0.0",
         "lodash": "^4.17.21",
         "phaser": "^3.80.1",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
+        "react-firebase-hooks": "^5.1.1",
         "tone": "^15.0.4",
         "use-indexeddb": "^2.0.2"
     },

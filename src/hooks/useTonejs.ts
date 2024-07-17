@@ -134,7 +134,11 @@ const stopPlayer = () => {
     Tone.Transport.stop();
 };
 
-const marbleRaceOnlyInstrument = async (id: string, bpm: number) => {
+const marbleRaceOnlyInstrument = async (
+    id: string,
+    bpm: number,
+    startOffset: number
+) => {
     if (bpm) Tone.Transport.bpm.value = bpm;
     else Tone.Transport.bpm.dispose();
     await initializeTone();
@@ -155,7 +159,7 @@ const marbleRaceOnlyInstrument = async (id: string, bpm: number) => {
     }
     await Tone.loaded();
     instrPlayerRef.start();
-    Tone.Transport.start(undefined, 12);
+    Tone.Transport.start(undefined, startOffset);
 };
 
 const marbleRacePlayVocals = async (id: string, vId: string) => {

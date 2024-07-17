@@ -1,5 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef } from "react";
 import StartGame from "./main";
+import { GameVoiceInfo } from "./scenes/Preloader";
 
 export interface IRefPhaserGame {
     game: Phaser.Game | null;
@@ -7,16 +8,23 @@ export interface IRefPhaserGame {
 }
 
 interface IProps {
+    voices: GameVoiceInfo[];
+    coverDocId: string;
     currentActiveScene?: (scene_instance: Phaser.Scene) => void;
+    musicStartOffset: number;
 }
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
-    function PhaserGame({}, ref) {
+    function PhaserGame({ voices, coverDocId, musicStartOffset }, ref) {
         const game = useRef<Phaser.Game | null>(null!);
 
         useLayoutEffect(() => {
             if (game.current === null) {
-                game.current = StartGame("game-container");
+                game.current = StartGame("game-container", {
+                    voices,
+                    coverDocId,
+                    musicStartOffset,
+                });
 
                 if (typeof ref === "function") {
                     ref({ game: game.current, scene: null });

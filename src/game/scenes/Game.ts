@@ -1,10 +1,10 @@
 import Phaser from "phaser";
-import { voiceNames, voices } from "../../App";
 import {
     marbleRaceOnlyInstrument,
     marbleRacePlayVocals,
 } from "../../hooks/useTonejs";
 import _ from "lodash";
+import { GameVoiceInfo } from "./Preloader";
 
 export default class Game extends Phaser.Scene {
     constructor() {
@@ -15,8 +15,9 @@ export default class Game extends Phaser.Scene {
         ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
-    public voices: MatterJS.BodyType[] = [];
-    public voicesImages: Phaser.GameObjects.Image[] = [];
+    public marbles: MatterJS.BodyType[] = [];
+    public marblesImages: Phaser.GameObjects.Image[] = [];
+    public marblesMasks: Phaser.GameObjects.Graphics[] = [];
     public isInstrumentPlaying: boolean = false;
     public autoScroll = true;
     public prevVoiceIdx = -1;
@@ -49,11 +50,24 @@ export default class Game extends Phaser.Scene {
         // size: number;
     }[][] = [];
     // public shape: any;
+    public voices: GameVoiceInfo[] = [];
+    public coverDocId: string;
+    public musicStartOffset: number;
+
+    init(data: {
+        voices: GameVoiceInfo[];
+        coverDocId: string;
+        musicStartOffset: number;
+    }) {
+        this.voices = data.voices;
+        this.coverDocId = data.coverDocId;
+        this.musicStartOffset = data.musicStartOffset;
+    }
 
     throttledUpdate(index: number) {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
-        marbleRacePlayVocals("f0pmE4twBXnJmVrJzh18", voices[index]);
+        marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
     }
 
     createTextureMask = (
@@ -498,7 +512,36 @@ export default class Game extends Phaser.Scene {
         return startOffset + 880;
     };
     createMarbles = (marbleRadius: number) => {
-        ["voice1", "voice2", "voice3", "voice4"].map((v, i) => {
+        this.voices.map((v, i) => {
+            // const radius = 23;
+            // const body = this.matter.add.circle(400, 400, radius);
+            // const image = this.add.image(
+            //     body.position.x,
+            //     body.position.y,
+            //     v.id
+            // );
+            // image.setOrigin(0.5, 0.5);
+            // image.displayWidth = radius * 2;
+            // image.displayHeight = radius * 2;
+            // // Create a circular mask
+            // const maskShape = this.make.graphics();
+            // maskShape.fillStyle(0xffffff);
+            // maskShape.fillCircle(radius, radius, radius);
+            // const mask = maskShape.createGeometryMask();
+
+            // // Apply the mask to the image
+            // image.setMask(mask);
+            // // Update the image and mask positions to follow the body's position
+            // this.matter.world.on("afterupdate", () => {
+            //     image.x = circleBody.position.x;
+            //     image.y = circleBody.position.y;
+            //     image.rotation = circleBody.angle;
+
+            //     // Update the mask position
+            //     maskShape.x = circleBody.position.x - radius;
+            //     maskShape.y = circleBody.position.y - radius;
+            //     maskShape.rotation = circleBody.angle;
+            // });
             const circleBody = this.matter.add.circle(206, 50, marbleRadius, {
                 restitution: 0.8,
                 // density: 0.02,
@@ -506,7 +549,7 @@ export default class Game extends Phaser.Scene {
                 frictionAir: 0,
                 frictionStatic: 0,
             });
-            this.voices.push(circleBody);
+            this.marbles.push(circleBody);
             this.trailsGroup.push(this.add.group());
             this.trailGraphics.push(this.add.graphics());
             this.trailPoints.push([]);
@@ -514,17 +557,26 @@ export default class Game extends Phaser.Scene {
             const circleImage = this.add.image(
                 circleBody.position.x,
                 circleBody.position.y,
-                v
+                v.id
             );
 
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2); // Adjust size to match the physics body
             circleImage.setOrigin(0.5, 0.5);
-            this.voicesImages.push(circleImage);
+            const maskShape = this.make.graphics();
+            maskShape.fillStyle(0xffffff);
+            maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
+            const mask = maskShape.createGeometryMask();
+
+            // Apply the mask to the image
+            circleImage.setMask(mask);
+            this.marblesMasks.push(maskShape);
+
+            this.marblesImages.push(circleImage);
             // Create label for each circle
             let label = this.add.text(
                 circleImage.x,
                 circleImage.y - 80,
-                voiceNames[i],
+                this.voices[i].name,
                 {
                     fontSize: "32px",
                     color: "#ffffff",
@@ -676,14 +728,16 @@ export default class Game extends Phaser.Scene {
         // });
         // shape1.setPosition(400, 400);
 
-        marbleRaceOnlyInstrument("f0pmE4twBXnJmVrJzh18", 120).then(
-            () => (this.isInstrumentPlaying = true)
-        );
+        marbleRaceOnlyInstrument(
+            this.coverDocId,
+            120,
+            this.musicStartOffset
+        ).then(() => (this.isInstrumentPlaying = true));
     }
     update(time: number, delta: number): void {
-        if (this.voices.length) {
+        if (this.marbles.length) {
             // ------------------------------------------------------------------------------------------------------------------------------
-            this.voices.map((voiceSprite, i) => {
+            this.marbles.map((voiceSprite, i) => {
                 const velocity = Math.sqrt(
                     voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
                 );
@@ -754,11 +808,17 @@ export default class Game extends Phaser.Scene {
                 }
             });
             // ------------------------------------------------------------------------------------------------------------------------------
-            this.voicesImages.map((v, i) => {
-                const voiceBody = this.voices[i];
+            this.marblesImages.map((v, i) => {
+                const voiceBody = this.marbles[i];
 
                 v.setPosition(voiceBody.position.x, voiceBody.position.y);
                 v.setRotation(voiceBody.angle);
+                this.marblesMasks[i].setPosition(
+                    voiceBody.position.x - 23,
+                    voiceBody.position.y - 23
+                );
+                // this.marblesMasks[i].setRotation(voiceBody.angle);
+
                 this.labels[i].setPosition(
                     voiceBody.position.x - 100,
                     voiceBody.position.y - 80
@@ -818,7 +878,7 @@ export default class Game extends Phaser.Scene {
         this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
         this.crossLeftRotation.map((c) => c.setAngle(c.angle - 2));
         if (this.isInstrumentPlaying) {
-            const voicesPositions = this.voices.map((m) => m.position.y);
+            const voicesPositions = this.marbles.map((m) => m.position.y);
             const largest = Math.max(...voicesPositions);
             const index = voicesPositions.findIndex((v) => v === largest);
             // console.log("First: ", index);

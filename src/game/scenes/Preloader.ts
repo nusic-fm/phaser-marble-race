@@ -1,30 +1,52 @@
 import Phaser from "phaser";
 
+export type GameVoiceInfo = {
+    id: string;
+    name: string;
+    avatar: string;
+};
 export default class Preloader extends Phaser.Scene {
+    public params: {
+        voices: GameVoiceInfo[];
+        coverDocId: string;
+        musicStartOffset: number;
+    };
     constructor() {
         super("preloader");
     }
 
+    init(data: {
+        voices: GameVoiceInfo[];
+        coverDocId: string;
+        musicStartOffset: number;
+    }) {
+        this.params = data;
+    }
+
     preload() {
         this.load.image("background", "assets/bg.webp");
-        this.load.image(
-            "voice1",
-            "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Farthur-morgan_rdr2-_200x200?alt=media&token=330a3b59-e78d-4b88-81a8-94142b3b4182"
-        );
-        this.load.image(
-            "voice2",
-            "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Fbillie-eilish-2019_200x200?alt=media&token=d2b5866e-0640-4bc7-915e-05a15cd532d5"
-        );
-        this.load.image(
-            "voice3",
-            "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Fcardi-b_200x200?alt=media&token=229057a6-3e8d-42ca-a0a4-01e54dee22bd"
-        );
-        this.load.image(
-            "voice4",
-            "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Fchester-bennington-_200x200?alt=media&token=30576234-1f5a-4104-860a-103e06f452d8"
-        );
-        // this.load.atlas('small', 'assets/sprite/small.png', 'assets/sprite/small.json');
-        // this.load.json('shapes', 'assets/physics/shape.json')
+        // TODO: Enable the below and comment out the rest of the images
+        if (this.params.voices.length) {
+            this.params.voices.map((voice) => {
+                this.load.image(voice.id, voice.avatar);
+            });
+        }
+        // this.load.image(
+        //     "voice1",
+        //     "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Farthur-morgan_rdr2-_200x200?alt=media&token=330a3b59-e78d-4b88-81a8-94142b3b4182"
+        // );
+        // this.load.image(
+        //     "voice2",
+        //     "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Fbillie-eilish-2019_200x200?alt=media&token=d2b5866e-0640-4bc7-915e-05a15cd532d5"
+        // );
+        // this.load.image(
+        //     "voice3",
+        //     "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Fcardi-b_200x200?alt=media&token=229057a6-3e8d-42ca-a0a4-01e54dee22bd"
+        // );
+        // this.load.image(
+        //     "voice4",
+        //     "https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/voice_models%2Favatars%2Fthumbs%2Fchester-bennington-_200x200?alt=media&token=30576234-1f5a-4104-860a-103e06f452d8"
+        // );
         this.load.atlas(
             "prod_texture_loaded_07",
             "assets/sprite/07.png",
@@ -91,7 +113,7 @@ export default class Preloader extends Phaser.Scene {
         //     }
         // );
         // this.matter.add.image(400, 300, 'sky')
-        this.scene.start("game");
+        this.scene.start("game", this.params);
 
         // const particles = this.add.particles('red')
 

@@ -1,5 +1,5 @@
 import { AUTO, Game } from "phaser";
-import Preloader from "./scenes/Preloader";
+import Preloader, { GameVoiceInfo } from "./scenes/Preloader";
 import GameScene from "./scenes/Game";
 
 //  Find out more information about the Game Config at:
@@ -21,8 +21,17 @@ const config: Phaser.Types.Core.GameConfig = {
     scene: [Preloader, GameScene],
 };
 
-const StartGame = (parent: string) => {
-    return new Game({ ...config, parent });
+const StartGame = (
+    parent: string,
+    data: {
+        voices: GameVoiceInfo[];
+        coverDocId: string;
+        musicStartOffset: number;
+    }
+) => {
+    const game = new Game({ ...config, parent });
+    game.scene.start("preloader", data);
+    return game;
 };
 
 export default StartGame;
