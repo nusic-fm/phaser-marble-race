@@ -59,60 +59,78 @@ const Rows = ({ onCoverSelection }: Props) => {
     }, [coversCollectionSnapshot]);
 
     return (
-        <Stack gap={3} my={2}>
+        <Stack my={2} height={"100%"} gap={2}>
             <Typography align="center">Choose Race</Typography>
-            {coversSnapshot?.docs.map((doc) => {
-                const id = doc.id;
-                const coverDoc = doc.data() as CoverV1;
-                return (
-                    <ListItemButton
-                        key={id}
-                        sx={{ width: "100%" }}
-                        onClick={() => onCoverSelection(id)}
-                    >
-                        <Stack gap={1} width="100%">
-                            <Box
-                                display="flex"
-                                justifyContent="center"
-                                alignItems="center"
-                                gap={1}
-                            >
-                                <AvatarGroup
-                                    total={coverDoc.voices.length}
-                                    max={5}
-                                    sx={{
-                                        ".MuiAvatar-colorDefault": {
-                                            backgroundColor: "transparent",
-                                            width: 70,
-                                            height: 70,
-                                        },
-                                    }}
+            <Stack
+                gap={2}
+                sx={{
+                    overflowY: "auto",
+                    // hide scrollbar
+                    // "&::-webkit-scrollbar": {
+                    //     display: "none",
+                    // },
+                    // "-ms-overflow-style": "none",
+                    // scrollbarWidth: "none",
+                }}
+                px={2}
+                // height="650px"
+            >
+                {coversSnapshot?.docs.map((doc) => {
+                    const id = doc.id;
+                    const coverDoc = doc.data() as CoverV1;
+                    return (
+                        <ListItemButton
+                            key={id}
+                            sx={{
+                                width: "100%",
+                                borderBottom: "1px solid #e0e0e0",
+                            }}
+                            onClick={() => onCoverSelection(id)}
+                        >
+                            <Stack gap={1} width="100%">
+                                <Box
+                                    display="flex"
+                                    justifyContent="center"
+                                    alignItems="center"
+                                    gap={1}
                                 >
-                                    {coverDoc.voices
-                                        .slice(0, 5)
-                                        .map((voice) => (
-                                            <Avatar
-                                                src={`https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
-                                                    "voice_models/avatars/thumbs/"
-                                                )}${
-                                                    voice.id
-                                                }_200x200?alt=media`}
-                                                sx={{
-                                                    width: 70,
-                                                    height: 70,
-                                                    borderRadius: "50%",
-                                                }}
-                                            />
-                                        ))}
-                                </AvatarGroup>
-                            </Box>
-                            <Typography align="center">
-                                {coverDoc.title}
-                            </Typography>
-                        </Stack>
-                    </ListItemButton>
-                );
-            })}
+                                    <AvatarGroup
+                                        total={coverDoc.voices.length}
+                                        max={5}
+                                        sx={{
+                                            ".MuiAvatar-colorDefault": {
+                                                backgroundColor: "transparent",
+                                                width: 70,
+                                                height: 70,
+                                            },
+                                        }}
+                                    >
+                                        {coverDoc.voices
+                                            .slice(0, 5)
+                                            .map((voice) => (
+                                                <Avatar
+                                                    src={`https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                                                        "voice_models/avatars/thumbs/"
+                                                    )}${
+                                                        voice.id
+                                                    }_200x200?alt=media`}
+                                                    sx={{
+                                                        width: 70,
+                                                        height: 70,
+                                                        borderRadius: "50%",
+                                                    }}
+                                                />
+                                            ))}
+                                    </AvatarGroup>
+                                </Box>
+                                <Typography align="center">
+                                    {coverDoc.title}
+                                </Typography>
+                            </Stack>
+                        </ListItemButton>
+                    );
+                })}
+            </Stack>
         </Stack>
     );
 };

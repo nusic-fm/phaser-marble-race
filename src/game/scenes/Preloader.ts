@@ -17,7 +17,7 @@ export default class Preloader extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("background", "assets/bg.webp");
+        this.load.image("background", this.params.backgroundPath);
         // TODO: Enable the below and comment out the rest of the images
         if (this.params.voices.length) {
             this.params.voices.map((voice) => {
