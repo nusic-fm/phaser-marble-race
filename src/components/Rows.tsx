@@ -106,7 +106,7 @@ const Rows = ({ onCoverSelection }: Props) => {
                     // "-ms-overflow-style": "none",
                     // scrollbarWidth: "none",
                 }}
-                px={2}
+                px={"20%"}
                 // height="650px"
             >
                 {coversSnapshot?.docs.map((doc) => {
@@ -129,32 +129,31 @@ const Rows = ({ onCoverSelection }: Props) => {
                                     gap={1}
                                 >
                                     <AvatarGroup
-                                        total={coverDoc.voices.length}
-                                        max={5}
+                                        max={6}
                                         sx={{
                                             ".MuiAvatar-colorDefault": {
                                                 backgroundColor: "transparent",
-                                                width: 70,
-                                                height: 70,
+                                                width: 60,
+                                                height: 60,
+                                                border: "1px solid white",
+                                                color: "white",
                                             },
                                         }}
                                     >
-                                        {coverDoc.voices
-                                            .slice(0, 5)
-                                            .map((voice) => (
-                                                <Avatar
-                                                    src={`https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
-                                                        "voice_models/avatars/thumbs/"
-                                                    )}${
-                                                        voice.id
-                                                    }_200x200?alt=media`}
-                                                    sx={{
-                                                        width: 70,
-                                                        height: 70,
-                                                        borderRadius: "50%",
-                                                    }}
-                                                />
-                                            ))}
+                                        {coverDoc.voices.map((voice) => (
+                                            <Avatar
+                                                src={`https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                                                    "voice_models/avatars/thumbs/"
+                                                )}${
+                                                    voice.id
+                                                }_200x200?alt=media`}
+                                                sx={{
+                                                    width: 60,
+                                                    height: 60,
+                                                    borderRadius: "50%",
+                                                }}
+                                            />
+                                        ))}
                                     </AvatarGroup>
                                 </Box>
                                 <Typography align="center">
