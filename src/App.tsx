@@ -1,9 +1,10 @@
-import { Box, Typography } from "@mui/material";
-import { useRef, useState } from "react";
+import { Box, Stack, Typography } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
 import Rows from "./components/Rows";
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import { downloadAudioFiles } from "./hooks/useTonejs";
 import { CoverV1, getCoverDocById } from "./services/db/coversV1.service";
+import { listAllTrackSkins } from "./services/storage/marbleRace.service";
 
 function App() {
     //  References to the PhaserGame component (game and scene are exposed)
@@ -12,6 +13,8 @@ function App() {
     const [ready, setReady] = useState(false);
     const [coverDoc, setCoverDoc] = useState<CoverV1 | null>(null);
     const [selectedCoverDocId, setSelectedCoverDocId] = useState<string>("");
+    const [skinPaths, setSkinPaths] = useState<string[]>([]);
+    const [selectedSkinPath, setSelectedSkinPath] = useState<string>("");
 
     const fetchCoverDoc = async (coverDocId: string) => {
         setIsDownloading(true);
@@ -31,6 +34,14 @@ function App() {
         setIsDownloading(false);
         setReady(true);
     };
+
+    useEffect(() => {
+        (async () => {
+            const paths = await listAllTrackSkins();
+            setSelectedSkinPath(paths[0]);
+            setSkinPaths(paths);
+        })();
+    }, []);
     return (
         <Box
             id="app"
@@ -77,6 +88,7 @@ function App() {
                         musicStartOffset={
                             coverDoc?.sections?.at(3)?.start || 20
                         }
+                        skinPath={selectedSkinPath}
                     />
                 ) : isDownloading ? (
                     <Typography
@@ -99,6 +111,31 @@ function App() {
                         Select a cover to start
                     </Typography>
                 )}
+            </Box>
+            <Box>
+                <Stack gap={1}>
+                    <Typography>Choose a Skin</Typography>
+                    <Stack direction="row" gap={2}>
+                        {skinPaths.map((path) => (
+                            <img
+                                key={path}
+                                src={path}
+                                alt={path}
+                                style={{
+                                    width: 80,
+                                    height: 140,
+                                    borderRadius: 10,
+                                    border:
+                                        path === selectedSkinPath
+                                            ? "2px solid #fff"
+                                            : "none",
+                                    cursor: "pointer",
+                                }}
+                                onClick={() => setSelectedSkinPath(path)}
+                            />
+                        ))}
+                    </Stack>
+                </Stack>
             </Box>
         </Box>
     );

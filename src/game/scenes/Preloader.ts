@@ -1,4 +1,5 @@
 import Phaser from "phaser";
+import { IGameDataParams } from "../PhaserGame";
 
 export type GameVoiceInfo = {
     id: string;
@@ -6,20 +7,12 @@ export type GameVoiceInfo = {
     avatar: string;
 };
 export default class Preloader extends Phaser.Scene {
-    public params: {
-        voices: GameVoiceInfo[];
-        coverDocId: string;
-        musicStartOffset: number;
-    };
+    public params: IGameDataParams;
     constructor() {
         super("preloader");
     }
 
-    init(data: {
-        voices: GameVoiceInfo[];
-        coverDocId: string;
-        musicStartOffset: number;
-    }) {
+    init(data: IGameDataParams) {
         this.params = data;
     }
 
@@ -96,7 +89,7 @@ export default class Preloader extends Phaser.Scene {
         this.load.image("bar", "assets/sprite/bar.png");
         this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
         this.load.image("02_cross", "assets/sprite/02_cross.png");
-        this.load.image("textureImage", "assets/texture.jpg");
+        this.load.image("textureImage", this.params.skinPath);
     }
 
     create() {

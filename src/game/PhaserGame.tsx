@@ -7,15 +7,22 @@ export interface IRefPhaserGame {
     scene: Phaser.Scene | null;
 }
 
-interface IProps {
+export interface IGameDataParams {
     voices: GameVoiceInfo[];
     coverDocId: string;
-    currentActiveScene?: (scene_instance: Phaser.Scene) => void;
     musicStartOffset: number;
+    skinPath: string;
+}
+
+interface IProps extends IGameDataParams {
+    currentActiveScene?: (scene_instance: Phaser.Scene) => void;
 }
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
-    function PhaserGame({ voices, coverDocId, musicStartOffset }, ref) {
+    function PhaserGame(
+        { voices, coverDocId, musicStartOffset, skinPath },
+        ref
+    ) {
         const game = useRef<Phaser.Game | null>(null!);
 
         useLayoutEffect(() => {
@@ -24,6 +31,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                     voices,
                     coverDocId,
                     musicStartOffset,
+                    skinPath,
                 });
 
                 if (typeof ref === "function") {

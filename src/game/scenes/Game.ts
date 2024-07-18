@@ -5,6 +5,7 @@ import {
 } from "../../hooks/useTonejs";
 import _ from "lodash";
 import { GameVoiceInfo } from "./Preloader";
+import { IGameDataParams } from "../PhaserGame";
 
 export default class Game extends Phaser.Scene {
     constructor() {
@@ -54,11 +55,7 @@ export default class Game extends Phaser.Scene {
     public coverDocId: string;
     public musicStartOffset: number;
 
-    init(data: {
-        voices: GameVoiceInfo[];
-        coverDocId: string;
-        musicStartOffset: number;
-    }) {
+    init(data: IGameDataParams) {
         this.voices = data.voices;
         this.coverDocId = data.coverDocId;
         this.musicStartOffset = data.musicStartOffset;
