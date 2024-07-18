@@ -2,7 +2,10 @@ import {
     Avatar,
     AvatarGroup,
     Box,
+    Button,
     ListItemButton,
+    MenuItem,
+    Select,
     Typography,
 } from "@mui/material";
 import { Stack } from "@mui/system";
@@ -19,6 +22,7 @@ import { useEffect, useState } from "react";
 import { useCollection } from "react-firebase-hooks/firestore";
 import { CoverV1 } from "../services/db/coversV1.service";
 import { db } from "../services/firebase.service";
+import FilterListOutlinedIcon from "@mui/icons-material/FilterListOutlined";
 
 const getRowsQuery = (recordsLimit: number, isLatest: boolean) => {
     if (isLatest) {
@@ -60,7 +64,37 @@ const Rows = ({ onCoverSelection }: Props) => {
 
     return (
         <Stack my={2} height={"100%"} gap={2}>
-            <Typography align="center">Choose Race</Typography>
+            <Stack
+                direction={"row"}
+                justifyContent={"center"}
+                alignItems="center"
+                position={"relative"}
+            >
+                <Typography align="center">Choose Race</Typography>
+                <Box position={"absolute"} right={0}>
+                    <Select
+                        size="small"
+                        sx={{ width: "135px" }}
+                        startAdornment={
+                            <FilterListOutlinedIcon
+                                fontSize="small"
+                                sx={{ mr: 1 }}
+                            />
+                        }
+                        value={isLatest ? "latest" : "top"}
+                        onChange={(e) => {
+                            if (e.target.value === "latest") {
+                                setIsLatest(true);
+                            } else {
+                                setIsLatest(false);
+                            }
+                        }}
+                    >
+                        <MenuItem value="top">Top</MenuItem>
+                        <MenuItem value="latest">Latest</MenuItem>
+                    </Select>
+                </Box>
+            </Stack>
             <Stack
                 gap={2}
                 sx={{
@@ -130,6 +164,19 @@ const Rows = ({ onCoverSelection }: Props) => {
                         </ListItemButton>
                     );
                 })}
+                {!!coversSnapshot && coversSnapshot.size >= 15 && (
+                    <Box display={"flex"} justifyContent="center" pt={2}>
+                        <Button
+                            onClick={() => {
+                                setRecordsLimit(recordsLimit + 15);
+                            }}
+                            variant="text"
+                            color="secondary"
+                        >
+                            Load More
+                        </Button>
+                    </Box>
+                )}
             </Stack>
         </Stack>
     );
