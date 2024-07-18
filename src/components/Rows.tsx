@@ -44,7 +44,7 @@ const getRowsQuery = (recordsLimit: number, isLatest: boolean) => {
 };
 
 type Props = {
-    onCoverSelection: (coverDocId: string) => void;
+    onCoverSelection: (coverDocId: string, coverDoc: CoverV1) => void;
 };
 const Rows = ({ onCoverSelection }: Props) => {
     const [recordsLimit, setRecordsLimit] = useState(15);
@@ -59,6 +59,10 @@ const Rows = ({ onCoverSelection }: Props) => {
     useEffect(() => {
         if (coversCollectionSnapshot?.size) {
             setCoversSnapshot(coversCollectionSnapshot);
+            onCoverSelection(
+                coversCollectionSnapshot.docs[0].id,
+                coversCollectionSnapshot.docs[0].data() as CoverV1
+            );
         }
     }, [coversCollectionSnapshot]);
 
@@ -119,7 +123,7 @@ const Rows = ({ onCoverSelection }: Props) => {
                                 width: "100%",
                                 borderBottom: "1px solid #e0e0e0",
                             }}
-                            onClick={() => onCoverSelection(id)}
+                            onClick={() => onCoverSelection(id, coverDoc)}
                         >
                             <Stack gap={1} width="100%">
                                 <Box

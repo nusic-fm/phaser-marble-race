@@ -1,10 +1,12 @@
-import { Box, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import Rows from "./components/Rows";
+import SelectVoices from "./components/SelectVoices";
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
+import { GameVoiceInfo } from "./game/scenes/Preloader";
 import { downloadAudioFiles } from "./hooks/useTonejs";
-import { CoverV1, getCoverDocById } from "./services/db/coversV1.service";
+import { CoverV1 } from "./services/db/coversV1.service";
 import {
     listAllTrackBackgrounds,
     listAllTrackSkins,
@@ -21,24 +23,42 @@ function App() {
     const [bgPaths, setBgPaths] = useState<string[]>([]);
     const [selectedSkinPath, setSelectedSkinPath] = useState<string>("");
     const [selectedBackground, setSelectedBackground] = useState<string>("");
+    const [selectedVoices, setSelectedVoices] = useState<{
+        [key: string]: GameVoiceInfo;
+    }>({});
 
-    const fetchCoverDoc = async (coverDocId: string) => {
-        setIsDownloading(true);
-        const coverDoc = await getCoverDocById(coverDocId);
-        setCoverDoc(coverDoc);
+    const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
+        setCoverDoc(_coverDoc);
         setSelectedCoverDocId(coverDocId);
-        await downloadAudioFiles([
-            `https://voxaudio.nusic.fm/covers/${coverDocId}/instrumental.mp3`,
-            ...coverDoc.voices
-                .slice(0, 8)
-                .map((v) => v.id)
-                .map(
-                    (v) =>
-                        `https://voxaudio.nusic.fm/covers/${coverDocId}/${v}.mp3`
-                ),
-        ]);
-        setIsDownloading(false);
-        setReady(true);
+        const _selectedVoices: { [key: string]: GameVoiceInfo } = {};
+        _coverDoc.voices.slice(0, 5).map(
+            (v, i) =>
+                (_selectedVoices[i] = {
+                    id: v.id,
+                    name: v.name,
+                    avatar: `https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                        "voice_models/avatars/thumbs/"
+                    )}${v.id}_200x200?alt=media`,
+                })
+        );
+        setSelectedVoices(_selectedVoices);
+    };
+
+    const downloadAndPlay = async () => {
+        if (coverDoc && selectedCoverDocId) {
+            setIsDownloading(true);
+            await downloadAudioFiles([
+                `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
+                ...Object.values(selectedVoices)
+                    .map((v) => v.id)
+                    .map(
+                        (v) =>
+                            `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${v}.mp3`
+                    ),
+            ]);
+            setIsDownloading(false);
+            setReady(true);
+        }
     };
 
     useEffect(() => {
@@ -78,13 +98,7 @@ function App() {
                     {ready && coverDoc ? (
                         <PhaserGame
                             ref={phaserRef}
-                            voices={coverDoc.voices.slice(0, 5).map((v) => ({
-                                id: v.id,
-                                name: v.name,
-                                avatar: `https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
-                                    "voice_models/avatars/thumbs/"
-                                )}${v.id}_200x200?alt=media`,
-                            }))}
+                            voices={Object.values(selectedVoices)}
                             coverDocId={selectedCoverDocId}
                             musicStartOffset={
                                 coverDoc?.sections?.at(3)?.start || 20
@@ -92,26 +106,30 @@ function App() {
                             skinPath={selectedSkinPath}
                             backgroundPath={selectedBackground}
                         />
-                    ) : isDownloading ? (
-                        <Typography
-                            height={"100%"}
-                            width={"100%"}
-                            display="flex"
-                            justifyContent={"center"}
-                            py={8}
-                        >
-                            Preparing...
-                        </Typography>
                     ) : (
-                        <Typography
-                            height={"100%"}
-                            width={"100%"}
-                            display="flex"
-                            justifyContent={"center"}
-                            py={8}
-                        >
-                            Select a cover to start
-                        </Typography>
+                        <Stack alignItems={"center"} py={8} gap={4}>
+                            <Typography
+                                height={"100%"}
+                                width={"100%"}
+                                display="flex"
+                                justifyContent={"center"}
+                                variant="h6"
+                                align="center"
+                            >
+                                {coverDoc
+                                    ? coverDoc.title
+                                    : "Select a cover to start"}
+                            </Typography>
+                            {coverDoc && (
+                                <Button
+                                    onClick={downloadAndPlay}
+                                    variant="contained"
+                                    color="primary"
+                                >
+                                    {isDownloading ? "Preparing" : "Play"}
+                                </Button>
+                            )}
+                        </Stack>
                     )}
                 </Box>
                 <Stack
@@ -122,6 +140,13 @@ function App() {
                 >
                     <Typography align="center">Controls</Typography>
                     <Stack gap={1}>
+                        {coverDoc && (
+                            <SelectVoices
+                                selectedVoices={selectedVoices}
+                                setSelectedVoices={setSelectedVoices}
+                                voices={coverDoc.voices}
+                            />
+                        )}
                         <Typography>Choose a Skin</Typography>
                         <Stack direction="row" gap={2}>
                             {skinPaths.map((path) => (
