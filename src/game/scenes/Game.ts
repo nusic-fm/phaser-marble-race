@@ -811,8 +811,8 @@ export default class Game extends Phaser.Scene {
                 v.setPosition(voiceBody.position.x, voiceBody.position.y);
                 v.setRotation(voiceBody.angle);
                 this.marblesMasks[i].setPosition(
-                    voiceBody.position.x - 23,
-                    voiceBody.position.y - 23
+                    voiceBody.position.x - voiceBody.circleRadius,
+                    voiceBody.position.y - voiceBody.circleRadius
                 );
                 // this.marblesMasks[i].setRotation(voiceBody.angle);
 
@@ -826,6 +826,7 @@ export default class Game extends Phaser.Scene {
                 ) {
                     this.matter.body.scale(voiceBody, 2, 2);
                     v.setDisplaySize(46, 46);
+                    this.marblesMasks[i].scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
                 } else if (
@@ -836,6 +837,7 @@ export default class Game extends Phaser.Scene {
                     this.heightReducedIndices.push(i);
                     this.matter.body.scale(voiceBody, 0.5, 0.5);
                     v.setDisplaySize(23, 23);
+                    this.marblesMasks[i].scale = 0.5;
                 }
             });
 
