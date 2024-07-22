@@ -218,3 +218,16 @@ export const calculatePositions = (
     // return positions;
 };
 
+// Fill the array with its elements until it reaches the desired length
+export const duplicateArrayElemToN = (
+    arr: string[],
+    n: number = 9
+): string[] => {
+    const result = arr;
+    while (result.length < n) {
+        result.push(arr[createRandomNumber(0, arr.length - 1)]);
+    }
+    result.push("22");
+    return result.sort(() => Math.random() - 0.5);
+};
+

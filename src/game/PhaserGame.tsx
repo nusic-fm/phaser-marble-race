@@ -13,6 +13,7 @@ export interface IGameDataParams {
     musicStartOffset: number;
     skinPath: string;
     backgroundPath: string;
+    selectedTracks: string[];
 }
 
 interface IProps extends IGameDataParams {
@@ -21,7 +22,14 @@ interface IProps extends IGameDataParams {
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
     function PhaserGame(
-        { voices, coverDocId, musicStartOffset, skinPath, backgroundPath },
+        {
+            voices,
+            coverDocId,
+            musicStartOffset,
+            skinPath,
+            backgroundPath,
+            selectedTracks,
+        },
         ref
     ) {
         const game = useRef<Phaser.Game | null>(null!);
@@ -34,6 +42,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                     musicStartOffset,
                     skinPath,
                     backgroundPath,
+                    selectedTracks,
                 });
 
                 if (typeof ref === "function") {

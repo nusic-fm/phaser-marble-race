@@ -2,6 +2,7 @@ import { Box, Button, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import Rows from "./components/Rows";
+import SelectTracks from "./components/SelectTracks";
 import SelectVoices from "./components/SelectVoices";
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import { GameVoiceInfo } from "./game/scenes/Preloader";
@@ -11,6 +12,8 @@ import {
     listAllTrackBackgrounds,
     listAllTrackSkins,
 } from "./services/storage/marbleRace.service";
+
+export const tracks = ["01", "02", "03", "06", "07", "11", "14", "16", "21"];
 
 function App() {
     //  References to the PhaserGame component (game and scene are exposed)
@@ -23,6 +26,16 @@ function App() {
     const [bgPaths, setBgPaths] = useState<string[]>([]);
     const [selectedSkinPath, setSelectedSkinPath] = useState<string>("");
     const [selectedBackground, setSelectedBackground] = useState<string>("");
+    const [selectedTracksList, setSelectedTracksList] = useState<string[]>(
+        () => {
+            // Check in the localstorage if there are selected tracks
+            const localTracks = localStorage.getItem("selectedTracks");
+            if (localTracks) {
+                return JSON.parse(localTracks);
+            }
+            return tracks?.slice(0, 10);
+        }
+    );
     const [selectedVoices, setSelectedVoices] = useState<{
         [key: string]: GameVoiceInfo;
     }>({});
@@ -45,6 +58,8 @@ function App() {
     };
 
     const downloadAndPlay = async () => {
+        if (isDownloading) return;
+        if (selectedTracksList.length === 0) return alert("Select tracks");
         if (coverDoc && selectedCoverDocId) {
             setIsDownloading(true);
             await downloadAudioFiles([
@@ -105,6 +120,7 @@ function App() {
                             }
                             skinPath={selectedSkinPath}
                             backgroundPath={selectedBackground}
+                            selectedTracks={selectedTracksList}
                         />
                     ) : (
                         <Stack alignItems={"center"} py={8} gap={4}>
@@ -158,7 +174,7 @@ function App() {
                                         width: 80,
                                         height: 140,
                                         borderRadius: 10,
-                                        border:
+                                        outline:
                                             path === selectedSkinPath
                                                 ? "2px solid #fff"
                                                 : "none",
@@ -179,7 +195,7 @@ function App() {
                                         width: 80,
                                         height: 140,
                                         borderRadius: 10,
-                                        border:
+                                        outline:
                                             path === selectedBackground
                                                 ? "2px solid #fff"
                                                 : "none",
@@ -189,6 +205,10 @@ function App() {
                                 />
                             ))}
                         </Stack>
+                        <SelectTracks
+                            setSelectedTracksList={setSelectedTracksList}
+                            selectedTracksList={selectedTracksList}
+                        />
                     </Stack>
                 </Stack>
             </Box>

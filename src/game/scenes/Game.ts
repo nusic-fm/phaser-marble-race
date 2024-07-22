@@ -6,6 +6,7 @@ import {
 import _ from "lodash";
 import { GameVoiceInfo } from "./Preloader";
 import { IGameDataParams } from "../PhaserGame";
+import { duplicateArrayElemToN } from "../../helpers";
 
 export default class Game extends Phaser.Scene {
     constructor() {
@@ -54,6 +55,7 @@ export default class Game extends Phaser.Scene {
     public voices: GameVoiceInfo[] = [];
     public coverDocId: string;
     public musicStartOffset: number;
+    public selectedTracks: string[];
     largeCircle: Phaser.Physics.Matter.Image | undefined;
     isRotating = true;
     baseAngle = 0;
@@ -67,6 +69,7 @@ export default class Game extends Phaser.Scene {
         this.voices = data.voices;
         this.coverDocId = data.coverDocId;
         this.musicStartOffset = data.musicStartOffset;
+        this.selectedTracks = duplicateArrayElemToN(data.selectedTracks);
     }
 
     throttledUpdate(index: number) {
@@ -706,52 +709,87 @@ export default class Game extends Phaser.Scene {
         this.add.image(centerX, centerY, "background").setScrollFactor(0);
         // Enable camera scrolling
         const canvasWidth = 512 - 94;
-        this.cameras.main.setBounds(0, 0, canvasWidth, 12 * 850);
-        this.matter.world.setBounds(0, 0, canvasWidth, 14 * 850);
 
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
 
         let startOffset = 800;
         const xOffset = (512 - 94) / 2;
-        startOffset = this.createStaticCircles(
-            xOffset,
-            startOffset,
-            prodShapes
-        );
-        startOffset = this.createStopperSlider(
-            xOffset,
-            startOffset,
-            prodShapes
-        );
-        startOffset = this.createCrossScreen(
-            startOffset,
-            canvasWidth,
-            miniShapes
-        );
-        startOffset = this.createHorizontalCrosses(
-            canvasWidth,
-            startOffset,
-            miniShapes
-        );
-        startOffset = this.createCircleBlockers(
-            xOffset,
-            startOffset,
-            prodShapes
-        );
-        startOffset = this.createReduceSizeSlider(
-            xOffset,
-            startOffset,
-            prodShapes
-        );
-        startOffset = this.createSeesawScreen(xOffset, startOffset, prodShapes);
-        startOffset = this.createStaticTriangles(
-            xOffset,
-            startOffset,
-            prodShapes
-        );
-        startOffset = this.createStarRotations(startOffset, miniShapes);
-        startOffset = this.createZigzagSlider(xOffset, startOffset, prodShapes);
+        this.selectedTracks.map((trackNo) => {
+            switch (trackNo) {
+                case "01":
+                    startOffset = this.createStaticCircles(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "02":
+                    startOffset = this.createCrossScreen(
+                        startOffset,
+                        canvasWidth,
+                        miniShapes
+                    );
+                    break;
+                case "03":
+                    startOffset = this.createStaticTriangles(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "06":
+                    startOffset = this.createSeesawScreen(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "07":
+                    startOffset = this.createZigzagSlider(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "11":
+                    startOffset = this.createStopperSlider(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "14":
+                    startOffset = this.createStarRotations(
+                        startOffset,
+                        miniShapes
+                    );
+                    break;
+                case "16":
+                    startOffset = this.createReduceSizeSlider(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "21":
+                    startOffset = this.createCircleBlockers(
+                        xOffset,
+                        startOffset,
+                        prodShapes
+                    );
+                    break;
+                case "22":
+                    startOffset = this.createHorizontalCrosses(
+                        canvasWidth,
+                        startOffset,
+                        miniShapes
+                    );
+                    break;
+            }
+        });
+        this.cameras.main.setBounds(0, 0, canvasWidth, startOffset + 500);
+        this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 1000);
 
         const marbleRadius = 23;
         this.createMarbles(marbleRadius);
