@@ -25,8 +25,9 @@ export default class Game extends Phaser.Scene {
     public prevVoiceIdx = -1;
     public leftRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
     public rightRotatableStars: Phaser.Physics.Matter.Sprite[] = [];
-    public reduceSizeScreenOffset = 0;
-    public increaseSizeScreenOffset = 0;
+    public reduceSizeScreenOffset: number[] = [];
+    public increaseSizeScreenOffset: number[] = [];
+    public currentMarblesSizeIndices: { [key: string]: number } = {};
     public heightReducedIndices: number[] = [];
     public upDownMotionElems: {
         matter: Phaser.Physics.Matter.Image;
@@ -369,7 +370,7 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.reduceSizeScreenOffset = startOffset;
+        this.reduceSizeScreenOffset.push(startOffset);
         const yOffset = startOffset + 833 / 2;
         const baseSprite = this.matter.add.sprite(
             xOffset,
@@ -383,7 +384,7 @@ export default class Game extends Phaser.Scene {
         );
         this.createTextureMask(xOffset, yOffset, baseSprite);
         startOffset += 800;
-        this.increaseSizeScreenOffset = startOffset;
+        this.increaseSizeScreenOffset.push(startOffset);
         startOffset += 300;
         return startOffset;
     };
@@ -527,6 +528,7 @@ export default class Game extends Phaser.Scene {
             })
             .setScale(1.16);
         this.voices.map((v, i) => {
+            this.currentMarblesSizeIndices[i.toString()] = 0;
             const angle = i * this.angleIncrement;
             const x = this.centerX + this.radius * Math.cos(angle);
             const y = this.centerY + this.radius * Math.sin(angle);
@@ -586,6 +588,7 @@ export default class Game extends Phaser.Scene {
         _startOffset: number,
         miniShapes: any
     ) => {
+        this.reduceSizeScreenOffset.push(_startOffset);
         let startOffset = _startOffset + 200;
         let leftOffset = 20;
         let rightOffset = canvasWidth - 20;
@@ -644,6 +647,7 @@ export default class Game extends Phaser.Scene {
         ].map((baseSprite) =>
             this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
         );
+        this.increaseSizeScreenOffset.push(startOffset);
         return startOffset + 230;
     };
     createTrails = (voiceSprite: MatterJS.BodyType, i: number) => {
@@ -686,12 +690,15 @@ export default class Game extends Phaser.Scene {
                 const alpha = (j + 0.01) / this.trailPoints[i].length; // Gradually decrease alpha
                 this.trailGraphics[i].fillStyle(0x0cffffff, alpha * 0.2);
                 // this.trailGraphics.fillCircle(point.x, point.y, 20);
+                const trailRadius = this.heightReducedIndices.includes(i)
+                    ? 11
+                    : 22;
                 this.trailGraphics[i].fillRoundedRect(
-                    point.x - 22,
-                    point.y - 22,
-                    44,
-                    44,
-                    22
+                    point.x - trailRadius,
+                    point.y - trailRadius,
+                    trailRadius * 2,
+                    trailRadius * 2,
+                    trailRadius
                 );
                 // .setAngle(point.angle);
             }
@@ -899,10 +906,14 @@ export default class Game extends Phaser.Scene {
                         voiceBody.position.x - 100,
                         voiceBody.position.y - 80
                     );
+                    const currentCrossIndex =
+                        this.currentMarblesSizeIndices[i.toString()];
                     if (
                         this.heightReducedIndices.includes(i) &&
-                        voiceBody.position.y > this.increaseSizeScreenOffset
+                        voiceBody.position.y >
+                            this.increaseSizeScreenOffset[currentCrossIndex]
                     ) {
+                        this.currentMarblesSizeIndices[i.toString()] += 1;
                         this.matter.body.scale(voiceBody, 2, 2);
                         marbleImage.setDisplaySize(46, 46);
                         this.marblesMasks[i].scale = 1;
@@ -912,8 +923,10 @@ export default class Game extends Phaser.Scene {
                             );
                     } else if (
                         this.heightReducedIndices.includes(i) === false &&
-                        voiceBody.position.y > this.reduceSizeScreenOffset &&
-                        voiceBody.position.y < this.increaseSizeScreenOffset
+                        voiceBody.position.y >
+                            this.reduceSizeScreenOffset[currentCrossIndex] &&
+                        voiceBody.position.y <
+                            this.increaseSizeScreenOffset[currentCrossIndex]
                     ) {
                         this.heightReducedIndices.push(i);
                         this.matter.body.scale(voiceBody, 0.5, 0.5);

@@ -8,13 +8,13 @@ import { IGameDataParams } from "./PhaserGame";
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
     width: 512 - 94,
-    height: window.innerHeight - 10,
+    height: "100%",
     parent: "game-container",
     // backgroundColor: "#028af8",
     physics: {
         default: "matter",
         matter: {
-            gravity: { x: 0, y: 0.3 },
+            gravity: { x: 0, y: 0.2 },
             // setBounds: true
             // debug: true,
         },
@@ -25,6 +25,13 @@ const config: Phaser.Types.Core.GameConfig = {
 const StartGame = (parent: string, data: IGameDataParams) => {
     const game = new Game({ ...config, parent });
     game.scene.start("preloader", data);
+    // Add an event listener to apply the border radius once the game canvas is created
+    game.events.on("ready", () => {
+        const canvas = document.querySelector("canvas");
+        if (canvas) {
+            canvas.style.borderRadius = "32px"; // Adjust the value as needed
+        }
+    });
     return game;
 };
 
