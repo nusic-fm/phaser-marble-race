@@ -162,7 +162,7 @@ export default class Game extends Phaser.Scene {
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 140,
+                canvasWidth - 150,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -648,12 +648,12 @@ export default class Game extends Phaser.Scene {
             voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
         );
         // If velocity is zero, do not draw the trail
-        if (velocity > 1) {
+        if (velocity > 0) {
             // Calculate the position directly behind the circle relative to its velocity vector
-            const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
-            const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
-            const trailX = voiceSprite.position.x + offsetX;
-            const trailY = voiceSprite.position.y + offsetY;
+            // const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
+            // const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
+            const trailX = voiceSprite.position.x;
+            const trailY = voiceSprite.position.y;
             //     // Calculate the angle of the trail image
             const angle =
                 Math.atan2(voiceSprite.velocity.y, voiceSprite.velocity.x) *
@@ -665,7 +665,11 @@ export default class Game extends Phaser.Scene {
                 angle,
             });
             // Adjust trail length based on velocity
-            this.trailLength = Phaser.Math.Clamp(velocity * 2, 10, 100);
+            this.trailLength = Phaser.Math.Clamp(
+                velocity * 2,
+                10,
+                this.isRotating ? 20 : 100
+            );
             // Limit the number of points in the trail to the trail length
             if (this.trailPoints[i].length > this.trailLength) {
                 this.trailPoints[i].shift();
@@ -677,14 +681,14 @@ export default class Game extends Phaser.Scene {
             for (let j = 0; j < this.trailPoints[i].length; j++) {
                 const point = this.trailPoints[i][j];
                 const alpha = (j + 0.01) / this.trailPoints[i].length; // Gradually decrease alpha
-                this.trailGraphics[i].fillStyle(0x0cffffff, alpha * 0.01);
+                this.trailGraphics[i].fillStyle(0x0cffffff, alpha * 0.2);
                 // this.trailGraphics.fillCircle(point.x, point.y, 20);
                 this.trailGraphics[i].fillRoundedRect(
-                    point.x - 23,
-                    point.y - 23,
-                    46,
-                    46,
-                    23
+                    point.x - 22,
+                    point.y - 22,
+                    44,
+                    44,
+                    22
                 );
                 // .setAngle(point.angle);
             }
@@ -702,8 +706,8 @@ export default class Game extends Phaser.Scene {
         this.add.image(centerX, centerY, "background").setScrollFactor(0);
         // Enable camera scrolling
         const canvasWidth = 512 - 94;
-        this.cameras.main.setBounds(0, 0, canvasWidth, 11 * 850 + 800);
-        this.matter.world.setBounds(0, 0, canvasWidth, 11 * 850 + 1100);
+        this.cameras.main.setBounds(0, 0, canvasWidth, 12 * 850);
+        this.matter.world.setBounds(0, 0, canvasWidth, 14 * 850);
 
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
@@ -879,8 +883,8 @@ export default class Game extends Phaser.Scene {
                         marbleImage.setDisplaySize(23, 23);
                         this.marblesMasks[i].scale = 0.5;
                     }
-                    this.createTrails(voiceBody, i);
                 }
+                this.createTrails(voiceBody, i);
             });
         }
         this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
