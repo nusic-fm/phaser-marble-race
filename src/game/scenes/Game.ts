@@ -762,7 +762,6 @@ export default class Game extends Phaser.Scene {
             delay: 1000,
             repeat: 2,
             callback: () => {
-                console.log("Callback");
                 if (this.countdownText) {
                     coundownValue--;
                     if (coundownValue > 0) {
@@ -783,7 +782,7 @@ export default class Game extends Phaser.Scene {
                         this.countdownText.destroy();
                         const velocity = 1; // Adjust this value to set the desired release velocity
 
-                        for (let i = 0; i < 5; i++) {
+                        for (let i = 0; i < this.voices.length; i++) {
                             const currentAngle =
                                 this.baseAngle + i * this.angleIncrement;
                             const x =
