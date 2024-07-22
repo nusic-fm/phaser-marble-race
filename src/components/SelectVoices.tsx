@@ -90,7 +90,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                             .map((v) => (
                                 <Tooltip title={v.name} key={v.id}>
                                     <Avatar
-                                        src={`https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                                        src={`https://voxaudio.nusic.fm/${encodeURIComponent(
                                             "voice_models/avatars/thumbs/"
                                         )}${v.id}_200x200?alt=media`}
                                         onClick={() => {
@@ -100,7 +100,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                                     [dialogRef.vid]: {
                                                         id: v.id,
                                                         name: v.name,
-                                                        avatar: `https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                                                        avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
                                                             "voice_models/avatars/thumbs/"
                                                         )}${
                                                             v.id

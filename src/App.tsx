@@ -36,7 +36,7 @@ function App() {
                 (_selectedVoices[i] = {
                     id: v.id,
                     name: v.name,
-                    avatar: `https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                    avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
                         "voice_models/avatars/thumbs/"
                     )}${v.id}_200x200?alt=media`,
                 })

@@ -528,7 +528,7 @@ export default class Game extends Phaser.Scene {
             const x = this.centerX + this.radius * Math.cos(angle);
             const y = this.centerY + this.radius * Math.sin(angle);
             const circleBody = this.matter.add.circle(x, y, marbleRadius, {
-                restitution: 0.8,
+                restitution: 0.4,
                 // density: 0.02,
                 friction: 0,
                 frictionAir: 0,

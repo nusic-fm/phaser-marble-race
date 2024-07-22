@@ -146,7 +146,7 @@ const Rows = ({ onCoverSelection }: Props) => {
                                     >
                                         {coverDoc.voices.map((voice) => (
                                             <Avatar
-                                                src={`https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+                                                src={`https://voxaudio.nusic.fm/${encodeURIComponent(
                                                     "voice_models/avatars/thumbs/"
                                                 )}${
                                                     voice.id

@@ -6,7 +6,7 @@ export const listAllTrackSkins = async (): Promise<string[]> => {
     const listResult = await listAll(folderRef);
     return listResult.items.map(
         (item) =>
-            `https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+            `https://voxaudio.nusic.fm/${encodeURIComponent(
                 item.fullPath
             )}?alt=media`
     );
@@ -16,7 +16,7 @@ export const listAllTrackBackgrounds = async (): Promise<string[]> => {
     const listResult = await listAll(folderRef);
     return listResult.items.map(
         (item) =>
-            `https://firebasestorage.googleapis.com/v0/b/nusic-vox-player.appspot.com/o/${encodeURIComponent(
+            `https://voxaudio.nusic.fm/${encodeURIComponent(
                 item.fullPath
             )}?alt=media`
     );
