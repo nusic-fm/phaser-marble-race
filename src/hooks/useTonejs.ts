@@ -68,7 +68,10 @@ const getFromDB = async (id: string): Promise<Float32Array | undefined> => {
     return record?.data;
 };
 
-const downloadAudioFiles = async (urls: string[]) => {
+const downloadAudioFiles = async (
+    urls: string[],
+    onProgress: (progress: number) => void
+) => {
     for (let i = 0; i < urls.length; i++) {
         const url = urls[i];
         if (!downloadObj[url]) {
@@ -77,7 +80,6 @@ const downloadAudioFiles = async (urls: string[]) => {
                 console.log("From Indexed DB", url);
                 const bf = Tone.Buffer.fromArray(dataArray);
                 downloadObj[url] = bf;
-                continue;
             } else {
                 console.log("Downloading", url);
                 const buffer = await new Promise<ToneAudioBuffer>((res) => {
@@ -91,6 +93,9 @@ const downloadAudioFiles = async (urls: string[]) => {
                 addToDB(url, buffer.toArray() as Float32Array);
             }
         }
+        // Update progress
+        const progress = ((i + 1) / urls.length) * 100;
+        onProgress(progress);
     }
 };
 

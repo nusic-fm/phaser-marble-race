@@ -1,6 +1,7 @@
 import { Box, Button, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
+import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 import Rows from "./components/Rows";
 import SelectTracks from "./components/SelectTracks";
 import SelectVoices from "./components/SelectVoices";
@@ -31,7 +32,9 @@ function App() {
             // Check in the localstorage if there are selected tracks
             const localTracks = localStorage.getItem("selectedTracks");
             if (localTracks) {
-                return JSON.parse(localTracks);
+                const arr = JSON.parse(localTracks);
+                // unique array
+                return [...new Set(arr)] as string[];
             }
             return tracks?.slice(0, 10);
         }
@@ -39,8 +42,22 @@ function App() {
     const [selectedVoices, setSelectedVoices] = useState<{
         [key: string]: GameVoiceInfo;
     }>({});
+    const [downloadProgress, setDownloadProgress] = useState(0);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
+        if (ready) {
+            // ask yes or no question
+            const quite = window.confirm(
+                "Are you sure you want to change the cover? The current game will be quit."
+            );
+
+            if (quite) {
+                phaserRef.current?.game?.destroy(true);
+                setReady(false);
+            } else {
+                return;
+            }
+        }
         setCoverDoc(_coverDoc);
         setSelectedCoverDocId(coverDocId);
         const _selectedVoices: { [key: string]: GameVoiceInfo } = {};
@@ -62,15 +79,21 @@ function App() {
         if (selectedTracksList.length === 0) return alert("Select tracks");
         if (coverDoc && selectedCoverDocId) {
             setIsDownloading(true);
-            await downloadAudioFiles([
-                `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
-                ...Object.values(selectedVoices)
-                    .map((v) => v.id)
-                    .map(
-                        (v) =>
-                            `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${v}.mp3`
-                    ),
-            ]);
+            await downloadAudioFiles(
+                [
+                    `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
+                    ...Object.values(selectedVoices)
+                        .map((v) => v.id)
+                        .map(
+                            (v) =>
+                                `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${v}.mp3`
+                        ),
+                ],
+                (progress: number) => {
+                    console.log("progress", progress);
+                    setDownloadProgress(progress);
+                }
+            );
             setIsDownloading(false);
             setReady(true);
         }
@@ -120,10 +143,18 @@ function App() {
                             }
                             skinPath={selectedSkinPath}
                             backgroundPath={selectedBackground}
-                            selectedTracks={selectedTracksList}
+                            selectedTracks={[...selectedTracksList]}
                         />
                     ) : (
-                        <Stack alignItems={"center"} py={8} gap={4}>
+                        <Stack
+                            alignItems={"center"}
+                            py={8}
+                            gap={4}
+                            sx={{
+                                background: "rgba(0,0,0,0.6)",
+                                borderRadius: 4,
+                            }}
+                        >
                             <Typography
                                 height={"100%"}
                                 width={"100%"}
@@ -136,13 +167,18 @@ function App() {
                                     ? coverDoc.title
                                     : "Select a cover to start"}
                             </Typography>
-                            {coverDoc && (
+                            {coverDoc && isDownloading ? (
+                                <LinearProgressWithLabel
+                                    value={downloadProgress}
+                                    sx={{ height: 10, borderRadius: 5 }}
+                                />
+                            ) : (
                                 <Button
                                     onClick={downloadAndPlay}
                                     variant="contained"
                                     color="primary"
                                 >
-                                    {isDownloading ? "Preparing" : "Play"}
+                                    Play
                                 </Button>
                             )}
                         </Stack>
