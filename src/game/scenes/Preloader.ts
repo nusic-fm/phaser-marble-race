@@ -75,6 +75,7 @@ export default class Preloader extends Phaser.Scene {
         this.load.image("02_cross", "assets/sprite/02_cross.png");
         this.load.image("textureImage", this.params.skinPath);
         this.load.image("empty_circle", "assets/empty_circle.png");
+        this.load.image("finish_line", "assets/finish.png");
     }
 
     create() {

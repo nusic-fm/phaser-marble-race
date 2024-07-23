@@ -65,6 +65,7 @@ export default class Game extends Phaser.Scene {
     radius = 100;
     angleIncrement = (2 * Math.PI) / 5;
     countdownText: Phaser.GameObjects.Text | undefined;
+    finishLineOffset: number = 0;
 
     init(data: IGameDataParams) {
         this.voices = data.voices;
@@ -715,13 +716,13 @@ export default class Game extends Phaser.Scene {
         const centerY = this.cameras.main.height / 2;
         this.add.image(centerX, centerY, "background").setScrollFactor(0);
         // Enable camera scrolling
-        const canvasWidth = 512 - 94;
+        const canvasWidth = this.cameras.main.width;
 
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
 
         let startOffset = 800;
-        const xOffset = (512 - 94) / 2;
+        const xOffset = canvasWidth / 2;
         this.selectedTracks.map((trackNo) => {
             switch (trackNo) {
                 case "01":
@@ -795,6 +796,11 @@ export default class Game extends Phaser.Scene {
                     break;
             }
         });
+        this.add
+            .image(centerX, startOffset + 250, "finish_line")
+            .setDisplaySize(418, 60);
+        this.finishLineOffset = startOffset + 250;
+        // .setDisplaySize(960, 40);
         this.cameras.main.setBounds(0, 0, canvasWidth, startOffset + 500);
         this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 1000);
 
@@ -943,17 +949,12 @@ export default class Game extends Phaser.Scene {
             const voicesPositions = this.marbles.map((m) => m.position.y);
             const largest = Math.max(...voicesPositions);
             const index = voicesPositions.findIndex((v) => v === largest);
-            // console.log("First: ", index);
+            if (largest > this.finishLineOffset) {
+                return;
+            }
             if (this.prevVoiceIdx !== index) this.throttledUpdate(index);
-            const container = document.getElementById("app");
-            if (
-                this.autoScroll &&
-                container
-                // &&
-                // largest - 300 > (container.scrollTop || 0)
-            ) {
+            if (this.autoScroll) {
                 this.cameras.main.scrollY = largest - 300;
-                // container.scrollTo(0, largest - 300);
             }
         }
         this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));

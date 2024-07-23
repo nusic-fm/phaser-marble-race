@@ -5,6 +5,7 @@ import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
 import Rows from "./components/Rows";
 import SelectTracks from "./components/SelectTracks";
 import SelectVoices from "./components/SelectVoices";
+import { canvasElemWidth } from "./game/main";
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import { GameVoiceInfo } from "./game/scenes/Preloader";
 import { downloadAudioFiles } from "./hooks/useTonejs";
@@ -123,66 +124,75 @@ function App() {
                     <Rows onCoverSelection={fetchCoverDoc} />
                 </Box>
                 <Box
-                    width={512 - 94}
-                    height={"100%"}
+                    display={"flex"}
+                    justifyContent="center"
+                    alignItems={"center"}
+                    width={canvasElemWidth}
                     borderLeft="1px solid #c3c3c3"
                     borderRight="1px solid #c3c3c3"
-                    sx={{
-                        background: `url(${selectedBackground})`,
-                        backgroundPosition: "center",
-                        borderRadius: 8,
-                    }}
                 >
-                    {ready && coverDoc ? (
-                        <PhaserGame
-                            ref={phaserRef}
-                            voices={Object.values(selectedVoices)}
-                            coverDocId={selectedCoverDocId}
-                            musicStartOffset={
-                                coverDoc?.sections?.at(3)?.start || 20
-                            }
-                            skinPath={selectedSkinPath}
-                            backgroundPath={selectedBackground}
-                            selectedTracks={[...selectedTracksList]}
-                        />
-                    ) : (
-                        <Stack
-                            alignItems={"center"}
-                            py={8}
-                            gap={4}
-                            sx={{
-                                background: "rgba(0,0,0,0.6)",
-                                borderRadius: 4,
-                            }}
-                        >
-                            <Typography
-                                height={"100%"}
-                                width={"100%"}
-                                display="flex"
-                                justifyContent={"center"}
-                                variant="h6"
-                                align="center"
+                    <Box
+                        width={canvasElemWidth}
+                        height={(canvasElemWidth * 16) / 9}
+                        sx={{
+                            background: `url(${selectedBackground})`,
+                            backgroundPosition: "center",
+                            // backgroundSize: "cover",
+                            // borderRadius: 8,
+                        }}
+                        display="flex"
+                        alignItems={"start"}
+                        justifyContent={"center"}
+                    >
+                        {ready && coverDoc ? (
+                            <PhaserGame
+                                ref={phaserRef}
+                                voices={Object.values(selectedVoices)}
+                                coverDocId={selectedCoverDocId}
+                                musicStartOffset={
+                                    coverDoc?.sections?.at(3)?.start || 20
+                                }
+                                skinPath={selectedSkinPath}
+                                backgroundPath={selectedBackground}
+                                selectedTracks={[...selectedTracksList]}
+                            />
+                        ) : (
+                            <Stack
+                                alignItems={"center"}
+                                py={8}
+                                px={2}
+                                gap={4}
+                                sx={{
+                                    background: "rgba(0,0,0,0.6)",
+                                }}
                             >
-                                {coverDoc
-                                    ? coverDoc.title
-                                    : "Select a cover to start"}
-                            </Typography>
-                            {coverDoc && isDownloading ? (
-                                <LinearProgressWithLabel
-                                    value={downloadProgress}
-                                    sx={{ height: 10, borderRadius: 5 }}
-                                />
-                            ) : (
-                                <Button
-                                    onClick={downloadAndPlay}
-                                    variant="contained"
-                                    color="primary"
+                                <Typography
+                                    height={"100%"}
+                                    width={"100%"}
+                                    display="flex"
+                                    justifyContent={"center"}
+                                    variant="h6"
+                                    align="center"
                                 >
-                                    Play
-                                </Button>
-                            )}
-                        </Stack>
-                    )}
+                                    {coverDoc?.title}
+                                </Typography>
+                                {coverDoc && isDownloading ? (
+                                    <LinearProgressWithLabel
+                                        value={downloadProgress}
+                                        sx={{ height: 10, borderRadius: 5 }}
+                                    />
+                                ) : (
+                                    <Button
+                                        onClick={downloadAndPlay}
+                                        variant="contained"
+                                        color="primary"
+                                    >
+                                        Play
+                                    </Button>
+                                )}
+                            </Stack>
+                        )}
+                    </Box>
                 </Box>
                 <Stack
                     flexBasis={`calc(60% - 406px)`}

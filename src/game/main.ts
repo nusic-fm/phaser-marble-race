@@ -3,12 +3,14 @@ import Preloader from "./scenes/Preloader";
 import GameScene from "./scenes/Game";
 import { IGameDataParams } from "./PhaserGame";
 
+export const canvasElemWidth = 512 - 95;
+
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
     type: AUTO,
-    width: 512 - 94,
-    height: "100%",
+    width: canvasElemWidth,
+    height: (canvasElemWidth * 16) / 9,
     parent: "game-container",
     // backgroundColor: "#028af8",
     physics: {
@@ -25,13 +27,13 @@ const config: Phaser.Types.Core.GameConfig = {
 const StartGame = (parent: string, data: IGameDataParams) => {
     const game = new Game({ ...config, parent });
     game.scene.start("preloader", data);
-    // Add an event listener to apply the border radius once the game canvas is created
-    game.events.on("ready", () => {
-        const canvas = document.querySelector("canvas");
-        if (canvas) {
-            canvas.style.borderRadius = "32px"; // Adjust the value as needed
-        }
-    });
+    // // Add an event listener to apply the border radius once the game canvas is created
+    // game.events.on("ready", () => {
+    //     const canvas = document.querySelector("canvas");
+    //     if (canvas) {
+    //         canvas.style.borderRadius = "32px"; // Adjust the value as needed
+    //     }
+    // });
     return game;
 };
 
