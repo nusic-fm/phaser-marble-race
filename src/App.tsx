@@ -1,4 +1,4 @@
-import { Box, Button, Stack, Typography } from "@mui/material";
+import { Box, Button, Stack, TextField, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
@@ -44,6 +44,7 @@ function App() {
         [key: string]: GameVoiceInfo;
     }>({});
     const [downloadProgress, setDownloadProgress] = useState(0);
+    const [startTimeOffset, setStartTimeOffset] = useState(0);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -128,8 +129,6 @@ function App() {
                     justifyContent="center"
                     alignItems={"center"}
                     width={canvasElemWidth}
-                    borderLeft="1px solid #c3c3c3"
-                    borderRight="1px solid #c3c3c3"
                 >
                     <Box
                         width={canvasElemWidth}
@@ -150,7 +149,9 @@ function App() {
                                 voices={Object.values(selectedVoices)}
                                 coverDocId={selectedCoverDocId}
                                 musicStartOffset={
-                                    coverDoc?.sections?.at(3)?.start || 20
+                                    startTimeOffset ||
+                                    coverDoc?.sections?.at(3)?.start ||
+                                    20
                                 }
                                 skinPath={selectedSkinPath}
                                 backgroundPath={selectedBackground}
@@ -202,6 +203,16 @@ function App() {
                 >
                     <Typography align="center">Controls</Typography>
                     <Stack gap={1}>
+                        <TextField
+                            value={startTimeOffset}
+                            onChange={(e) =>
+                                setStartTimeOffset(parseFloat(e.target.value))
+                            }
+                            label="Start Time"
+                            sx={{ width: 200 }}
+                            color="secondary"
+                            size="small"
+                        />
                         {coverDoc && (
                             <SelectVoices
                                 selectedVoices={selectedVoices}

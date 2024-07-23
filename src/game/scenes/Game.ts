@@ -796,9 +796,7 @@ export default class Game extends Phaser.Scene {
                     break;
             }
         });
-        this.add
-            .image(centerX, startOffset + 250, "finish_line")
-            .setDisplaySize(418, 60);
+        this.add.image(centerX, startOffset + 250, "finish_line").setScale(0.2);
         this.finishLineOffset = startOffset + 250;
         // .setDisplaySize(960, 40);
         this.cameras.main.setBounds(0, 0, canvasWidth, startOffset + 500);
