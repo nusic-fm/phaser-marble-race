@@ -1,4 +1,4 @@
-import { Box, Button, Stack, TextField, Typography } from "@mui/material";
+import { Box, Button, Slider, Stack, Typography } from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
@@ -44,7 +44,7 @@ function App() {
         [key: string]: GameVoiceInfo;
     }>({});
     const [downloadProgress, setDownloadProgress] = useState(0);
-    const [startSectionIdx, setStartSectionIdx] = useState(2);
+    const [startSectionIdx, setStartSectionIdx] = useState(3);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -202,25 +202,21 @@ function App() {
                 >
                     <Typography align="center">Controls</Typography>
                     <Stack gap={1}>
-                        <TextField
-                            type={"number"}
-                            value={startSectionIdx}
-                            inputProps={{
-                                min: 1,
-                                max: coverDoc?.sections?.length,
-                            }}
-                            onChange={(e) => {
-                                if (e.target.value)
-                                    setStartSectionIdx(
-                                        parseInt(e.target.value)
-                                    );
-                                else setStartSectionIdx(0);
-                            }}
-                            label="Start Section"
-                            sx={{ width: 200 }}
-                            color="secondary"
-                            size="small"
-                        />
+                        <Stack gap={2} direction="row" alignItems={"center"}>
+                            <Typography>Start Section</Typography>
+                            <Slider
+                                sx={{ width: 200 }}
+                                min={1}
+                                step={1}
+                                max={coverDoc?.sections?.length}
+                                value={startSectionIdx}
+                                onChange={(_, val) =>
+                                    setStartSectionIdx(val as number)
+                                }
+                                marks
+                                valueLabelDisplay="auto"
+                            />
+                        </Stack>
                         {coverDoc && (
                             <SelectVoices
                                 selectedVoices={selectedVoices}
