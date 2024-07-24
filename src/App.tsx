@@ -8,7 +8,7 @@ import SelectVoices from "./components/SelectVoices";
 import { canvasElemWidth } from "./game/main";
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import { GameVoiceInfo } from "./game/scenes/Preloader";
-import { downloadAudioFiles } from "./hooks/useTonejs";
+import { downloadAudioFiles, stopAndDestroyPlayers } from "./hooks/useTonejs";
 import { CoverV1 } from "./services/db/coversV1.service";
 import {
     listAllTrackBackgrounds,
@@ -55,6 +55,8 @@ function App() {
             );
 
             if (quite) {
+                stopAndDestroyPlayers();
+                setDownloadProgress(0);
                 phaserRef.current?.game?.destroy(true);
                 setReady(false);
             } else {

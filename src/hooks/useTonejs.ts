@@ -164,6 +164,8 @@ const marbleRaceOnlyInstrument = async (
     }
     await Tone.loaded();
     instrPlayerRef.start();
+    playersRef[voicesUrls[0]].start(undefined, startOffset);
+    currentlyPlayingUrl = voicesUrls[0];
     Tone.Transport.start(undefined, startOffset);
 };
 
@@ -176,6 +178,26 @@ const marbleRacePlayVocals = async (id: string, vId: string) => {
     if (url in playersRef) {
         currentlyPlayingUrl = url;
         playersRef[url].start(undefined, Tone.Transport.seconds);
+    }
+};
+
+const stopAndDestroyPlayers = () => {
+    if (instrPlayerRef) {
+        instrPlayerRef.stop();
+        instrPlayerRef.dispose();
+        instrPlayerRef = null;
+    }
+    const downloadObjKeys = Object.keys(downloadObj);
+    delete downloadObj[downloadObjKeys[0]];
+    const voicesUrls = downloadObjKeys.slice(1);
+    for (let i = 0; i < voicesUrls.length; i++) {
+        const url = voicesUrls[i];
+        if (playersRef[url]) {
+            playersRef[url].stop();
+            playersRef[url].dispose();
+            delete playersRef[url];
+            delete downloadObj[url];
+        }
     }
 };
 
@@ -196,5 +218,6 @@ export {
     playPlayer,
     stopPlayer,
     getToneStatus,
+    stopAndDestroyPlayers,
 };
 
