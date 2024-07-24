@@ -44,7 +44,7 @@ function App() {
         [key: string]: GameVoiceInfo;
     }>({});
     const [downloadProgress, setDownloadProgress] = useState(0);
-    const [startTimeOffset, setStartTimeOffset] = useState(0);
+    const [startSectionIdx, setStartSectionIdx] = useState(2);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -149,9 +149,8 @@ function App() {
                                 voices={Object.values(selectedVoices)}
                                 coverDocId={selectedCoverDocId}
                                 musicStartOffset={
-                                    startTimeOffset ||
-                                    coverDoc?.sections?.at(3)?.start ||
-                                    20
+                                    coverDoc?.sections?.at(startSectionIdx - 1)
+                                        ?.start || 0
                                 }
                                 skinPath={selectedSkinPath}
                                 backgroundPath={selectedBackground}
@@ -204,11 +203,20 @@ function App() {
                     <Typography align="center">Controls</Typography>
                     <Stack gap={1}>
                         <TextField
-                            value={startTimeOffset}
-                            onChange={(e) =>
-                                setStartTimeOffset(parseFloat(e.target.value))
-                            }
-                            label="Start Time"
+                            type={"number"}
+                            value={startSectionIdx}
+                            inputProps={{
+                                min: 1,
+                                max: coverDoc?.sections?.length,
+                            }}
+                            onChange={(e) => {
+                                if (e.target.value)
+                                    setStartSectionIdx(
+                                        parseInt(e.target.value)
+                                    );
+                                else setStartSectionIdx(0);
+                            }}
+                            label="Start Section"
                             sx={{ width: 200 }}
                             color="secondary"
                             size="small"
