@@ -714,7 +714,10 @@ export default class Game extends Phaser.Scene {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
-        this.add.image(centerX, centerY, "background").setScrollFactor(0);
+        this.add
+            .image(centerX, centerY, "background")
+            .setDisplaySize(414, 736)
+            .setScrollFactor(0);
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 

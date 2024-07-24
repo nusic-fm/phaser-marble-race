@@ -136,7 +136,7 @@ function App() {
                         sx={{
                             background: `url(${selectedBackground})`,
                             backgroundPosition: "center",
-                            // backgroundSize: "cover",
+                            backgroundSize: "contain",
                             // borderRadius: 8,
                         }}
                         display="flex"

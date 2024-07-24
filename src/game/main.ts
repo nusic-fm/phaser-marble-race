@@ -3,7 +3,7 @@ import Preloader from "./scenes/Preloader";
 import GameScene from "./scenes/Game";
 import { IGameDataParams } from "./PhaserGame";
 
-export const canvasElemWidth = 512 - 95;
+export const canvasElemWidth = 414;
 
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
