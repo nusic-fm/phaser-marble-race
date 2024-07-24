@@ -45,6 +45,7 @@ function App() {
     }>({});
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [startSectionIdx, setStartSectionIdx] = useState(3);
+    const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -154,7 +155,11 @@ function App() {
                                 }
                                 skinPath={selectedSkinPath}
                                 backgroundPath={selectedBackground}
-                                selectedTracks={[...selectedTracksList]}
+                                selectedTracks={[...selectedTracksList].slice(
+                                    0,
+                                    noOfRaceTracks
+                                )}
+                                noOfRaceTracks={noOfRaceTracks}
                             />
                         ) : (
                             <Stack
@@ -212,6 +217,21 @@ function App() {
                                 value={startSectionIdx}
                                 onChange={(_, val) =>
                                     setStartSectionIdx(val as number)
+                                }
+                                marks
+                                valueLabelDisplay="auto"
+                            />
+                        </Stack>
+                        <Stack gap={2} direction="row" alignItems={"center"}>
+                            <Typography>No of Race Tracks</Typography>
+                            <Slider
+                                sx={{ width: 200 }}
+                                min={1}
+                                step={1}
+                                max={10}
+                                value={noOfRaceTracks}
+                                onChange={(_, val) =>
+                                    setNoOfRaceTracks(val as number)
                                 }
                                 marks
                                 valueLabelDisplay="auto"

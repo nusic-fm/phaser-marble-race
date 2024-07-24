@@ -57,6 +57,7 @@ export default class Game extends Phaser.Scene {
     public coverDocId: string;
     public musicStartOffset: number;
     public selectedTracks: string[];
+    public noOfRaceTracks: number;
     largeCircle: Phaser.Physics.Matter.Image | undefined;
     isRotating = true;
     baseAngle = 0;
@@ -71,7 +72,11 @@ export default class Game extends Phaser.Scene {
         this.voices = data.voices;
         this.coverDocId = data.coverDocId;
         this.musicStartOffset = data.musicStartOffset;
-        this.selectedTracks = duplicateArrayElemToN(data.selectedTracks);
+        this.noOfRaceTracks = data.noOfRaceTracks;
+        this.selectedTracks = duplicateArrayElemToN(
+            data.selectedTracks,
+            this.noOfRaceTracks
+        );
     }
 
     throttledUpdate(index: number) {
@@ -716,7 +721,7 @@ export default class Game extends Phaser.Scene {
         const centerY = this.cameras.main.height / 2;
         this.add
             .image(centerX, centerY, "background")
-            .setDisplaySize(414, 736)
+            .setDisplaySize(this.cameras.main.width, this.cameras.main.height)
             .setScrollFactor(0);
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
@@ -947,12 +952,20 @@ export default class Game extends Phaser.Scene {
         this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
         this.crossLeftRotation.map((c) => c.setAngle(c.angle - 2));
         if (this.isInstrumentPlaying && this.isRotating === false) {
-            const voicesPositions = this.marbles.map((m) => m.position.y);
+            const voicesPositions = this.marbles
+                .map((m) => m.position.y)
+                .filter((y) => y < this.finishLineOffset);
             const largest = Math.max(...voicesPositions);
             const index = voicesPositions.findIndex((v) => v === largest);
-            if (largest > this.finishLineOffset) {
-                return;
-            }
+            // if (largest > this.finishLineOffset) {
+            //     // Find 2nd largest
+            //     index = voicesPositions.indexOf(
+            //         voicesPositions
+            //             .filter((v) => v !== largest)
+            //             .reduce((a, b) => (a > b ? a : b))
+            //     );
+            // }
+            if (index === -1) return;
             if (this.prevVoiceIdx !== index) this.throttledUpdate(index);
             if (this.autoScroll) {
                 this.cameras.main.scrollY = largest - 300;

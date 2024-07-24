@@ -221,7 +221,7 @@ export const calculatePositions = (
 // Fill the array with its elements until it reaches the desired length
 export const duplicateArrayElemToN = (
     arr: string[],
-    n: number = 9
+    n: number = 5
 ): string[] => {
     const result = arr;
     while (result.length < n) {
