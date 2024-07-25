@@ -126,11 +126,7 @@ function App() {
         })();
     }, []);
     return (
-        <Stack
-            id="app"
-            gap={2}
-            sx={{ overflow: "hidden", width: "100%", height: "100vh" }}
-        >
+        <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
             <Header />
             <Box width={"100%"} display="flex" gap={2}>
                 <Box height={`calc(100vh - 160px)`} flexBasis="40%">

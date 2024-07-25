@@ -60,10 +60,9 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                         height={142}
                     >
                         <img
-                            src={`https://voxaudio.nusic.fm/marble_race%2Foriginal_tracks%2F${trackPath}.png?alt=media`}
+                            src={`https://voxaudio.nusic.fm/marble_race%2Ftracks_preview%2F${trackPath}.png?alt=media`}
                             style={{
                                 cursor: "pointer",
-                                background: "#c3c3c3",
                                 objectFit: "cover",
                                 width: "100%",
                                 height: "100%",
@@ -127,12 +126,11 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                             {availableTracksToSelect.map((t) => (
                                 <img
                                     key={t}
-                                    src={`https://voxaudio.nusic.fm/marble_race%2Foriginal_tracks%2F${t}.png?alt=media`}
+                                    src={`https://voxaudio.nusic.fm/marble_race%2Ftracks_preview%2F${t}.png?alt=media`}
                                     style={{
                                         width: 80,
                                         height: 142,
                                         cursor: "pointer",
-                                        background: "#c3c3c3",
                                         objectFit: "cover",
                                     }}
                                     onClick={() => {
