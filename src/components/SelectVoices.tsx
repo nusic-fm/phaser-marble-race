@@ -70,7 +70,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                         },
                                     }}
                                 >
-                                    <RemoveIcon
+                                    {/* <RemoveIcon
                                         fontSize="large"
                                         color="secondary"
                                         sx={{ cursor: "pointer" }}
@@ -86,7 +86,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                             );
                                             setVoiceSlotObj(rest);
                                         }}
-                                    />
+                                    /> */}
                                     <AddIcon
                                         fontSize="large"
                                         color="secondary"
@@ -172,6 +172,35 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                     />
                                 </Tooltip>
                             ))}
+                        <Box
+                            width={38}
+                            height={38}
+                            border="2px solid"
+                            display={"flex"}
+                            alignItems="center"
+                            justifyContent={"center"}
+                            borderRadius={"50%"}
+                        >
+                            <RemoveIcon
+                                fontSize="small"
+                                color="secondary"
+                                sx={{ cursor: "pointer" }}
+                                onClick={() => {
+                                    if (dialogRef) {
+                                        // Delete By ID
+                                        const { [dialogRef.vid]: _, ...rest } =
+                                            voiceSlotObj;
+                                        rest[dialogRef.vid] = null;
+                                        setSelectedVoices(
+                                            Object.values(rest).filter(
+                                                (v) => v !== null
+                                            ) as GameVoiceInfo[]
+                                        );
+                                        setVoiceSlotObj(rest);
+                                    }
+                                }}
+                            />
+                        </Box>
                     </Stack>
                 </Stack>
             </Popover>
