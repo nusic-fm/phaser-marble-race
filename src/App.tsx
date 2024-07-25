@@ -51,9 +51,7 @@ function App() {
             return tracks?.slice(0, 10);
         }
     );
-    const [selectedVoices, setSelectedVoices] = useState<{
-        [key: string]: GameVoiceInfo;
-    }>({});
+    const [selectedVoices, setSelectedVoices] = useState<GameVoiceInfo[]>([]);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [startSectionIdx, setStartSectionIdx] = useState(3);
     const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
@@ -77,29 +75,28 @@ function App() {
         }
         setCoverDoc(_coverDoc);
         setSelectedCoverDocId(coverDocId);
-        const _selectedVoices: { [key: string]: GameVoiceInfo } = {};
-        _coverDoc.voices.slice(0, 5).map(
-            (v, i) =>
-                (_selectedVoices[i] = {
-                    id: v.id,
-                    name: v.name,
-                    avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
-                        "voice_models/avatars/thumbs/"
-                    )}${v.id}_200x200?alt=media`,
-                })
+
+        setSelectedVoices(
+            _coverDoc.voices.slice(0, 5).map((v) => ({
+                id: v.id,
+                name: v.name,
+                avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
+                    "voice_models/avatars/thumbs/"
+                )}${v.id}_200x200?alt=media`,
+            }))
         );
-        setSelectedVoices(_selectedVoices);
     };
 
     const downloadAndPlay = async () => {
         if (isDownloading) return;
+        if (selectedVoices.length < 2) return alert("Select at least 2 voices");
         if (selectedTracksList.length === 0) return alert("Select tracks");
         if (coverDoc && selectedCoverDocId) {
             setIsDownloading(true);
             await downloadAudioFiles(
                 [
                     `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
-                    ...Object.values(selectedVoices)
+                    ...selectedVoices
                         .map((v) => v.id)
                         .map(
                             (v) =>
@@ -161,7 +158,7 @@ function App() {
                         {ready && coverDoc ? (
                             <PhaserGame
                                 ref={phaserRef}
-                                voices={Object.values(selectedVoices)}
+                                voices={selectedVoices}
                                 coverDocId={selectedCoverDocId}
                                 musicStartOffset={
                                     coverDoc?.sections?.at(startSectionIdx - 1)

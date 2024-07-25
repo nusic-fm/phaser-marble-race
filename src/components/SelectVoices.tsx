@@ -3,75 +3,127 @@ import {
     Typography,
     Box,
     Avatar,
-    IconButton,
     Tooltip,
     Popover,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
+
 import { GameVoiceInfo } from "../game/scenes/Preloader";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { VoiceV1Cover } from "../services/db/coversV1.service";
 
 type Props = {
-    selectedVoices: { [key: string]: GameVoiceInfo };
+    selectedVoices: GameVoiceInfo[];
     voices: VoiceV1Cover[];
     setSelectedVoices: any;
 };
 
 const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
     const [dialogRef, setDialogRef] = useState<{
-        ref: HTMLButtonElement;
+        ref: any;
         vid: string;
     } | null>(null);
+    const [voiceSlotObj, setVoiceSlotObj] = useState<{
+        [key: string]: GameVoiceInfo | null;
+    }>({});
+
+    useEffect(() => {
+        if (voices.length) {
+            const _obj: { [key: string]: GameVoiceInfo | null } = {};
+            selectedVoices.map((v, i) => {
+                _obj[i] = v;
+            });
+            setVoiceSlotObj(_obj);
+        }
+    }, [voices]);
 
     return (
         <Stack direction="row" gap={3}>
-            {Object.values(selectedVoices).map((voice, i) => (
-                <Stack key={voice.id} gap={1} alignItems="center">
-                    <Typography>Voice {i + 1}</Typography>
-                    <Tooltip title={voice.name}>
-                        <Box position={"relative"} width={80} height={80}>
-                            <Avatar
-                                src={voice.avatar}
-                                sx={{
-                                    width: 76,
-                                    height: 76,
-                                    border: "2px solid #fff",
-                                }}
-                            />
-                            <Box
-                                position={"absolute"}
-                                top={0}
-                                right={0}
-                                display="flex"
-                                justifyContent={"center"}
-                                alignItems={"center"}
-                                width="100%"
-                                height={"100%"}
-                                sx={
-                                    {
-                                        // background: "rgba(0,0,0,0.2)",
-                                    }
-                                }
-                            >
-                                <IconButton
+            {new Array(voices.length > 5 ? 5 : voices.length)
+                .fill("")
+                .map((_, i) => (
+                    <Stack key={i} gap={1} alignItems="center">
+                        <Typography>Voice {i + 1}</Typography>
+                        <Tooltip title={voiceSlotObj[i]?.name}>
+                            <Box position={"relative"} width={80} height={80}>
+                                <Avatar
+                                    src={voiceSlotObj[i]?.avatar}
+                                    sx={{
+                                        width: 76,
+                                        height: 76,
+                                        border: "2px solid #fff",
+                                    }}
+                                />
+                                <Box
+                                    position={"absolute"}
+                                    top={0}
+                                    right={0}
+                                    display="flex"
+                                    justifyContent={"center"}
+                                    alignItems={"center"}
+                                    width="100%"
+                                    height={"100%"}
+                                    sx={{
+                                        ":hover": {
+                                            background: "rgba(0,0,0,0.4)",
+                                        },
+                                    }}
+                                >
+                                    <RemoveIcon
+                                        fontSize="large"
+                                        color="secondary"
+                                        sx={{ cursor: "pointer" }}
+                                        onClick={(e) => {
+                                            // Delete By ID
+                                            const { [i]: _, ...rest } =
+                                                voiceSlotObj;
+                                            rest[i] = null;
+                                            setSelectedVoices(
+                                                Object.values(rest).filter(
+                                                    (v) => v !== null
+                                                ) as GameVoiceInfo[]
+                                            );
+                                            setVoiceSlotObj(rest);
+                                        }}
+                                    />
+                                    <AddIcon
+                                        fontSize="large"
+                                        color="secondary"
+                                        sx={{ cursor: "pointer" }}
+                                        onClick={(e) =>
+                                            setDialogRef({
+                                                ref: e.currentTarget,
+                                                vid: i.toString(),
+                                            })
+                                        }
+                                    />
+                                    {/* <IconButton
+                                    size="small"
                                     onClick={(e) =>
                                         setDialogRef({
                                             ref: e.currentTarget,
                                             vid: i.toString(),
                                         })
                                     }
-                                >
-                                    <AddIcon fontSize="large" />
-                                </IconButton>
+                                ></IconButton>
+                                <IconButton
+                                    size="small"
+                                    onClick={(e) =>
+                                        setDialogRef({
+                                            ref: e.currentTarget,
+                                            vid: i.toString(),
+                                        })
+                                    }
+                                ></IconButton> */}
+                                </Box>
                             </Box>
-                        </Box>
-                    </Tooltip>
-                    {/* <Typography align="center">
+                        </Tooltip>
+                        {/* <Typography align="center">
                                         {selectedVoices[parseInt(key)].name}
                                     </Typography> */}
-                </Stack>
-            ))}
+                    </Stack>
+                ))}
             <Popover
                 open={Boolean(dialogRef)}
                 anchorEl={dialogRef?.ref}
@@ -83,7 +135,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                         {voices
                             .filter(
                                 (v) =>
-                                    !Object.values(selectedVoices)
+                                    !selectedVoices
                                         .map((v) => v.id)
                                         .includes(v.id)
                             )
@@ -95,18 +147,25 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                         )}${v.id}_200x200?alt=media`}
                                         onClick={() => {
                                             if (dialogRef?.vid) {
-                                                setSelectedVoices({
-                                                    ...selectedVoices,
-                                                    [dialogRef.vid]: {
-                                                        id: v.id,
-                                                        name: v.name,
-                                                        avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
-                                                            "voice_models/avatars/thumbs/"
-                                                        )}${
-                                                            v.id
-                                                        }_200x200?alt=media`,
-                                                    },
-                                                });
+                                                const key = dialogRef.vid;
+                                                const newObj = {
+                                                    ...voiceSlotObj,
+                                                };
+                                                newObj[key] = {
+                                                    id: v.id,
+                                                    name: v.name,
+                                                    avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
+                                                        "voice_models/avatars/thumbs/"
+                                                    )}${
+                                                        v.id
+                                                    }_200x200?alt=media`,
+                                                };
+                                                setSelectedVoices(
+                                                    Object.values(
+                                                        newObj
+                                                    ).filter((v) => v !== null)
+                                                );
+                                                setVoiceSlotObj(newObj);
                                                 setDialogRef(null);
                                             }
                                         }}
