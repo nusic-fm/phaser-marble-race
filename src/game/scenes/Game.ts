@@ -11,10 +11,7 @@ import { duplicateArrayElemToN } from "../../helpers";
 export default class Game extends Phaser.Scene {
     constructor() {
         super("game");
-        this.throttledUpdate = _.throttle(
-            this.throttledUpdate.bind(this),
-            1000
-        ); // Throttle interval in milliseconds
+        this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
     public marbles: MatterJS.BodyType[] = [];

@@ -15,7 +15,18 @@ import {
     listAllTrackSkins,
 } from "./services/storage/marbleRace.service";
 
-export const tracks = ["01", "02", "03", "06", "07", "11", "14", "16", "21"];
+export const tracks = [
+    "01",
+    "02",
+    "03",
+    "06",
+    "07",
+    "11",
+    "14",
+    "16",
+    "21",
+    "22",
+];
 
 function App() {
     //  References to the PhaserGame component (game and scene are exposed)
@@ -46,6 +57,7 @@ function App() {
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [startSectionIdx, setStartSectionIdx] = useState(3);
     const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
+    const [marbleSpeed, setMarbleSpeed] = useState(0.2);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -162,6 +174,7 @@ function App() {
                                     noOfRaceTracks
                                 )}
                                 noOfRaceTracks={noOfRaceTracks}
+                                gravityY={marbleSpeed}
                             />
                         ) : (
                             <Stack
@@ -234,6 +247,21 @@ function App() {
                                 value={noOfRaceTracks}
                                 onChange={(_, val) =>
                                     setNoOfRaceTracks(val as number)
+                                }
+                                marks
+                                valueLabelDisplay="auto"
+                            />
+                        </Stack>
+                        <Stack gap={2} direction="row" alignItems={"center"}>
+                            <Typography>Speed</Typography>
+                            <Slider
+                                sx={{ width: 200 }}
+                                min={0.1}
+                                step={0.1}
+                                max={0.8}
+                                value={marbleSpeed}
+                                onChange={(_, val) =>
+                                    setMarbleSpeed(val as number)
                                 }
                                 marks
                                 valueLabelDisplay="auto"

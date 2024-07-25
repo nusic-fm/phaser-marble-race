@@ -57,7 +57,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                         key={trackPath}
                         position="relative"
                         width={80}
-                        height={130}
+                        height={142}
                     >
                         <img
                             src={`https://voxaudio.nusic.fm/marble_race%2Foriginal_tracks%2F${trackPath}.png?alt=media`}

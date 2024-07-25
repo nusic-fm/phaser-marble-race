@@ -25,6 +25,8 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const StartGame = (parent: string, data: IGameDataParams) => {
+    if (data.gravityY && config.physics?.matter?.gravity)
+        config.physics.matter.gravity.y = data.gravityY;
     const game = new Game({ ...config, parent });
     game.scene.start("preloader", data);
     // // Add an event listener to apply the border radius once the game canvas is created
