@@ -180,26 +180,24 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                             alignItems="center"
                             justifyContent={"center"}
                             borderRadius={"50%"}
+                            sx={{ cursor: "pointer" }}
+                            onClick={() => {
+                                if (dialogRef) {
+                                    // Delete By ID
+                                    const { [dialogRef.vid]: _, ...rest } =
+                                        voiceSlotObj;
+                                    rest[dialogRef.vid] = null;
+                                    setSelectedVoices(
+                                        Object.values(rest).filter(
+                                            (v) => v !== null
+                                        ) as GameVoiceInfo[]
+                                    );
+                                    setVoiceSlotObj(rest);
+                                    setDialogRef(null);
+                                }
+                            }}
                         >
-                            <RemoveIcon
-                                fontSize="small"
-                                color="secondary"
-                                sx={{ cursor: "pointer" }}
-                                onClick={() => {
-                                    if (dialogRef) {
-                                        // Delete By ID
-                                        const { [dialogRef.vid]: _, ...rest } =
-                                            voiceSlotObj;
-                                        rest[dialogRef.vid] = null;
-                                        setSelectedVoices(
-                                            Object.values(rest).filter(
-                                                (v) => v !== null
-                                            ) as GameVoiceInfo[]
-                                        );
-                                        setVoiceSlotObj(rest);
-                                    }
-                                }}
-                            />
+                            <RemoveIcon fontSize="small" color="secondary" />
                         </Box>
                     </Stack>
                 </Stack>
