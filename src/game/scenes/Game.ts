@@ -801,11 +801,12 @@ export default class Game extends Phaser.Scene {
                     break;
             }
         });
-        this.add.image(centerX, startOffset + 250, "finish_line").setScale(0.2);
-        this.finishLineOffset = startOffset + 250;
+        const finishOffset = startOffset + 250;
+        this.add.image(centerX, finishOffset, "finish_line").setScale(0.2);
+        this.finishLineOffset = finishOffset;
         // .setDisplaySize(960, 40);
-        this.cameras.main.setBounds(0, 0, canvasWidth, startOffset + 500);
-        this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 1000);
+        this.cameras.main.setBounds(0, 0, canvasWidth, finishOffset + 250);
+        this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
 
         const marbleRadius = 23;
         this.createMarbles(marbleRadius);
@@ -949,10 +950,11 @@ export default class Game extends Phaser.Scene {
         this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
         this.crossLeftRotation.map((c) => c.setAngle(c.angle - 2));
         if (this.isInstrumentPlaying && this.isRotating === false) {
-            const voicesPositions = this.marbles
-                .map((m) => m.position.y)
-                .filter((y) => y < this.finishLineOffset);
-            const largest = Math.max(...voicesPositions);
+            const voicesPositions = this.marbles.map((m) => m.position.y);
+            const unFinishedPositions = voicesPositions.filter(
+                (y) => y < this.finishLineOffset
+            );
+            const largest = Math.max(...unFinishedPositions);
             const index = voicesPositions.findIndex((v) => v === largest);
             // if (largest > this.finishLineOffset) {
             //     // Find 2nd largest
