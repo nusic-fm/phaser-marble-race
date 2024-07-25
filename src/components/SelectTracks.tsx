@@ -98,7 +98,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                         )}
                     </Box>
                 ))}
-                <Box width={64} height={130} px={1}>
+                <Box width={64} height={142} px={1}>
                     <Box
                         width={"100%"}
                         height={"100%"}
@@ -130,7 +130,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                                     src={`https://voxaudio.nusic.fm/marble_race%2Foriginal_tracks%2F${t}.png?alt=media`}
                                     style={{
                                         width: 80,
-                                        height: 130,
+                                        height: 142,
                                         cursor: "pointer",
                                         background: "#c3c3c3",
                                         objectFit: "cover",
