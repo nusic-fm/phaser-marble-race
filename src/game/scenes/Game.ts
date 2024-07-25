@@ -28,10 +28,12 @@ export default class Game extends Phaser.Scene {
     public heightReducedIndices: number[] = [];
     public upDownMotionElems: {
         matter: Phaser.Physics.Matter.Image;
+        startX: number;
         startY: number;
         maxTop: number;
         maxBottom: number;
         moveSpeed: number;
+        direction: "left" | "right";
     }[] = [];
     public labels: Phaser.GameObjects.Text[] = [];
     public motionTimeForUpDownWard = 0;
@@ -411,70 +413,80 @@ export default class Game extends Phaser.Scene {
         this.upDownMotionElems.push(
             {
                 matter: this.matter.add
-                    .image(315, startOffset + 100, "left_block", undefined, {
+                    .image(318, startOffset + 122, "left_block", undefined, {
                         isStatic: true,
                     })
                     .setScale(0.18, 0.18),
-                startY: startOffset + 100,
+                startX: 315,
+                startY: startOffset + 122,
                 maxTop: 1,
                 maxBottom: 38,
-                moveSpeed: 0.3,
+                moveSpeed: 0.1,
+                direction: "right",
             }
             // .setAngle(7.1)
         );
         this.upDownMotionElems.push(
             {
                 matter: this.matter.add
-                    .image(106, startOffset + 259, "right_block", undefined, {
+                    .image(102.8, startOffset + 275, "right_block", undefined, {
                         isStatic: true,
                     })
                     .setScale(0.18, 0.18),
-                startY: startOffset + 259,
+                startX: 102.8,
+                startY: startOffset + 275,
                 maxTop: 1,
                 maxBottom: 28,
-                moveSpeed: 0.4,
+                moveSpeed: 0.2,
+                direction: "left",
             }
             // .setAngle(7.1)
         );
         this.upDownMotionElems.push(
             {
                 matter: this.matter.add
-                    .image(316, startOffset + 418, "left_block", undefined, {
+                    .image(314, startOffset + 418, "left_block", undefined, {
                         isStatic: true,
                     })
                     .setScale(0.18, 0.18),
+                startX: 314,
                 startY: startOffset + 418,
                 maxTop: 15,
                 maxBottom: -18,
-                moveSpeed: 0.3,
+                moveSpeed: 0.15,
+                direction: "right",
             }
             // .setAngle(7.1)
         );
         this.upDownMotionElems.push(
             {
                 matter: this.matter.add
-                    .image(105, startOffset + 550, "right_block", undefined, {
+                    .image(102.8, startOffset + 568, "right_block", undefined, {
                         isStatic: true,
                     })
                     .setScale(0.18, 0.18),
-                startY: startOffset + 550,
+                startX: 102.8,
+                startY: startOffset + 568,
                 maxTop: 1,
                 maxBottom: 28,
-                moveSpeed: 0.3,
+                moveSpeed: 0.18,
+                direction: "left",
             }
             // .setAngle(7.1)
         );
         this.upDownMotionElems.push(
             {
                 matter: this.matter.add
-                    .image(316, startOffset + 695, "left_block", undefined, {
+                    .image(314, startOffset + 713, "left_block", undefined, {
                         isStatic: true,
                     })
                     .setScale(0.18, 0.18),
-                startY: startOffset + 705,
-                maxTop: 20,
-                maxBottom: -18,
-                moveSpeed: 0.4,
+                startX: 314,
+                startY: startOffset + 713,
+                maxTop: 1,
+                maxBottom: 28,
+                moveSpeed: 0.1,
+                direction: "right",
             }
             // .setAngle(7.1)
         );
@@ -982,17 +994,36 @@ export default class Game extends Phaser.Scene {
         // Bars up/down motion
         this.motionTimeForUpDownWard += delta;
         this.upDownMotionElems.map(
-            ({ matter, startY, moveSpeed, maxBottom, maxTop }) => {
-                // Calculate new y position using a sine wave for smooth up and down movement
-                const range = maxBottom - maxTop;
-                const midPoint = maxTop + range / 2;
-                // Update the rectangle's y position using a sine wave
-                matter.setPosition(
-                    matter.x,
-                    startY +
-                        midPoint +
-                        (range / 2) * Math.sin(time * 0.005 * moveSpeed)
-                );
+            ({
+                matter,
+                startX,
+                startY,
+                moveSpeed,
+                maxBottom,
+                maxTop,
+                direction,
+            }) => {
+                const amplitude = (maxBottom - maxTop) / 2;
+                const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
+                // // Calculate new y position using a sine wave for smooth up and down movement
+                // const range = maxBottom - maxTop;
+                // const midPoint = maxTop + range / 2;
+                // Calculate the new position considering the angle
+                if (direction === "right") {
+                    const newX =
+                        startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
+                    const newY =
+                        startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
+                    // Update the rectangle's y position using a sine wave
+                    matter.setPosition(newX, newY);
+                } else {
+                    const newX =
+                        startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
+                    const newY =
+                        startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
+                    // Update the rectangle's y position using a sine wave
+                    matter.setPosition(newX, newY);
+                }
             }
         );
     }
