@@ -199,6 +199,7 @@ const stopAndDestroyPlayers = () => {
             delete downloadObj[url];
         }
     }
+    Tone.Transport.stop();
 };
 
 const getToneStatus = () => {

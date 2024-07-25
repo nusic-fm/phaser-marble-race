@@ -212,8 +212,26 @@ function App() {
                     justifyContent={"start"}
                     height="100%"
                     gap={2}
+                    position="relative"
                 >
                     <Typography align="center">Controls</Typography>
+                    {ready && (
+                        <Box position={"absolute"} left={0}>
+                            <Button
+                                color="error"
+                                variant="contained"
+                                size="small"
+                                onClick={() => {
+                                    phaserRef.current?.game?.destroy(true);
+                                    stopAndDestroyPlayers();
+                                    setDownloadProgress(0);
+                                    setReady(false);
+                                }}
+                            >
+                                Reset Game
+                            </Button>
+                        </Box>
+                    )}
                     <Stack gap={1}>
                         <Stack gap={2} direction="row" alignItems={"center"}>
                             <Typography>Start Section</Typography>
