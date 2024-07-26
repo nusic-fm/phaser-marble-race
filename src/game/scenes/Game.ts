@@ -7,6 +7,7 @@ import _ from "lodash";
 import { GameVoiceInfo } from "./Preloader";
 import { IGameDataParams } from "../PhaserGame";
 import { duplicateArrayElemToN } from "../../helpers";
+import { BodyType } from "matter";
 
 export default class Game extends Phaser.Scene {
     constructor() {
@@ -192,7 +193,8 @@ export default class Game extends Phaser.Scene {
     createSeesawScreen = (
         xOffset: number,
         startOffset: number,
-        prodShapes: any
+        prodShapes: any,
+        miniShapes: any
     ) => {
         const yOffset = startOffset + 835 / 2;
         const baseSprite = this.matter.add.sprite(
@@ -205,6 +207,28 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        const seesawX = xOffset - 2;
+        const seesawY = yOffset - 130;
+        const seesaw = this.matter.add.sprite(
+            seesawX,
+            seesawY,
+            "06b",
+            undefined,
+            {
+                shape: miniShapes["06b"],
+                // isStatic: true,
+            }
+        );
+        const contraint = this.matter.constraint.create({
+            bodyA: seesaw.body as BodyType,
+            bodyB: baseSprite.body as BodyType,
+            pointA: { x: 0, y: 0 },
+            pointB: { x: -2, y: -130 },
+            stiffness: 1,
+            length: 0,
+        });
+        this.matter.world.add(contraint);
+        this.createTextureMask(seesawX, seesawY, seesaw);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 840;
     };
@@ -767,7 +791,8 @@ export default class Game extends Phaser.Scene {
                     startOffset = this.createSeesawScreen(
                         xOffset,
                         startOffset,
-                        prodShapes
+                        prodShapes,
+                        miniShapes
                     );
                     break;
                 case "07":
