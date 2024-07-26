@@ -228,7 +228,7 @@ function App() {
                                     setReady(false);
                                 }}
                             >
-                                Reset Game
+                                Reset Race
                             </Button>
                         </Box>
                     )}
@@ -286,7 +286,14 @@ function App() {
                             />
                         )}
                         <Typography>Choose a Skin</Typography>
-                        <Stack direction="row" gap={2}>
+                        <Stack
+                            direction="row"
+                            gap={2}
+                            width={460}
+                            sx={{ overflowX: "auto" }}
+                            justifyContent="start"
+                            p={1}
+                        >
                             {skinPaths.map((path) => (
                                 <img
                                     key={path}
@@ -307,7 +314,14 @@ function App() {
                             ))}
                         </Stack>
                         <Typography>Choose a Background</Typography>
-                        <Stack direction="row" gap={2}>
+                        <Stack
+                            direction="row"
+                            gap={2}
+                            width={460}
+                            sx={{ overflowX: "auto" }}
+                            justifyContent="start"
+                            p={1}
+                        >
                             {bgPaths.map((path) => (
                                 <img
                                     key={path}

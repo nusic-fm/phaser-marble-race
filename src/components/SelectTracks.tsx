@@ -40,7 +40,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
     return (
         <Stack gap={1}>
             <Box display={"flex"} gap={2} alignItems={"center"}>
-                <Typography>Choose Tracks</Typography>
+                <Typography>Choose Racetracks</Typography>
                 <Button
                     size="small"
                     variant="outlined"
@@ -121,7 +121,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                     onClose={() => setDialogRef(null)}
                 >
                     <Stack p={2} gap={1}>
-                        <Typography>Add Tracks</Typography>
+                        <Typography>Add Racetracks</Typography>
                         <Stack direction={"row"} gap={1}>
                             {availableTracksToSelect.map((t) => (
                                 <img
