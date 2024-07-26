@@ -251,9 +251,10 @@ export default class Game extends Phaser.Scene {
         this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 880;
     };
-    createStarRotations = (startOffset: number, miniShapes: any) => {
+    createStarRotations = (_startOffset: number, miniShapes: any) => {
         // Stars
         const barWidth = 0;
+        let startOffset = _startOffset + 250;
         // this.matter.add.sprite(
         //     barWidth / 2,
         //     startOffset + 270,
