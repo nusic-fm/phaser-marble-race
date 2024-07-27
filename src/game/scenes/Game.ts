@@ -69,7 +69,8 @@ export default class Game extends Phaser.Scene {
     finishLineOffset: number = 0;
 
     init(data: IGameDataParams) {
-        this.voices = data.voices;
+        // Sort the voices randomly
+        this.voices = data.voices.sort(() => Math.random() - 0.5);
         this.coverDocId = data.coverDocId;
         this.musicStartOffset = data.musicStartOffset;
         this.noOfRaceTracks = data.noOfRaceTracks;
@@ -560,25 +561,45 @@ export default class Game extends Phaser.Scene {
         this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 880;
     };
-    createMarbles = (marbleRadius: number) => {
+    createMarbles = (marbleRadius: number, miniShapes: any) => {
         this.largeCircle = this.matter.add
-            .image(this.centerX, this.centerY, "empty_circle", undefined, {
+            .sprite(this.centerX, this.centerY, "wheel", undefined, {
+                shape: miniShapes["wheel"],
                 isStatic: true,
-                isSensor: true, // Making it a sensor so it doesn't interact with the smaller circles
+                frictionStatic: 1,
+                friction: 1,
             })
-            .setScale(1.16);
+            .setScale(0.8);
+        // this.tweens.add({
+        //     targets: this.largeCircle,
+        //     angle: 360,
+        //     duration: 100,
+        //     repeat: 100,
+        // });
+        const xOffsetValues = [
+            this.centerX - 46,
+            this.centerX + 23,
+            this.centerX,
+            this.centerX + 23,
+            this.centerX + 46,
+        ];
         this.voices.map((v, i) => {
             this.currentMarblesSizeIndices[i.toString()] = 0;
-            const angle = i * this.angleIncrement;
-            const x = this.centerX + this.radius * Math.cos(angle);
-            const y = this.centerY + this.radius * Math.sin(angle);
-            const circleBody = this.matter.add.circle(x, y, marbleRadius, {
-                restitution: 0.4,
-                // density: 0.02,
-                friction: 0,
-                frictionAir: 0,
-                frictionStatic: 0,
-            });
+            // const angle = i * this.angleIncrement;
+            // const x = this.centerX + this.radius * Math.cos(angle);
+            // const y = this.centerY + this.radius * Math.sin(angle);
+            const circleBody = this.matter.add.circle(
+                xOffsetValues[i],
+                this.centerY,
+                marbleRadius,
+                {
+                    restitution: 0.4,
+                    // density: 0.02,
+                    friction: 0,
+                    frictionAir: 0,
+                    frictionStatic: 0,
+                }
+            );
             this.marbles.push(circleBody);
             this.trailsGroup.push(this.add.group());
             this.trailGraphics.push(this.add.graphics());
@@ -847,7 +868,7 @@ export default class Game extends Phaser.Scene {
         this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
 
         const marbleRadius = 23;
-        this.createMarbles(marbleRadius);
+        this.createMarbles(marbleRadius, miniShapes);
 
         let coundownValue = 3;
         // Start Countdown:
@@ -873,35 +894,35 @@ export default class Game extends Phaser.Scene {
                         }
                         this.isRotating = false;
                         this.countdownText.destroy();
-                        const velocity = 1; // Adjust this value to set the desired release velocity
+                        // const velocity = 2; // Adjust this value to set the desired release velocity
 
-                        for (let i = 0; i < this.voices.length; i++) {
-                            const currentAngle =
-                                this.baseAngle + i * this.angleIncrement;
-                            const x =
-                                this.centerX +
-                                this.radius * Math.cos(currentAngle);
-                            const y =
-                                this.centerY +
-                                this.radius * Math.sin(currentAngle);
+                        // for (let i = 0; i < this.voices.length; i++) {
+                        //     const currentAngle =
+                        //         this.baseAngle + i * this.angleIncrement;
+                        //     const x =
+                        //         this.centerX +
+                        //         this.radius * Math.cos(currentAngle);
+                        //     const y =
+                        //         this.centerY +
+                        //         this.radius * Math.sin(currentAngle);
 
-                            // Set the new position of the circle
-                            this.matter.body.setPosition(
-                                this.marbles[i],
-                                { x, y },
-                                false
-                            );
+                        //     // Set the new position of the circle
+                        //     this.matter.body.setPosition(
+                        //         this.marbles[i],
+                        //         { x, y },
+                        //         false
+                        //     );
 
-                            // Calculate the velocity components
-                            const velocityX = velocity * Math.cos(currentAngle);
-                            const velocityY = velocity * Math.sin(currentAngle);
+                        //     // Calculate the velocity components
+                        //     const velocityX = velocity * Math.cos(currentAngle);
+                        //     const velocityY = velocity * Math.sin(currentAngle);
 
-                            // Apply the velocity to the body
-                            this.matter.body.setVelocity(this.marbles[i], {
-                                x: velocityX,
-                                y: velocityY,
-                            });
-                        }
+                        //     // Apply the velocity to the body
+                        //     this.matter.body.setVelocity(this.marbles[i], {
+                        //         x: velocityX,
+                        //         y: velocityY,
+                        //     });
+                        // }
                     }
                 }
             },
@@ -914,74 +935,77 @@ export default class Game extends Phaser.Scene {
     }
     update(time: number, delta: number): void {
         if (this.marbles.length) {
+            if (this.isRotating) {
+                // Update the base angle to create the circular motion
+                this.baseAngle += 0.01; // Adjust this value to change the speed of rotation
+                this.largeCircle?.setRotation(this.baseAngle);
+                this.matter.body.setAngularVelocity(
+                    this.largeCircle?.body as BodyType,
+                    0.15
+                );
+            }
             this.marbles.map((voiceBody, i) => {
                 const marbleImage = this.marblesImages[i];
-                if (this.isRotating) {
-                    // Update the base angle to create the circular motion
-                    this.baseAngle += 0.01; // Adjust this value to change the speed of rotation
+                // if (this.isRotating) {
+                //     // // Update the position of each circle
+                //     // const currentAngle =
+                //     //     this.baseAngle + i * this.angleIncrement;
+                //     // const x =
+                //     //     this.centerX + this.radius * Math.cos(currentAngle);
+                //     // const y =
+                //     //     this.centerY + this.radius * Math.sin(currentAngle);
+                //     // // Set the new position of the circle
+                //     // this.matter.body.setPosition(voiceBody, { x, y }, false);
+                //     // // this.matter.body.setAngle(voiceBody, currentAngle, false);
+                //     // marbleImage.setPosition(x, y);
+                //     // // marbleImage.setRotation(voiceBody.angle);
+                //     // this.marblesMasks[i].setPosition(
+                //     //     voiceBody.position.x - voiceBody.circleRadius,
+                //     //     voiceBody.position.y - voiceBody.circleRadius
+                //     // );
+                //     // this.labels[i].setPosition(-100, -100);
+                // } else {
+                marbleImage.setPosition(
+                    voiceBody.position.x,
+                    voiceBody.position.y
+                );
+                marbleImage.setRotation(voiceBody.angle);
+                this.marblesMasks[i].setPosition(
+                    voiceBody.position.x - voiceBody.circleRadius,
+                    voiceBody.position.y - voiceBody.circleRadius
+                );
+                // this.marblesMasks[i].setRotation(voiceBody.angle);
 
-                    // Update the position of each circle
-                    const currentAngle =
-                        this.baseAngle + i * this.angleIncrement;
-                    const x =
-                        this.centerX + this.radius * Math.cos(currentAngle);
-                    const y =
-                        this.centerY + this.radius * Math.sin(currentAngle);
-
-                    // Set the new position of the circle
-                    this.matter.body.setPosition(voiceBody, { x, y }, false);
-                    // this.matter.body.setAngle(voiceBody, currentAngle, false);
-                    marbleImage.setPosition(x, y);
-                    // marbleImage.setRotation(voiceBody.angle);
-                    this.marblesMasks[i].setPosition(
-                        voiceBody.position.x - voiceBody.circleRadius,
-                        voiceBody.position.y - voiceBody.circleRadius
-                    );
-                    this.labels[i].setPosition(-100, -100);
-                } else {
-                    marbleImage.setPosition(
-                        voiceBody.position.x,
-                        voiceBody.position.y
-                    );
-                    marbleImage.setRotation(voiceBody.angle);
-                    this.marblesMasks[i].setPosition(
-                        voiceBody.position.x - voiceBody.circleRadius,
-                        voiceBody.position.y - voiceBody.circleRadius
-                    );
-                    // this.marblesMasks[i].setRotation(voiceBody.angle);
-
-                    this.labels[i]?.setPosition(
-                        voiceBody.position.x - 100,
-                        voiceBody.position.y - 80
-                    );
-                    const currentCrossIndex =
-                        this.currentMarblesSizeIndices[i.toString()];
-                    if (
-                        this.heightReducedIndices.includes(i) &&
-                        voiceBody.position.y >
-                            this.increaseSizeScreenOffset[currentCrossIndex]
-                    ) {
-                        this.currentMarblesSizeIndices[i.toString()] += 1;
-                        this.matter.body.scale(voiceBody, 2, 2);
-                        marbleImage.setDisplaySize(46, 46);
-                        this.marblesMasks[i].scale = 1;
-                        this.heightReducedIndices =
-                            this.heightReducedIndices.filter(
-                                (idx) => idx !== i
-                            );
-                    } else if (
-                        this.heightReducedIndices.includes(i) === false &&
-                        voiceBody.position.y >
-                            this.reduceSizeScreenOffset[currentCrossIndex] &&
-                        voiceBody.position.y <
-                            this.increaseSizeScreenOffset[currentCrossIndex]
-                    ) {
-                        this.heightReducedIndices.push(i);
-                        this.matter.body.scale(voiceBody, 0.5, 0.5);
-                        marbleImage.setDisplaySize(23, 23);
-                        this.marblesMasks[i].scale = 0.5;
-                    }
+                this.labels[i]?.setPosition(
+                    voiceBody.position.x - 100,
+                    voiceBody.position.y - 80
+                );
+                const currentCrossIndex =
+                    this.currentMarblesSizeIndices[i.toString()];
+                if (
+                    this.heightReducedIndices.includes(i) &&
+                    voiceBody.position.y >
+                        this.increaseSizeScreenOffset[currentCrossIndex]
+                ) {
+                    this.currentMarblesSizeIndices[i.toString()] += 1;
+                    this.matter.body.scale(voiceBody, 2, 2);
+                    marbleImage.setDisplaySize(46, 46);
+                    this.marblesMasks[i].scale = 1;
+                    this.heightReducedIndices =
+                        this.heightReducedIndices.filter((idx) => idx !== i);
+                } else if (
+                    this.heightReducedIndices.includes(i) === false &&
+                    voiceBody.position.y >
+                        this.reduceSizeScreenOffset[currentCrossIndex] &&
+                    voiceBody.position.y <
+                        this.increaseSizeScreenOffset[currentCrossIndex]
+                ) {
+                    this.heightReducedIndices.push(i);
+                    this.matter.body.scale(voiceBody, 0.5, 0.5);
+                    marbleImage.setDisplaySize(23, 23);
+                    this.marblesMasks[i].scale = 0.5;
                 }
+                // }
                 this.createTrails(voiceBody, i);
             });
         }

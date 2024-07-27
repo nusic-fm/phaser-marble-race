@@ -1,4 +1,12 @@
-import { Box, Button, Slider, Stack, Typography } from "@mui/material";
+import {
+    Box,
+    Button,
+    Slider,
+    Stack,
+    Typography,
+    useMediaQuery,
+    useTheme,
+} from "@mui/material";
 import { useEffect, useRef, useState } from "react";
 import Header from "./components/Header";
 import LinearProgressWithLabel from "./components/LinearProgressWithLabel";
@@ -56,6 +64,8 @@ function App() {
     const [startSectionIdx, setStartSectionIdx] = useState(3);
     const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
     const [marbleSpeed, setMarbleSpeed] = useState(0.2);
+    // const theme = useTheme();
+    // const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -125,6 +135,7 @@ function App() {
             setBgPaths(paths);
         })();
     }, []);
+
     return (
         <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
             <Header />
