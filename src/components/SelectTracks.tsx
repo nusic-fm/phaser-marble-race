@@ -5,6 +5,8 @@ import {
     Typography,
     IconButton,
     Button,
+    useMediaQuery,
+    useTheme,
 } from "@mui/material";
 import { tracks } from "../App";
 import AddIcon from "@mui/icons-material/Add";
@@ -19,6 +21,8 @@ type Props = {
 const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
     const [dialogRef, setDialogRef] = useState<HTMLButtonElement | null>(null);
     const [showRemove, setShowRemove] = useState(false);
+    const theme = useTheme();
+    const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
 
     const availableTracksToSelect = tracks.filter(
         (t) => !Object.values(selectedTracksList).includes(t)
@@ -51,7 +55,12 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                     {showRemove ? "Done" : "Remove"}
                 </Button>
             </Box>
-            <Stack direction="row" gap={1} flexWrap="wrap">
+            <Stack
+                direction="row"
+                gap={1}
+                width={isMobileView ? "100%" : 460}
+                justifyContent="start"
+            >
                 {selectedTracksList.map((trackPath) => (
                     <Box
                         key={trackPath}

@@ -5,6 +5,8 @@ import {
     Avatar,
     Tooltip,
     Popover,
+    // useMediaQuery,
+    // useTheme,
 } from "@mui/material";
 import AddIcon from "@mui/icons-material/Add";
 import RemoveIcon from "@mui/icons-material/Remove";
@@ -27,6 +29,8 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
     const [voiceSlotObj, setVoiceSlotObj] = useState<{
         [key: string]: GameVoiceInfo | null;
     }>({});
+    // const theme = useTheme();
+    // const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
 
     useEffect(() => {
         if (voices.length) {
@@ -39,7 +43,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
     }, [voices]);
 
     return (
-        <Stack direction="row" gap={3}>
+        <Stack direction="row" gap={3} width="100%" sx={{ overflowX: "auto" }}>
             {new Array(voices.length > 5 ? 5 : voices.length)
                 .fill("")
                 .map((_, i) => (
@@ -70,23 +74,6 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                         },
                                     }}
                                 >
-                                    {/* <RemoveIcon
-                                        fontSize="large"
-                                        color="secondary"
-                                        sx={{ cursor: "pointer" }}
-                                        onClick={(e) => {
-                                            // Delete By ID
-                                            const { [i]: _, ...rest } =
-                                                voiceSlotObj;
-                                            rest[i] = null;
-                                            setSelectedVoices(
-                                                Object.values(rest).filter(
-                                                    (v) => v !== null
-                                                ) as GameVoiceInfo[]
-                                            );
-                                            setVoiceSlotObj(rest);
-                                        }}
-                                    /> */}
                                     <AddIcon
                                         fontSize="large"
                                         color="secondary"
@@ -98,30 +85,9 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
                                             })
                                         }
                                     />
-                                    {/* <IconButton
-                                    size="small"
-                                    onClick={(e) =>
-                                        setDialogRef({
-                                            ref: e.currentTarget,
-                                            vid: i.toString(),
-                                        })
-                                    }
-                                ></IconButton>
-                                <IconButton
-                                    size="small"
-                                    onClick={(e) =>
-                                        setDialogRef({
-                                            ref: e.currentTarget,
-                                            vid: i.toString(),
-                                        })
-                                    }
-                                ></IconButton> */}
                                 </Box>
                             </Box>
                         </Tooltip>
-                        {/* <Typography align="center">
-                                        {selectedVoices[parseInt(key)].name}
-                                    </Typography> */}
                     </Stack>
                 ))}
             <Popover

@@ -16,6 +16,7 @@ export interface IGameDataParams {
     selectedTracks: string[];
     noOfRaceTracks: number;
     gravityY: number;
+    width: number;
 }
 
 interface IProps extends IGameDataParams {
@@ -33,6 +34,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             selectedTracks,
             noOfRaceTracks,
             gravityY,
+            width,
         },
         ref
     ) {
@@ -49,6 +51,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                     selectedTracks,
                     noOfRaceTracks,
                     gravityY,
+                    width,
                 });
 
                 if (typeof ref === "function") {

@@ -528,7 +528,7 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        const yOffset = startOffset + 833 / 2;
+        const yOffset = startOffset + 835 / 2;
         const baseSprite = this.matter.add.sprite(
             xOffset,
             yOffset,
@@ -539,8 +539,9 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        // .setDisplaySize(this.cameras.main.width + 96, 835);
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        return startOffset + 832;
+        return startOffset + 835;
     };
     createZigzagSlider = (
         xOffset: number,
@@ -562,14 +563,19 @@ export default class Game extends Phaser.Scene {
         return startOffset + 880;
     };
     createMarbles = (marbleRadius: number, miniShapes: any) => {
-        this.largeCircle = this.matter.add
-            .sprite(this.centerX, this.centerY, "wheel", undefined, {
+        this.largeCircle = this.matter.add.sprite(
+            this.centerX,
+            this.centerY,
+            "wheel",
+            undefined,
+            {
                 shape: miniShapes["wheel"],
                 isStatic: true,
                 frictionStatic: 1,
                 friction: 1,
-            })
-            .setScale(0.8);
+            }
+        );
+        // .setScale(0.8);
         // this.tweens.add({
         //     targets: this.largeCircle,
         //     angle: 360,
