@@ -24,6 +24,7 @@ import {
 } from "./services/storage/marbleRace.service";
 import LibraryMusicRoundedIcon from "@mui/icons-material/LibraryMusicRounded";
 import TuneIcon from "@mui/icons-material/Tune";
+import { createRandomNumber } from "./helpers";
 
 export const tracks = [
     "01",
@@ -68,7 +69,12 @@ function App() {
     const [marbleSpeed, setMarbleSpeed] = useState(0.2);
     const theme = useTheme();
     const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
-    const canvasElemWidth = isMobileView ? window.innerWidth : 414;
+    const canvasElemWidth = window.innerWidth > 414 ? 414 : window.innerWidth;
+    // isMobileView
+    //     ? window.innerWidth > 414
+    //         ? 414
+    //         : window.innerWidth
+    //     : 414;
     const coversPageRef = useRef<HTMLDivElement>(null);
     const gamePageRef = useRef<HTMLDivElement>(null);
     const controlsPageRef = useRef<HTMLDivElement>(null);
@@ -161,7 +167,9 @@ function App() {
         })();
         (async () => {
             const paths = await listAllTrackBackgrounds();
-            setSelectedBackground(paths[0]);
+            setSelectedBackground(
+                paths[createRandomNumber(0, paths.length - 1)]
+            );
             setBgPaths(paths);
         })();
     }, []);
@@ -216,6 +224,7 @@ function App() {
                             height={"100%"}
                             display="flex"
                             gap={2}
+                            justifyContent="center"
                         >
                             <Box
                                 display={"flex"}
