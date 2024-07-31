@@ -67,6 +67,7 @@ export default class Game extends Phaser.Scene {
     angleIncrement = (2 * Math.PI) / 5;
     countdownText: Phaser.GameObjects.Text | undefined;
     finishLineOffset: number = 0;
+    marbleRadius = 23;
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
@@ -78,6 +79,7 @@ export default class Game extends Phaser.Scene {
             data.selectedTracks,
             this.noOfRaceTracks
         );
+        this.marbleRadius = data.width > 414 ? 23 : 21;
     }
 
     throttledUpdate(index: number) {
@@ -107,6 +109,7 @@ export default class Game extends Phaser.Scene {
         canvasWidth: number,
         miniShapes: any
     ) => {
+        // TODO: Scale the sprite
         startOffset += 151;
         this.crossRightRotation.push(
             this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
@@ -197,6 +200,7 @@ export default class Game extends Phaser.Scene {
         prodShapes: any,
         miniShapes: any
     ) => {
+        // TODO: Scale the sprite
         const yOffset = startOffset + 835 / 2;
         const baseSprite = this.matter.add.sprite(
             xOffset,
@@ -239,20 +243,17 @@ export default class Game extends Phaser.Scene {
         prodShapes: any
     ) => {
         const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_21",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_21", undefined, {
                 shape: prodShapes["21"],
                 isStatic: true,
-            }
-        );
+            })
+            .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 880;
     };
     createStarRotations = (_startOffset: number, miniShapes: any) => {
+        // TODO: Scale the sprite
         // Stars
         const barWidth = 0;
         let startOffset = _startOffset + 250;
@@ -381,16 +382,12 @@ export default class Game extends Phaser.Scene {
         prodShapes: any
     ) => {
         const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset + 0,
-            yOffset,
-            "prod_texture_loaded_03",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset + 0, yOffset, "prod_texture_loaded_03", undefined, {
                 shape: prodShapes["03"],
                 isStatic: true,
-            }
-        );
+            })
+            .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
 
         return startOffset + 1000;
@@ -403,16 +400,12 @@ export default class Game extends Phaser.Scene {
     ) => {
         this.reduceSizeScreenOffset.push(startOffset);
         const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_16",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_16", undefined, {
                 shape: prodShapes["16"],
                 isStatic: true,
-            }
-        );
+            })
+            .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         startOffset += 800;
         this.increaseSizeScreenOffset.push(startOffset);
@@ -424,6 +417,7 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
+        // TODO: Scale the sprite
         const yOffset = startOffset + 833 / 2;
         const baseSprite = this.matter.add.sprite(
             xOffset - 4,
@@ -435,6 +429,7 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
+        // .setScale(this.cameras.main.width / 414);
         // Motion parts
         this.upDownMotionElems.push(
             {
@@ -529,16 +524,12 @@ export default class Game extends Phaser.Scene {
         prodShapes: any
     ) => {
         const yOffset = startOffset + 835 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_01",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_01", undefined, {
                 shape: prodShapes["01"],
                 isStatic: true,
-            }
-        );
+            })
+            .setScale(this.cameras.main.width / 414);
         // .setDisplaySize(this.cameras.main.width + 96, 835);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 835;
@@ -549,16 +540,12 @@ export default class Game extends Phaser.Scene {
         prodShapes: any
     ) => {
         const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_07",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_07", undefined, {
                 shape: prodShapes["07"],
                 isStatic: true,
-            }
-        );
+            })
+            .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         return startOffset + 880;
     };
@@ -873,8 +860,7 @@ export default class Game extends Phaser.Scene {
         this.cameras.main.setBounds(0, 0, canvasWidth, finishOffset + 250);
         this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
 
-        const marbleRadius = 23;
-        this.createMarbles(marbleRadius, miniShapes);
+        this.createMarbles(this.marbleRadius, miniShapes);
 
         let coundownValue = 3;
         // Start Countdown:
@@ -995,7 +981,10 @@ export default class Game extends Phaser.Scene {
                 ) {
                     this.currentMarblesSizeIndices[i.toString()] += 1;
                     this.matter.body.scale(voiceBody, 2, 2);
-                    marbleImage.setDisplaySize(46, 46);
+                    marbleImage.setDisplaySize(
+                        this.marbleRadius * 2,
+                        this.marbleRadius * 2
+                    );
                     this.marblesMasks[i].scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
@@ -1008,7 +997,10 @@ export default class Game extends Phaser.Scene {
                 ) {
                     this.heightReducedIndices.push(i);
                     this.matter.body.scale(voiceBody, 0.5, 0.5);
-                    marbleImage.setDisplaySize(23, 23);
+                    marbleImage.setDisplaySize(
+                        this.marbleRadius,
+                        this.marbleRadius
+                    );
                     this.marblesMasks[i].scale = 0.5;
                 }
                 // }

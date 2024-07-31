@@ -131,7 +131,13 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                 >
                     <Stack p={2} gap={1}>
                         <Typography>Add Racetracks</Typography>
-                        <Stack direction={"row"} gap={1}>
+                        <Stack
+                            direction={"row"}
+                            gap={1}
+                            maxWidth="100%"
+                            justifyContent={"start"}
+                            sx={{ overflowX: "auto" }}
+                        >
                             {availableTracksToSelect.map((t) => (
                                 <img
                                     key={t}
