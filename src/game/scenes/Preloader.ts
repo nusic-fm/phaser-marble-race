@@ -18,6 +18,8 @@ export default class Preloader extends Phaser.Scene {
 
     preload() {
         this.load.image("background", this.params.backgroundPath);
+        if (this.params.enableMotion)
+            this.load.image("center_logo", "assets/transparent_logo.png");
         // TODO: Enable the below and comment out the rest of the images
         if (this.params.voices.length) {
             this.params.voices.map((voice) => {

@@ -13,6 +13,10 @@ export default class Game extends Phaser.Scene {
     constructor() {
         super("game");
         this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
+        this.throttledBgMoving = _.throttle(
+            this.throttledBgMoving.bind(this),
+            1000
+        ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
     public marbles: MatterJS.BodyType[] = [];
@@ -68,6 +72,8 @@ export default class Game extends Phaser.Scene {
     countdownText: Phaser.GameObjects.Text | undefined;
     finishLineOffset: number = 0;
     marbleRadius = 23;
+    background: Phaser.GameObjects.Image;
+    enableMotion: boolean = false;
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
@@ -80,6 +86,8 @@ export default class Game extends Phaser.Scene {
             this.noOfRaceTracks
         );
         this.marbleRadius = data.width >= 414 ? 23 : 20;
+        this.enableMotion = data.enableMotion;
+
         this.centerX = this.cameras.main.width / 2;
         this.centerY = this.cameras.main.height / 2;
     }
@@ -88,6 +96,9 @@ export default class Game extends Phaser.Scene {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
         marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
+    }
+    throttledBgMoving() {
+        this.applyTween();
     }
 
     createTextureMask = (
@@ -557,12 +568,6 @@ export default class Game extends Phaser.Scene {
             }
         );
         // .setScale(0.8);
-        // this.tweens.add({
-        //     targets: this.largeCircle,
-        //     angle: 360,
-        //     duration: 100,
-        //     repeat: 100,
-        // });
         const xOffsetValues = [
             this.centerX - 46,
             this.centerX + 23,
@@ -756,15 +761,42 @@ export default class Game extends Phaser.Scene {
             // this.trailsGroup[i].clear(true, true);
         }
     };
+    applyTween = () => {
+        // const duration = Phaser.Math.Between(1000, 1800);
+        const randomX = Phaser.Math.Between(-50, 50);
+        const randomY = Phaser.Math.Between(-50, 50);
+        this.tweens.add({
+            targets: this.background,
+            x: this.centerX + randomX,
+            y: this.centerY + randomY,
+            ease: "Sine.easeInOut",
+            duration: 2000, // Adjust duration for speed of motion
+            yoyo: true,
+            repeat: -1,
+            // onComplete: applyTween, // Repeat the tween indefinitely
+            // onCompleteScope: this,
+        });
+    };
 
     create() {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
-        this.add
+        this.background = this.add
             .image(centerX, centerY, "background")
-            .setDisplaySize(this.cameras.main.width, this.cameras.main.height)
             .setScrollFactor(0);
+        if (!this.enableMotion) {
+            this.background.setDisplaySize(
+                this.cameras.main.width,
+                this.cameras.main.height
+            );
+        } else {
+            this.add
+                .image(this.centerX, this.centerY, "center_logo")
+                .setDisplaySize(350, 115)
+                .setScrollFactor(0);
+        }
+
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 
@@ -920,6 +952,7 @@ export default class Game extends Phaser.Scene {
         ).then(() => (this.isInstrumentPlaying = true));
     }
     update(time: number, delta: number): void {
+        if (this.enableMotion) this.throttledBgMoving();
         if (this.marbles.length) {
             if (this.isRotating) {
                 // Update the base angle to create the circular motion

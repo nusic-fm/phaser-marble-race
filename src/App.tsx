@@ -1,6 +1,7 @@
 import {
     Box,
     Button,
+    Checkbox,
     IconButton,
     Slider,
     Stack,
@@ -78,6 +79,7 @@ function App() {
     const coversPageRef = useRef<HTMLDivElement>(null);
     const gamePageRef = useRef<HTMLDivElement>(null);
     const controlsPageRef = useRef<HTMLDivElement>(null);
+    const [enableMotion, setEnableMotion] = useState(false);
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -262,6 +264,7 @@ function App() {
                                             noOfRaceTracks={noOfRaceTracks}
                                             gravityY={marbleSpeed}
                                             width={canvasElemWidth}
+                                            enableMotion={enableMotion}
                                         />
                                     ) : (
                                         <Stack
@@ -490,7 +493,16 @@ function App() {
                                         />
                                     ))}
                                 </Stack>
-                                <Typography>Choose a Background</Typography>
+                                <Stack direction={"row"} alignItems="center">
+                                    <Checkbox
+                                        checked={enableMotion}
+                                        color="secondary"
+                                        onChange={(e, checked) =>
+                                            setEnableMotion(checked)
+                                        }
+                                    />
+                                    <Typography>Motion</Typography>
+                                </Stack>
                                 <Stack
                                     direction="row"
                                     gap={2}
@@ -553,6 +565,7 @@ function App() {
                             background: `url(${selectedBackground})`,
                             backgroundPosition: "center",
                             backgroundSize: "contain",
+                            backgroundRepeat: "no-repeat",
                             // borderRadius: 8,
                         }}
                         display="flex"
@@ -577,6 +590,7 @@ function App() {
                                 noOfRaceTracks={noOfRaceTracks}
                                 gravityY={marbleSpeed}
                                 width={canvasElemWidth}
+                                enableMotion={enableMotion}
                             />
                         ) : (
                             <Stack
@@ -744,7 +758,19 @@ function App() {
                                 />
                             ))}
                         </Stack>
-                        <Typography>Choose a Background</Typography>
+                        <Stack direction="row" gap={2} alignItems="center">
+                            <Typography>Choose a Background</Typography>
+                            <Stack direction={"row"} alignItems="center">
+                                <Checkbox
+                                    checked={enableMotion}
+                                    color="secondary"
+                                    onChange={(e, checked) =>
+                                        setEnableMotion(checked)
+                                    }
+                                />
+                                <Typography>Motion</Typography>
+                            </Stack>
+                        </Stack>
                         <Stack
                             direction="row"
                             gap={2}
