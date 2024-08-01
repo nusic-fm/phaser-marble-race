@@ -79,7 +79,9 @@ export default class Game extends Phaser.Scene {
             data.selectedTracks,
             this.noOfRaceTracks
         );
-        this.marbleRadius = data.width > 414 ? 23 : 21;
+        this.marbleRadius = data.width >= 414 ? 23 : 20;
+        this.centerX = this.cameras.main.width / 2;
+        this.centerY = this.cameras.main.height / 2;
     }
 
     throttledUpdate(index: number) {
@@ -200,35 +202,27 @@ export default class Game extends Phaser.Scene {
         prodShapes: any,
         miniShapes: any
     ) => {
-        // TODO: Scale the sprite
+        const scaleFactor = this.cameras.main.width / 414;
         const yOffset = startOffset + 835 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_06",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_06", undefined, {
                 shape: prodShapes["06"],
                 isStatic: true,
-            }
-        );
+            })
+            .setScale(scaleFactor);
         const seesawX = xOffset - 2;
         const seesawY = yOffset - 130;
-        const seesaw = this.matter.add.sprite(
-            seesawX,
-            seesawY,
-            "06b",
-            undefined,
-            {
+        const seesaw = this.matter.add
+            .sprite(seesawX, seesawY, "06b", undefined, {
                 shape: miniShapes["06b"],
                 // isStatic: true,
-            }
-        );
+            })
+            .setScale(scaleFactor);
         const contraint = this.matter.constraint.create({
             bodyA: seesaw.body as BodyType,
             bodyB: baseSprite.body as BodyType,
             pointA: { x: 0, y: 0 },
-            pointB: { x: -2, y: -130 },
+            pointB: { x: -2, y: -130 * scaleFactor },
             stiffness: 1,
             length: 0,
         });
@@ -552,7 +546,7 @@ export default class Game extends Phaser.Scene {
     createMarbles = (marbleRadius: number, miniShapes: any) => {
         this.largeCircle = this.matter.add.sprite(
             this.centerX,
-            this.centerY,
+            this.centerY - 100,
             "wheel",
             undefined,
             {
