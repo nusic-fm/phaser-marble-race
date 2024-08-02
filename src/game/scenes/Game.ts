@@ -793,7 +793,7 @@ export default class Game extends Phaser.Scene {
         } else {
             this.add
                 .image(this.centerX, this.centerY, "center_logo")
-                .setDisplaySize(350, 115)
+                .setDisplaySize(254, 84)
                 .setScrollFactor(0);
         }
 
