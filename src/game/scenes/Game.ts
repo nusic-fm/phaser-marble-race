@@ -1042,6 +1042,9 @@ export default class Game extends Phaser.Scene {
                 (y) => y < this.finishLineOffset
             );
             const largest = Math.max(...unFinishedPositions);
+            const secondLargest = Math.max(
+                ...unFinishedPositions.filter((p) => p !== largest)
+            );
             const index = voicesPositions.findIndex((v) => v === largest);
             // if (largest > this.finishLineOffset) {
             //     // Find 2nd largest
@@ -1052,7 +1055,11 @@ export default class Game extends Phaser.Scene {
             //     );
             // }
             if (index === -1) return;
-            if (this.prevVoiceIdx !== index) this.throttledUpdate(index);
+            if (
+                this.prevVoiceIdx !== index &&
+                largest > secondLargest + this.marbleRadius
+            )
+                this.throttledUpdate(index);
             if (this.autoScroll) {
                 this.cameras.main.scrollY = largest - 300;
             }
