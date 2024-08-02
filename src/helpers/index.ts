@@ -43,6 +43,22 @@ export const formatDuration = (value: number) => {
         secondLeft < 10 ? `0${secondLeft.toFixed(0)}` : secondLeft.toFixed(0)
     }`;
 };
+
+export const formatSecondsTohr = (seconds: number) => {
+    // Calculate hours, minutes, and seconds
+    const hrs = Math.floor(seconds / 3600);
+    const mins = Math.floor((seconds % 3600) / 60);
+    const secs = seconds % 60;
+
+    // Format the time string
+    const formattedHours =
+        hrs > 0 ? `${hrs.toString().padStart(2, "0")}h:` : "";
+    const formattedMinutes = mins.toString().padStart(2, "0");
+    const formattedSeconds = secs.toString().padStart(2, "0");
+
+    return `${formattedHours}${formattedMinutes}m:${formattedSeconds}s`;
+};
+
 // const isLink = (text: string) => {
 //     // Regular expression pattern to match URLs
 //     var urlPattern = /^(ftp|http|https):\/\/[^ "]+$/;

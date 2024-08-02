@@ -1,9 +1,11 @@
-import { Typography, useMediaQuery, useTheme } from "@mui/material";
+import { Button, Typography, useMediaQuery, useTheme } from "@mui/material";
 import { Stack } from "@mui/system";
+import AccountBalanceWalletOutlinedIcon from "@mui/icons-material/AccountBalanceWalletOutlined";
+import { Dispatch, SetStateAction } from "react";
 
-type Props = {};
+type Props = { setShowDashboard?: Dispatch<SetStateAction<boolean>> };
 
-const Header = ({}: Props) => {
+const Header = ({ setShowDashboard }: Props) => {
     const theme = useTheme();
     const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
 
@@ -27,11 +29,24 @@ const Header = ({}: Props) => {
             </Stack>
         );
     return (
-        <Stack direction="row" p={2}>
+        <Stack
+            direction="row"
+            p={2}
+            justifyContent="space-between"
+            alignItems={"center"}
+        >
             <Stack gap={1}>
                 <img src="nusic_white.png" height={40}></img>
                 <Typography align="center">AI Cover Races</Typography>
             </Stack>
+            <Button
+                variant="outlined"
+                color="secondary"
+                endIcon={<AccountBalanceWalletOutlinedIcon />}
+                onClick={() => setShowDashboard && setShowDashboard(true)}
+            >
+                Dashboard
+            </Button>
         </Stack>
     );
 };

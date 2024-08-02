@@ -2,6 +2,9 @@ import {
     Box,
     Button,
     Checkbox,
+    Dialog,
+    DialogContent,
+    Fab,
     IconButton,
     Slider,
     Stack,
@@ -25,7 +28,9 @@ import {
 } from "./services/storage/marbleRace.service";
 import LibraryMusicRoundedIcon from "@mui/icons-material/LibraryMusicRounded";
 import TuneIcon from "@mui/icons-material/Tune";
-import { createRandomNumber } from "./helpers";
+import { createRandomNumber, formatSecondsTohr } from "./helpers";
+import axios from "axios";
+import Close from "@mui/icons-material/Close";
 
 export const tracks = [
     "01",
@@ -80,6 +85,40 @@ function App() {
     const gamePageRef = useRef<HTMLDivElement>(null);
     const controlsPageRef = useRef<HTMLDivElement>(null);
     const [enableMotion, setEnableMotion] = useState(false);
+    const [showDashboard, setShowDashboard] = useState(false);
+    const [voiceId, setVoiceId] = useState("lana-del-rey");
+    const [analyticsObj, setAnalyticsObj] = useState<{
+        totalPlayTime: number;
+        averagePlayTime: number;
+    }>({
+        totalPlayTime: 0,
+        averagePlayTime: 0,
+    });
+
+    const fetchAnalytics = async () => {
+        try {
+            const res = await axios.post(
+                "https://api.nusic.kamu.dev/query",
+                {
+                    query: `select sum(end_time - start_time) as total_play_time, avg(end_time - start_time) as average_play_time from 'nusic/cover-playtimes' where voice_id = '${voiceId}'`,
+                },
+                {
+                    headers: {
+                        Authorization: import.meta.env.VITE_KAMU_AUTH_TOKEN,
+                    },
+                }
+            );
+            const obj = res.data.data[0];
+            if (obj) {
+                setAnalyticsObj({
+                    totalPlayTime: obj.total_play_time,
+                    averagePlayTime: obj.average_play_time,
+                });
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    };
 
     const fetchCoverDoc = async (coverDocId: string, _coverDoc: CoverV1) => {
         if (ready) {
@@ -109,6 +148,7 @@ function App() {
                 )}${v.id}_200x200?alt=media`,
             }))
         );
+        fetchAnalytics();
     };
 
     const downloadAndPlay = async () => {
@@ -547,7 +587,7 @@ function App() {
     }
     return (
         <Stack id="app" gap={2} sx={{ width: "100%", height: "100vh" }}>
-            <Header />
+            <Header setShowDashboard={setShowDashboard} />
             <Box width={"100%"} display="flex" gap={2}>
                 <Box height={`calc(100vh - 160px)`} width="40%">
                     <Rows onCoverSelection={fetchCoverDoc} />
@@ -805,6 +845,135 @@ function App() {
                     </Box>
                 </Stack>
             </Box>
+            <Dialog open={showDashboard} fullWidth maxWidth="xl">
+                <DialogContent>
+                    <Box position={"absolute"} top={0} right={0}>
+                        <Fab
+                            size="small"
+                            onClick={() => setShowDashboard(false)}
+                        >
+                            <Close />
+                        </Fab>
+                    </Box>
+                    <Box>
+                        <Box
+                            height={200}
+                            // border="1px solid"
+                            width={"100%"}
+                            sx={{
+                                // backdropFilter: "blue(40px)",
+                                backgroundColor: "#c3c3c3",
+                                borderRadius: 4,
+                            }}
+                        ></Box>
+                        <Stack alignItems={"center"} mt="-100px">
+                            <Box
+                                width={200}
+                                height={200}
+                                borderRadius="50%"
+                                border={"2px solid"}
+                                sx={{
+                                    background: `url(https://voxaudio.nusic.fm/${encodeURIComponent(
+                                        "voice_models/avatars/thumbs/"
+                                    )}${voiceId}_200x200?alt=media)`,
+                                }}
+                            ></Box>
+                            <Typography mt={2} textTransform="capitalize">
+                                {voiceId.replace(/[-]/g, " ")}
+                            </Typography>
+                            <Stack direction={"row"} gap={2} mt={2}>
+                                <Stack
+                                    p={2}
+                                    width={200}
+                                    height={80}
+                                    border="2px solid"
+                                    borderRadius={6}
+                                    justifyContent="space-between"
+                                >
+                                    <Typography>Total Play Time</Typography>
+                                    <Typography variant="h5">
+                                        {formatSecondsTohr(
+                                            analyticsObj.totalPlayTime
+                                        )}
+                                    </Typography>
+                                </Stack>
+                                <Stack
+                                    p={2}
+                                    border="2px solid"
+                                    borderRadius={4}
+                                    width={200}
+                                    height={80}
+                                    justifyContent="space-between"
+                                    gap={1}
+                                >
+                                    <Typography>$NUSIC Accrued</Typography>
+                                    <Stack
+                                        direction={"row"}
+                                        gap={1}
+                                        alignItems="center"
+                                    >
+                                        <Typography variant="h4">
+                                            {analyticsObj.totalPlayTime}
+                                        </Typography>
+                                        <img src="coin.png" alt="" width={50} />
+                                    </Stack>
+                                </Stack>
+                                <Stack
+                                    p={2}
+                                    border="2ps solid"
+                                    borderRadius={4}
+                                    gap={1}
+                                >
+                                    <Typography
+                                        align="center"
+                                        variant="subtitle2"
+                                        color={"#c3c3c3"}
+                                    >
+                                        Voice Owner
+                                    </Typography>
+                                    <Button variant="contained" size="large">
+                                        Withdraw
+                                    </Button>
+                                    <Typography align="center">
+                                        Convert AI Cover earnings to USD now
+                                    </Typography>
+                                </Stack>
+                                <Stack
+                                    p={2}
+                                    border="2px solid"
+                                    borderRadius={4}
+                                    gap={1}
+                                    width={200}
+                                    height={80}
+                                    justifyContent="space-between"
+                                >
+                                    <Typography>Average Play Time</Typography>
+                                    <Typography variant="h5" mt={2}>
+                                        {analyticsObj.averagePlayTime.toFixed(
+                                            1
+                                        )}
+                                        s
+                                    </Typography>
+                                </Stack>
+                                <Stack
+                                    p={2}
+                                    border="2px solid"
+                                    borderRadius={4}
+                                    gap={1}
+                                    width={200}
+                                    height={80}
+                                    justifyContent="space-between"
+                                >
+                                    <Typography>Voice Likes</Typography>
+                                    <Typography variant="h5" mt={2}>
+                                        21
+                                    </Typography>
+                                </Stack>
+                            </Stack>
+                        </Stack>
+                    </Box>
+                </DialogContent>
+            </Dialog>
         </Stack>
     );
 }
