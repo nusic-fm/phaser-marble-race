@@ -57,14 +57,16 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
             </Box>
             <Stack
                 direction="row"
-                gap={1}
+                gap={2}
                 width={isMobileView ? "100%" : 460}
                 justifyContent="start"
+                sx={{ overflowX: "auto" }}
             >
                 {selectedTracksList.map((trackPath) => (
                     <Box
                         key={trackPath}
                         position="relative"
+                        minWidth={80}
                         width={80}
                         height={142}
                     >

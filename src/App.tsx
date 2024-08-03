@@ -503,7 +503,7 @@ function App() {
                                         voices={coverDoc.voices}
                                     />
                                 )}
-                                <Typography>Choose a Skin</Typography>
+                                <Typography p={1}>Choose a Skin</Typography>
                                 <Stack
                                     direction="row"
                                     gap={2}
@@ -534,6 +534,7 @@ function App() {
                                     ))}
                                 </Stack>
                                 <Stack direction={"row"} alignItems="center">
+                                    <Typography>Choose a Background</Typography>
                                     <Checkbox
                                         checked={enableMotion}
                                         color="secondary"
