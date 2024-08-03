@@ -15,7 +15,7 @@ export default class Game extends Phaser.Scene {
         this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
         this.throttledBgMoving = _.throttle(
             this.throttledBgMoving.bind(this),
-            1000
+            100
         ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
@@ -763,14 +763,14 @@ export default class Game extends Phaser.Scene {
     };
     applyTween = () => {
         // const duration = Phaser.Math.Between(1000, 1800);
-        const randomX = Phaser.Math.Between(-50, 50);
-        const randomY = Phaser.Math.Between(-50, 50);
+        const randomX = this.background.x - 0.2;
+        // const randomY = Phaser.Math.Between(-50, 50);
         this.tweens.add({
             targets: this.background,
-            x: this.centerX + randomX,
-            y: this.centerY + randomY,
+            x: randomX,
+            y: this.centerY,
             ease: "Sine.easeInOut",
-            duration: 2000, // Adjust duration for speed of motion
+            duration: 10, // Adjust duration for speed of motion
             yoyo: true,
             repeat: -1,
             // onComplete: applyTween, // Repeat the tween indefinitely
@@ -781,15 +781,16 @@ export default class Game extends Phaser.Scene {
     create() {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
-        const centerY = this.cameras.main.height / 2;
+        // const centerY = this.cameras.main.height / 2;
         this.background = this.add
-            .image(centerX, centerY, "background")
+            .image(0, 0, "background")
+            .setOrigin(0, 0.5)
             .setScrollFactor(0);
         if (!this.enableMotion) {
-            this.background.setDisplaySize(
-                this.cameras.main.width,
-                this.cameras.main.height
-            );
+            // this.background.setDisplaySize(
+            //     this.cameras.main.width,
+            //     this.cameras.main.height
+            // );
         } else {
             this.add
                 .image(this.centerX, this.centerY, "center_logo")
@@ -952,7 +953,7 @@ export default class Game extends Phaser.Scene {
         ).then(() => (this.isInstrumentPlaying = true));
     }
     update(time: number, delta: number): void {
-        if (this.enableMotion) this.throttledBgMoving();
+        if (this.enableMotion) this.applyTween();
         if (this.marbles.length) {
             if (this.isRotating) {
                 // Update the base angle to create the circular motion

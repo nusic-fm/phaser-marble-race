@@ -42,8 +42,8 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
     }, [selectedTracksList]);
 
     return (
-        <Stack gap={1}>
-            <Box display={"flex"} gap={2} alignItems={"center"}>
+        <Stack>
+            <Box display={"flex"} gap={2} alignItems={"center"} py={1}>
                 <Typography>Choose Racetracks</Typography>
                 <Button
                     size="small"
@@ -58,8 +58,11 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
             <Stack
                 direction="row"
                 gap={2}
-                width={isMobileView ? "100%" : 460}
+                px={1}
+                width={"90%"}
+                height="180px"
                 justifyContent="start"
+                alignItems={"center"}
                 sx={{ overflowX: "auto" }}
             >
                 {selectedTracksList.map((trackPath) => (
@@ -108,7 +111,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                         )}
                     </Box>
                 ))}
-                <Box width={64} height={142} px={1}>
+                <Box minWidth={64} width={64} height={142}>
                     <Box
                         width={"100%"}
                         height={"100%"}
@@ -146,6 +149,7 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
                                     src={`https://voxaudio.nusic.fm/marble_race%2Ftracks_preview%2F${t}.png?alt=media`}
                                     style={{
                                         width: 80,
+                                        minWidth: 80,
                                         height: 142,
                                         cursor: "pointer",
                                         objectFit: "cover",
