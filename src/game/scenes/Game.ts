@@ -13,10 +13,6 @@ export default class Game extends Phaser.Scene {
     constructor() {
         super("game");
         this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
-        this.throttledBgMoving = _.throttle(
-            this.throttledBgMoving.bind(this),
-            100
-        ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
     public marbles: MatterJS.BodyType[] = [];
@@ -72,7 +68,7 @@ export default class Game extends Phaser.Scene {
     countdownText: Phaser.GameObjects.Text | undefined;
     finishLineOffset: number = 0;
     marbleRadius = 23;
-    background: Phaser.GameObjects.Image;
+    background: Phaser.GameObjects.TileSprite;
     enableMotion: boolean = false;
 
     init(data: IGameDataParams) {
@@ -96,9 +92,6 @@ export default class Game extends Phaser.Scene {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
         marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
-    }
-    throttledBgMoving() {
-        this.applyTween();
     }
 
     createTextureMask = (
@@ -761,39 +754,40 @@ export default class Game extends Phaser.Scene {
             // this.trailsGroup[i].clear(true, true);
         }
     };
-    applyTween = () => {
-        // const duration = Phaser.Math.Between(1000, 1800);
-        const randomX = this.background.x - 0.2;
-        // const randomY = Phaser.Math.Between(-50, 50);
-        this.tweens.add({
-            targets: this.background,
-            x: randomX,
-            y: this.centerY,
-            ease: "Sine.easeInOut",
-            duration: 10, // Adjust duration for speed of motion
-            yoyo: true,
-            repeat: -1,
-            // onComplete: applyTween, // Repeat the tween indefinitely
-            // onCompleteScope: this,
-        });
-    };
 
     create() {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         if (!this.enableMotion) {
             const centerY = this.cameras.main.height / 2;
-            this.background = this.add
+            const bg = this.add
                 .image(centerX, centerY, "background")
                 .setScrollFactor(0);
-            this.background.setDisplaySize(
+            bg.setDisplaySize(
                 this.cameras.main.width,
                 this.cameras.main.height
             );
         } else {
+            // this.background = this.add.image(0, 0, "background");
+
+            // // Set the origin to the top-left corner
+            // this.background.setOrigin(0, 0);
+
+            // // Scale the background image to fit the game width
+            // let scaleX = this.cameras.main.width / this.background.width;
+            // let scaleY = this.cameras.main.height / this.background.height;
+            // let scale = Math.max(scaleX, scaleY);
+            // this.background.setScale(scale).setScrollFactor(0);
             this.background = this.add
-                .image(0, 0, "background")
-                .setOrigin(0, 0.5)
+                .tileSprite(
+                    0,
+                    0,
+                    this.cameras.main.width,
+                    this.cameras.main.height,
+                    "background"
+                )
+                // .setScale(scale)
+                .setOrigin(0, 0)
                 .setScrollFactor(0);
             this.add
                 .image(this.centerX, this.centerY, "center_logo")
@@ -956,7 +950,8 @@ export default class Game extends Phaser.Scene {
         ).then(() => (this.isInstrumentPlaying = true));
     }
     update(time: number, delta: number): void {
-        if (this.enableMotion) this.applyTween();
+        if (this.enableMotion && !this.isRotating)
+            this.background.tilePositionX += 0.08;
         if (this.marbles.length) {
             if (this.isRotating) {
                 // Update the base angle to create the circular motion
