@@ -781,17 +781,20 @@ export default class Game extends Phaser.Scene {
     create() {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
-        // const centerY = this.cameras.main.height / 2;
-        this.background = this.add
-            .image(0, 0, "background")
-            .setOrigin(0, 0.5)
-            .setScrollFactor(0);
         if (!this.enableMotion) {
-            // this.background.setDisplaySize(
-            //     this.cameras.main.width,
-            //     this.cameras.main.height
-            // );
+            const centerY = this.cameras.main.height / 2;
+            this.background = this.add
+                .image(centerX, centerY, "background")
+                .setScrollFactor(0);
+            this.background.setDisplaySize(
+                this.cameras.main.width,
+                this.cameras.main.height
+            );
         } else {
+            this.background = this.add
+                .image(0, 0, "background")
+                .setOrigin(0, 0.5)
+                .setScrollFactor(0);
             this.add
                 .image(this.centerX, this.centerY, "center_logo")
                 .setDisplaySize(254, 84)
