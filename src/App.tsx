@@ -54,6 +54,7 @@ function App() {
     const [selectedCoverDocId, setSelectedCoverDocId] = useState<string>("");
     const [skinPaths, setSkinPaths] = useState<string[]>([]);
     const [bgPaths, setBgPaths] = useState<string[]>([]);
+    const [motionBgPaths, setMotionBgPaths] = useState<string[]>([]);
     const [selectedSkinPath, setSelectedSkinPath] = useState<string>("");
     const [selectedBackground, setSelectedBackground] = useState<string>("");
     const [selectedTracksList, setSelectedTracksList] = useState<string[]>(
@@ -208,11 +209,15 @@ function App() {
             setSkinPaths(paths);
         })();
         (async () => {
-            const paths = await listAllTrackBackgrounds();
+            const [motionBgPaths, nonMotionBgPaths] =
+                await listAllTrackBackgrounds();
             setSelectedBackground(
-                paths[createRandomNumber(0, paths.length - 1)]
+                nonMotionBgPaths[
+                    createRandomNumber(0, nonMotionBgPaths.length - 1)
+                ]
             );
-            setBgPaths(paths);
+            setBgPaths(nonMotionBgPaths);
+            setMotionBgPaths(motionBgPaths);
         })();
     }, []);
 
@@ -533,16 +538,20 @@ function App() {
                                         />
                                     ))}
                                 </Stack>
-                                <Stack direction={"row"} alignItems="center">
+                                <Stack
+                                    direction={"row"}
+                                    alignItems="center"
+                                    py={1}
+                                >
                                     <Typography>Choose a Background</Typography>
-                                    <Checkbox
+                                    {/* <Checkbox
                                         checked={enableMotion}
                                         color="secondary"
                                         onChange={(e, checked) =>
                                             setEnableMotion(checked)
                                         }
                                     />
-                                    <Typography>Motion</Typography>
+                                    <Typography>Motion</Typography> */}
                                 </Stack>
                                 <Stack
                                     direction="row"
@@ -567,9 +576,32 @@ function App() {
                                                         : "none",
                                                 cursor: "pointer",
                                             }}
-                                            onClick={() =>
-                                                setSelectedBackground(path)
-                                            }
+                                            onClick={() => {
+                                                setSelectedBackground(path);
+                                                setEnableMotion(false);
+                                            }}
+                                        />
+                                    ))}
+                                    {motionBgPaths.map((path) => (
+                                        <img
+                                            key={path}
+                                            src={path}
+                                            alt={path}
+                                            style={{
+                                                width: 80,
+                                                height: 140,
+                                                borderRadius: 10,
+                                                outline:
+                                                    path === selectedBackground
+                                                        ? "2px solid #fff"
+                                                        : "none",
+                                                cursor: "pointer",
+                                                objectFit: "contain",
+                                            }}
+                                            onClick={() => {
+                                                setSelectedBackground(path);
+                                                setEnableMotion(true);
+                                            }}
                                         />
                                     ))}
                                 </Stack>
@@ -799,9 +831,14 @@ function App() {
                                 />
                             ))}
                         </Stack>
-                        <Stack direction="row" gap={2} alignItems="center">
+                        <Stack
+                            direction="row"
+                            gap={2}
+                            alignItems="center"
+                            py={1}
+                        >
                             <Typography>Choose a Background</Typography>
-                            <Stack direction={"row"} alignItems="center">
+                            {/* <Stack direction={"row"} alignItems="center">
                                 <Checkbox
                                     checked={enableMotion}
                                     color="secondary"
@@ -810,7 +847,7 @@ function App() {
                                     }
                                 />
                                 <Typography>Motion</Typography>
-                            </Stack>
+                            </Stack> */}
                         </Stack>
                         <Stack
                             direction="row"
@@ -835,7 +872,32 @@ function App() {
                                                 : "none",
                                         cursor: "pointer",
                                     }}
-                                    onClick={() => setSelectedBackground(path)}
+                                    onClick={() => {
+                                        setSelectedBackground(path);
+                                        setEnableMotion(false);
+                                    }}
+                                />
+                            ))}
+                            {motionBgPaths.map((path) => (
+                                <img
+                                    key={path}
+                                    src={path}
+                                    alt={path}
+                                    style={{
+                                        width: 80,
+                                        height: 140,
+                                        borderRadius: 10,
+                                        outline:
+                                            path === selectedBackground
+                                                ? "2px solid #fff"
+                                                : "none",
+                                        cursor: "pointer",
+                                        objectFit: "contain",
+                                    }}
+                                    onClick={() => {
+                                        setSelectedBackground(path);
+                                        setEnableMotion(true);
+                                    }}
                                 />
                             ))}
                         </Stack>
