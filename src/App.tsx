@@ -925,8 +925,12 @@ function App() {
                             width={"100%"}
                             sx={{
                                 // backdropFilter: "blue(40px)",
-                                backgroundColor: "#c3c3c3",
+                                // backgroundColor: "#c3c3c3",
                                 borderRadius: 4,
+                                background: `url(https://voxaudio.nusic.fm/${encodeURIComponent(
+                                    "voice_models/banners/"
+                                )}${voiceId}.png?alt=media)`,
+                                backgroundSize: "contain",
                             }}
                         ></Box>
                         <Stack alignItems={"center"} mt="-100px">
