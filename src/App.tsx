@@ -25,6 +25,7 @@ import { CoverV1 } from "./services/db/coversV1.service";
 import {
     listAllTrackBackgrounds,
     listAllTrackSkins,
+    listAllTrails,
 } from "./services/storage/marbleRace.service";
 import LibraryMusicRoundedIcon from "@mui/icons-material/LibraryMusicRounded";
 import TuneIcon from "@mui/icons-material/Tune";
@@ -56,6 +57,8 @@ function App() {
     const [bgPaths, setBgPaths] = useState<string[]>([]);
     const [motionBgPaths, setMotionBgPaths] = useState<string[]>([]);
     const [selectedSkinPath, setSelectedSkinPath] = useState<string>("");
+    const [trailPaths, setTrailPaths] = useState<string[]>([]);
+    const [selectedTrailPath, setSelectedTrailPath] = useState<string>("");
     const [selectedBackground, setSelectedBackground] = useState<string>("");
     const [selectedTracksList, setSelectedTracksList] = useState<string[]>(
         () => {
@@ -219,6 +222,13 @@ function App() {
             setBgPaths(nonMotionBgPaths);
             setMotionBgPaths(motionBgPaths);
         })();
+        (async () => {
+            const _trailsPath = await listAllTrails();
+            setSelectedTrailPath(
+                _trailsPath[createRandomNumber(0, _trailsPath.length - 1)]
+            );
+            setTrailPaths(_trailsPath);
+        })();
     }, []);
 
     if (isMobileView) {
@@ -310,6 +320,7 @@ function App() {
                                             gravityY={marbleSpeed}
                                             width={canvasElemWidth}
                                             enableMotion={enableMotion}
+                                            trailPath={selectedTrailPath}
                                         />
                                     ) : (
                                         <Stack
@@ -393,6 +404,7 @@ function App() {
                                 left={"50%"}
                                 bottom={0}
                                 sx={{ transform: "translate(-50%, -50%)" }}
+                                zIndex={1}
                             >
                                 <Button
                                     color="error"
@@ -611,6 +623,37 @@ function App() {
                                     }
                                     selectedTracksList={selectedTracksList}
                                 />
+
+                                <Typography mt={1}>Choose a Trail</Typography>
+                                <Stack
+                                    direction="row"
+                                    gap={2}
+                                    width={"90%"}
+                                    sx={{ overflowX: "auto" }}
+                                    justifyContent="start"
+                                    p={1}
+                                >
+                                    {trailPaths.map((path) => (
+                                        <img
+                                            key={path}
+                                            src={path}
+                                            alt={path}
+                                            style={{
+                                                width: 46,
+                                                height: 46,
+                                                borderRadius: 2,
+                                                outline:
+                                                    path === selectedTrailPath
+                                                        ? "2px solid #fff"
+                                                        : "none",
+                                                cursor: "pointer",
+                                            }}
+                                            onClick={() =>
+                                                setSelectedTrailPath(path)
+                                            }
+                                        />
+                                    ))}
+                                </Stack>
                             </Box>
                         </Stack>
                     </Box>
@@ -664,6 +707,7 @@ function App() {
                                 gravityY={marbleSpeed}
                                 width={canvasElemWidth}
                                 enableMotion={enableMotion}
+                                trailPath={selectedTrailPath}
                             />
                         ) : (
                             <Stack
@@ -711,7 +755,7 @@ function App() {
                 >
                     <Typography align="center">Controls</Typography>
                     {ready && (
-                        <Box position={"absolute"} left={0}>
+                        <Box position={"absolute"} left={0} zIndex={1}>
                             <Button
                                 color="error"
                                 variant="contained"
@@ -905,6 +949,34 @@ function App() {
                             setSelectedTracksList={setSelectedTracksList}
                             selectedTracksList={selectedTracksList}
                         />
+                        <Typography mt={1}>Choose a Trail</Typography>
+                        <Stack
+                            direction="row"
+                            gap={2}
+                            width={"90%"}
+                            sx={{ overflowX: "auto" }}
+                            justifyContent="start"
+                            p={1}
+                        >
+                            {trailPaths.map((path) => (
+                                <img
+                                    key={path}
+                                    src={path}
+                                    alt={path}
+                                    style={{
+                                        width: 46,
+                                        height: 46,
+                                        borderRadius: 2,
+                                        outline:
+                                            path === selectedTrailPath
+                                                ? "2px solid #fff"
+                                                : "none",
+                                        cursor: "pointer",
+                                    }}
+                                    onClick={() => setSelectedTrailPath(path)}
+                                />
+                            ))}
+                        </Stack>
                     </Box>
                 </Stack>
             </Box>

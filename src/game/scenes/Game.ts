@@ -42,9 +42,9 @@ export default class Game extends Phaser.Scene {
     public crossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
     public horizontalCrossRightRotation: Phaser.Physics.Matter.Sprite[] = [];
     public horizontalCrossLeftRotation: Phaser.Physics.Matter.Sprite[] = [];
-    public trails: { x: number; y: number }[][] = [];
-    public trailGraphics: Phaser.GameObjects.Graphics[] = [];
-    public trailsGroup: Phaser.GameObjects.Group[] = [];
+    // public trails: { x: number; y: number }[][] = [];
+    // public trailGraphics: Phaser.GameObjects.Graphics[] = [];
+    // public trailsGroup: Phaser.GameObjects.Group[] = [];
     public trailLength: number;
     public trailPoints: {
         x: number;
@@ -70,6 +70,14 @@ export default class Game extends Phaser.Scene {
     marbleRadius = 23;
     background: Phaser.GameObjects.TileSprite;
     enableMotion: boolean = false;
+    marbleTrailParticles: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
+    trailConfig = {
+        speed: { min: -50, max: 50 },
+        scale: { start: 1, end: 0.5 },
+        blendMode: "ADD",
+        lifespan: 400,
+        alpha: 0.5,
+    };
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
@@ -586,9 +594,17 @@ export default class Game extends Phaser.Scene {
                 }
             );
             this.marbles.push(circleBody);
-            this.trailsGroup.push(this.add.group());
-            this.trailGraphics.push(this.add.graphics());
-            this.trailPoints.push([]);
+            this.marbleTrailParticles.push(
+                this.add.particles(0, 0, "trail", {
+                    ...this.trailConfig,
+                    follow: circleBody.position,
+                })
+            );
+
+            // circleBody.emitter = emitter;
+            // this.trailsGroup.push(this.add.group());
+            // this.trailGraphics.push(this.add.graphics());
+            // this.trailPoints.push([]);
             // // Create an image and attach it to the circle body
             const circleImage = this.add.image(
                 circleBody.position.x,
@@ -696,64 +712,64 @@ export default class Game extends Phaser.Scene {
         this.increaseSizeScreenOffset.push(startOffset);
         return startOffset + 230;
     };
-    createTrails = (voiceSprite: MatterJS.BodyType, i: number) => {
-        const velocity = Math.sqrt(
-            voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
-        );
-        // If velocity is zero, do not draw the trail
-        if (velocity > 0) {
-            // Calculate the position directly behind the circle relative to its velocity vector
-            // const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
-            // const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
-            const trailX = voiceSprite.position.x;
-            const trailY = voiceSprite.position.y;
-            //     // Calculate the angle of the trail image
-            const angle =
-                Math.atan2(voiceSprite.velocity.y, voiceSprite.velocity.x) *
-                (180 / Math.PI);
-            // Add the current trail position to the trail points array
-            this.trailPoints[i].push({
-                x: trailX,
-                y: trailY,
-                angle,
-            });
-            // Adjust trail length based on velocity
-            this.trailLength = Phaser.Math.Clamp(
-                velocity * 2,
-                10,
-                this.isRotating ? 20 : 100
-            );
-            // Limit the number of points in the trail to the trail length
-            if (this.trailPoints[i].length > this.trailLength) {
-                this.trailPoints[i].shift();
-            }
-            // Clear the previous trail
-            this.trailGraphics[i].clear();
-            //     this.trailsGroup[i].clear(true, true);
-            //     // Draw the trail
-            for (let j = 0; j < this.trailPoints[i].length; j++) {
-                const point = this.trailPoints[i][j];
-                const alpha = (j + 0.01) / this.trailPoints[i].length; // Gradually decrease alpha
-                this.trailGraphics[i].fillStyle(0x0cffffff, alpha * 0.2);
-                // this.trailGraphics.fillCircle(point.x, point.y, 20);
-                const trailRadius = this.heightReducedIndices.includes(i)
-                    ? 11
-                    : 22;
-                this.trailGraphics[i].fillRoundedRect(
-                    point.x - trailRadius,
-                    point.y - trailRadius,
-                    trailRadius * 2,
-                    trailRadius * 2,
-                    trailRadius
-                );
-                // .setAngle(point.angle);
-            }
-        } else {
-            // Clear the trail if velocity is zero
-            this.trailGraphics[i].clear();
-            // this.trailsGroup[i].clear(true, true);
-        }
-    };
+    // createTrails = (voiceSprite: MatterJS.BodyType, i: number) => {
+    //     const velocity = Math.sqrt(
+    //         voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
+    //     );
+    //     // If velocity is zero, do not draw the trail
+    //     if (velocity > 0) {
+    //         // Calculate the position directly behind the circle relative to its velocity vector
+    //         // const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
+    //         // const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
+    //         const trailX = voiceSprite.position.x;
+    //         const trailY = voiceSprite.position.y;
+    //         //     // Calculate the angle of the trail image
+    //         const angle =
+    //             Math.atan2(voiceSprite.velocity.y, voiceSprite.velocity.x) *
+    //             (180 / Math.PI);
+    //         // Add the current trail position to the trail points array
+    //         this.trailPoints[i].push({
+    //             x: trailX,
+    //             y: trailY,
+    //             angle,
+    //         });
+    //         // Adjust trail length based on velocity
+    //         this.trailLength = Phaser.Math.Clamp(
+    //             velocity * 2,
+    //             10,
+    //             this.isRotating ? 20 : 100
+    //         );
+    //         // Limit the number of points in the trail to the trail length
+    //         if (this.trailPoints[i].length > this.trailLength) {
+    //             this.trailPoints[i].shift();
+    //         }
+    //         // Clear the previous trail
+    //         this.trailGraphics[i].clear();
+    //         //     this.trailsGroup[i].clear(true, true);
+    //         //     // Draw the trail
+    //         for (let j = 0; j < this.trailPoints[i].length; j++) {
+    //             const point = this.trailPoints[i][j];
+    //             const alpha = (j + 0.01) / this.trailPoints[i].length; // Gradually decrease alpha
+    //             this.trailGraphics[i].fillStyle(0x0cffffff, alpha * 0.2);
+    //             // this.trailGraphics.fillCircle(point.x, point.y, 20);
+    //             const trailRadius = this.heightReducedIndices.includes(i)
+    //                 ? 11
+    //                 : 22;
+    //             this.trailGraphics[i].fillRoundedRect(
+    //                 point.x - trailRadius,
+    //                 point.y - trailRadius,
+    //                 trailRadius * 2,
+    //                 trailRadius * 2,
+    //                 trailRadius
+    //             );
+    //             // .setAngle(point.angle);
+    //         }
+    //     } else {
+    //         // Clear the trail if velocity is zero
+    //         this.trailGraphics[i].clear();
+    //         // this.trailsGroup[i].clear(true, true);
+    //     }
+    // };
 
     create() {
         // Center the background image
@@ -1014,6 +1030,7 @@ export default class Game extends Phaser.Scene {
                     this.marblesMasks[i].scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
+                    this.marbleTrailParticles[i].setConfig(this.trailConfig);
                 } else if (
                     this.heightReducedIndices.includes(i) === false &&
                     voiceBody.position.y >
@@ -1028,9 +1045,13 @@ export default class Game extends Phaser.Scene {
                         this.marbleRadius
                     );
                     this.marblesMasks[i].scale = 0.5;
+                    this.marbleTrailParticles[i].setConfig({
+                        ...this.trailConfig,
+                        scale: { start: 0.5, end: 0.01 },
+                    });
                 }
                 // }
-                this.createTrails(voiceBody, i);
+                // this.createTrails(voiceBody, i);
             });
         }
         this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));

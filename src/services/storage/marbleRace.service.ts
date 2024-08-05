@@ -37,3 +37,13 @@ export const listAllTrackBackgrounds = async (): Promise<string[][]> => {
     ];
 };
 
+export const listAllTrails = async (): Promise<string[]> => {
+    const folderRef = ref(storage, "marble_race/trails");
+    const listResult = await listAll(folderRef);
+    return listResult.items.map(
+        (item) =>
+            `https://voxaudio.nusic.fm/${encodeURIComponent(
+                item.fullPath
+            )}?alt=media`
+    );
+};

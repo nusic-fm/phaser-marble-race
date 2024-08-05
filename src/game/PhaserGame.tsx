@@ -18,6 +18,7 @@ export interface IGameDataParams {
     gravityY: number;
     width: number;
     enableMotion: boolean;
+    trailPath: string;
 }
 
 interface IProps extends IGameDataParams {
@@ -37,6 +38,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             gravityY,
             width,
             enableMotion,
+            trailPath,
         },
         ref
     ) {
@@ -55,6 +57,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                     gravityY,
                     width,
                     enableMotion,
+                    trailPath,
                 });
 
                 if (typeof ref === "function") {
