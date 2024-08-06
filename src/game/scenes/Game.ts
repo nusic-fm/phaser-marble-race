@@ -200,12 +200,6 @@ export default class Game extends Phaser.Scene {
                 }
             )
         );
-        this.crossLeftRotation.map((baseSprite) =>
-            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
-        this.crossRightRotation.map((baseSprite) =>
-            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
         return startOffset + 250;
     };
     createSeesawScreen = (
@@ -374,10 +368,6 @@ export default class Game extends Phaser.Scene {
                     isStatic: true,
                 })
                 .setAngle(35)
-        );
-        [...this.leftRotatableStars, ...this.rightRotatableStars].map(
-            (baseSprite) =>
-                this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
         );
         return startOffset + 149;
     };
@@ -703,12 +693,6 @@ export default class Game extends Phaser.Scene {
             );
             rightOffset -= 80;
         });
-        [
-            ...this.horizontalCrossLeftRotation,
-            ...this.horizontalCrossRightRotation,
-        ].map((baseSprite) =>
-            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
         this.increaseSizeScreenOffset.push(startOffset);
         return startOffset + 230;
     };
@@ -901,6 +885,22 @@ export default class Game extends Phaser.Scene {
         this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
 
         this.createMarbles(this.marbleRadius, miniShapes);
+        this.crossLeftRotation.map((baseSprite) =>
+            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
+        this.crossRightRotation.map((baseSprite) =>
+            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
+        [...this.leftRotatableStars, ...this.rightRotatableStars].map(
+            (baseSprite) =>
+                this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
+        [
+            ...this.horizontalCrossLeftRotation,
+            ...this.horizontalCrossRightRotation,
+        ].map((baseSprite) =>
+            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        );
 
         let coundownValue = 3;
         // Start Countdown:
