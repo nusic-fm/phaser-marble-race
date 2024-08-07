@@ -623,9 +623,10 @@ export default class Game extends Phaser.Scene {
                     fontSize: "32px",
                     color: "#ffffff",
                     stroke: "#000",
-                    strokeThickness: 10,
+                    strokeThickness: 4,
                 }
             );
+            label.setDepth(1);
             this.labels.push(label);
         });
         this.countdownText = this.add
@@ -1011,8 +1012,8 @@ export default class Game extends Phaser.Scene {
                 // this.marblesMasks[i].setRotation(voiceBody.angle);
 
                 this.labels[i]?.setPosition(
-                    voiceBody.position.x - 100,
-                    voiceBody.position.y - 80
+                    voiceBody.position.x - this.labels[i].width / 2,
+                    voiceBody.position.y - 60
                 );
                 const currentCrossIndex =
                     this.currentMarblesSizeIndices[i.toString()];
