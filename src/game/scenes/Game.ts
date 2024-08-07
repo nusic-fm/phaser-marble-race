@@ -145,14 +145,14 @@ export default class Game extends Phaser.Scene {
         );
         startOffset += 151 + 40;
         this.crossLeftRotation.push(
-            this.matter.add.sprite(138, startOffset, "02_cross", undefined, {
+            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
                 shape: miniShapes["02"],
                 isStatic: true,
             })
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 120,
+                canvasWidth - 126,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -190,7 +190,7 @@ export default class Game extends Phaser.Scene {
         );
         this.crossRightRotation.push(
             this.matter.add.sprite(
-                canvasWidth - 150,
+                canvasWidth - 126,
                 startOffset,
                 "02_cross",
                 undefined,
@@ -397,10 +397,16 @@ export default class Game extends Phaser.Scene {
         this.reduceSizeScreenOffset.push(startOffset);
         const yOffset = startOffset + 833 / 2;
         const baseSprite = this.matter.add
-            .sprite(xOffset, yOffset, "prod_texture_loaded_16", undefined, {
-                shape: prodShapes["16"],
-                isStatic: true,
-            })
+            .sprite(
+                xOffset + 3.5,
+                yOffset,
+                "prod_texture_loaded_16",
+                undefined,
+                {
+                    shape: prodShapes["16"],
+                    isStatic: true,
+                }
+            )
             .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         startOffset += 800;
@@ -1055,8 +1061,14 @@ export default class Game extends Phaser.Scene {
                 // this.createTrails(voiceBody, i);
             });
         }
-        this.crossRightRotation.map((c) => c.setAngle(c.angle + 2));
-        this.crossLeftRotation.map((c) => c.setAngle(c.angle - 2));
+        this.crossRightRotation.map((c) => {
+            c.setAngle(c.angle + 2);
+            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+        });
+        this.crossLeftRotation.map((c) => {
+            c.setAngle(c.angle - 2);
+            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+        });
         if (this.isInstrumentPlaying && this.isRotating === false) {
             const voicesPositions = this.marbles.map((m) => m.position.y);
             const unFinishedPositions = voicesPositions.filter(
