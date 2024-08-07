@@ -94,6 +94,9 @@ export default class Game extends Phaser.Scene {
 
         this.centerX = this.cameras.main.width / 2;
         this.centerY = this.cameras.main.height / 2;
+        this.trailConfig.scale.end = data.trailEndSize;
+        this.trailConfig.lifespan = data.trailsLifeSpace;
+        this.trailConfig.alpha = data.trailsOpacity;
     }
 
     throttledUpdate(index: number) {

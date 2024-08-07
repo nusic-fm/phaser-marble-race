@@ -98,6 +98,9 @@ function App() {
         totalPlayTime: 0,
         averagePlayTime: 0,
     });
+    const [trailsLifeSpace, setTrailsLifeSpan] = useState(400);
+    const [trailsOpacity, setTrailsOpacity] = useState(0.5);
+    const [trailEndSize, setTrailEndSize] = useState(0.5);
 
     const fetchAnalytics = async () => {
         try {
@@ -321,6 +324,9 @@ function App() {
                                             width={canvasElemWidth}
                                             enableMotion={enableMotion}
                                             trailPath={selectedTrailPath}
+                                            trailsLifeSpace={trailsLifeSpace}
+                                            trailEndSize={trailEndSize}
+                                            trailsOpacity={trailsOpacity}
                                         />
                                     ) : (
                                         <Stack
@@ -654,6 +660,66 @@ function App() {
                                         />
                                     ))}
                                 </Stack>
+                                <Stack
+                                    gap={2}
+                                    direction="row"
+                                    alignItems={"center"}
+                                    my={1}
+                                >
+                                    <Typography>Trails Length</Typography>
+                                    <Slider
+                                        sx={{ width: 200 }}
+                                        min={0}
+                                        step={100}
+                                        max={2000}
+                                        value={trailsLifeSpace}
+                                        onChange={(_, val) =>
+                                            setTrailsLifeSpan(val as number)
+                                        }
+                                        marks
+                                        valueLabelDisplay="auto"
+                                    />
+                                </Stack>
+                                <Stack
+                                    gap={2}
+                                    direction="row"
+                                    alignItems={"center"}
+                                    my={1}
+                                >
+                                    <Typography>Trails Transparancy</Typography>
+                                    <Slider
+                                        sx={{ width: 200 }}
+                                        min={0}
+                                        step={0.1}
+                                        max={1}
+                                        value={trailsOpacity}
+                                        onChange={(_, val) =>
+                                            setTrailsOpacity(val as number)
+                                        }
+                                        marks
+                                        valueLabelDisplay="auto"
+                                    />
+                                </Stack>
+                                <Stack
+                                    gap={2}
+                                    direction="row"
+                                    alignItems={"center"}
+                                    my={1}
+                                >
+                                    <Typography>Trails End Size</Typography>
+                                    <Slider
+                                        sx={{ width: 200 }}
+                                        min={0}
+                                        step={0.1}
+                                        max={1}
+                                        value={trailEndSize}
+                                        onChange={(_, val) =>
+                                            setTrailEndSize(val as number)
+                                        }
+                                        marks
+                                        valueLabelDisplay="auto"
+                                    />
+                                </Stack>
                             </Box>
                         </Stack>
                     </Box>
@@ -708,6 +774,9 @@ function App() {
                                 width={canvasElemWidth}
                                 enableMotion={enableMotion}
                                 trailPath={selectedTrailPath}
+                                trailsLifeSpace={trailsLifeSpace}
+                                trailEndSize={trailEndSize}
+                                trailsOpacity={trailsOpacity}
                             />
                         ) : (
                             <Stack
@@ -976,6 +1045,66 @@ function App() {
                                     onClick={() => setSelectedTrailPath(path)}
                                 />
                             ))}
+                        </Stack>
+                        <Stack
+                            gap={2}
+                            direction="row"
+                            alignItems={"center"}
+                            my={1}
+                        >
+                            <Typography>Trails Length</Typography>
+                            <Slider
+                                sx={{ width: 200 }}
+                                min={0}
+                                step={100}
+                                max={2000}
+                                value={trailsLifeSpace}
+                                onChange={(_, val) =>
+                                    setTrailsLifeSpan(val as number)
+                                }
+                                marks
+                                valueLabelDisplay="auto"
+                            />
+                        </Stack>
+                        <Stack
+                            gap={2}
+                            direction="row"
+                            alignItems={"center"}
+                            my={1}
+                        >
+                            <Typography>Trails Transparancy</Typography>
+                            <Slider
+                                sx={{ width: 200 }}
+                                min={0}
+                                step={0.1}
+                                max={1}
+                                value={trailsOpacity}
+                                onChange={(_, val) =>
+                                    setTrailsOpacity(val as number)
+                                }
+                                marks
+                                valueLabelDisplay="auto"
+                            />
+                        </Stack>
+                        <Stack
+                            gap={2}
+                            direction="row"
+                            alignItems={"center"}
+                            my={1}
+                        >
+                            <Typography>Trails End Size</Typography>
+                            <Slider
+                                sx={{ width: 200 }}
+                                min={0}
+                                step={0.1}
+                                max={1}
+                                value={trailEndSize}
+                                onChange={(_, val) =>
+                                    setTrailEndSize(val as number)
+                                }
+                                marks
+                                valueLabelDisplay="auto"
+                            />
                         </Stack>
                     </Box>
                 </Stack>
