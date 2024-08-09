@@ -158,8 +158,21 @@ function App() {
         fetchAnalytics();
     };
 
-    const downloadAndPlay = async () => {
+    const downloadAndPlay = async (_coverId?: string, _coverDoc?: CoverV1) => {
         if (isDownloading) return;
+        if (_coverId && _coverDoc) {
+            setSelectedCoverDocId(_coverId);
+            setCoverDoc(_coverDoc);
+            setSelectedVoices(
+                _coverDoc.voices.slice(0, 5).map((v) => ({
+                    id: v.id,
+                    name: v.name,
+                    avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
+                        "voice_models/avatars/thumbs/"
+                    )}${v.id}_200x200?alt=media`,
+                }))
+            );
+        }
         if (selectedVoices.length < 2) {
             alert("Select at least 2 voices");
             controlsPageRef.current?.scrollIntoView({
@@ -180,16 +193,23 @@ function App() {
             behavior: "smooth",
             block: "nearest",
         });
-        if (coverDoc && selectedCoverDocId) {
+        if ((_coverDoc || coverDoc) && (_coverId || selectedCoverDocId)) {
             setIsDownloading(true);
             await downloadAudioFiles(
                 [
-                    `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/instrumental.mp3`,
-                    ...selectedVoices
+                    `https://voxaudio.nusic.fm/covers/${
+                        _coverId || selectedCoverDocId
+                    }/instrumental.mp3`,
+                    ...(_coverDoc
+                        ? _coverDoc.voices.slice(0, 5)
+                        : selectedVoices
+                    )
                         .map((v) => v.id)
                         .map(
                             (v) =>
-                                `https://voxaudio.nusic.fm/covers/${selectedCoverDocId}/${v}.mp3`
+                                `https://voxaudio.nusic.fm/covers/${
+                                    _coverId || selectedCoverDocId
+                                }/${v}.mp3`
                         ),
                 ],
                 (progress: number) => {
@@ -375,9 +395,9 @@ function App() {
                                                         <LibraryMusicRoundedIcon />
                                                     </IconButton>
                                                     <Button
-                                                        onClick={
-                                                            downloadAndPlay
-                                                        }
+                                                        onClick={() => {
+                                                            downloadAndPlay();
+                                                        }}
                                                         variant="contained"
                                                         color="primary"
                                                         size="large"
@@ -805,7 +825,9 @@ function App() {
                                     />
                                 ) : (
                                     <Button
-                                        onClick={downloadAndPlay}
+                                        onClick={() => {
+                                            downloadAndPlay();
+                                        }}
                                         variant="contained"
                                         color="primary"
                                     >
@@ -1167,12 +1189,16 @@ function App() {
                                 </Stack>
                                 <Stack
                                     p={2}
-                                    border="2px solid"
+                                    border="2px solid white"
                                     borderRadius={4}
                                     width={200}
                                     height={80}
                                     justifyContent="space-between"
                                     gap={1}
+                                    sx={{ cursor: "pointer" }}
+                                    component="a"
+                                    target={"_blank"}
+                                    href="https://sepolia.basescan.org/address/0x8949D245A2002F7b7f4dc7E59ef0A4969f0D0750"
                                 >
                                     <Typography>$NUSIC Accrued</Typography>
                                     <Stack
