@@ -24,9 +24,9 @@ const SelectTracks = ({ selectedTracksList, setSelectedTracksList }: Props) => {
     const theme = useTheme();
     const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
 
-    const availableTracksToSelect = tracks.filter(
-        (t) => !Object.values(selectedTracksList).includes(t)
-    );
+    const availableTracksToSelect = tracks
+        .filter((t) => !Object.values(selectedTracksList).includes(t))
+        .filter((t) => (isMobileView ? t !== "11" : true));
 
     useEffect(() => {
         if (selectedTracksList.length === 0) {
