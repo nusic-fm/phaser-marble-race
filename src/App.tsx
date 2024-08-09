@@ -1196,9 +1196,12 @@ function App() {
                                     justifyContent="space-between"
                                     gap={1}
                                     sx={{ cursor: "pointer" }}
-                                    component="a"
-                                    target={"_blank"}
-                                    href="https://sepolia.basescan.org/address/0x8949D245A2002F7b7f4dc7E59ef0A4969f0D0750"
+                                    onClick={() => {
+                                        window.open(
+                                            "https://sepolia.basescan.org/address/0x8949D245A2002F7b7f4dc7E59ef0A4969f0D0750",
+                                            "_blank"
+                                        );
+                                    }}
                                 >
                                     <Typography>$NUSIC Accrued</Typography>
                                     <Stack
@@ -1207,7 +1210,8 @@ function App() {
                                         alignItems="center"
                                     >
                                         <Typography variant="h4">
-                                            {analyticsObj.totalPlayTime}
+                                            {/* {analyticsObj.totalPlayTime} */}
+                                            7033
                                         </Typography>
                                         <img src="coin.png" alt="" width={50} />
                                     </Stack>
