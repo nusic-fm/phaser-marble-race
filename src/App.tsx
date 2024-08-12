@@ -1198,7 +1198,7 @@ function App() {
                                     sx={{ cursor: "pointer" }}
                                     onClick={() => {
                                         window.open(
-                                            "https://sepolia.basescan.org/address/0x8949D245A2002F7b7f4dc7E59ef0A4969f0D0750",
+                                            "https://sepolia.basescan.org/address/0xc400d4ba3A3fA7fd94D0Af06Ac9A72bA66cc409e#readContract#F5",
                                             "_blank"
                                         );
                                     }}
