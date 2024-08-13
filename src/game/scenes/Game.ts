@@ -81,22 +81,21 @@ export default class Game extends Phaser.Scene {
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
-        this.voices = data.voices.sort(() => Math.random() - 0.5);
-        this.coverDocId = data.coverDocId;
-        this.musicStartOffset = data.musicStartOffset;
-        this.noOfRaceTracks = data.noOfRaceTracks;
-        this.selectedTracks = duplicateArrayElemToN(
-            data.selectedTracks,
-            this.noOfRaceTracks
-        );
-        this.marbleRadius = data.width >= 414 ? 23 : 20;
-        this.enableMotion = data.enableMotion;
-
-        this.centerX = this.cameras.main.width / 2;
-        this.centerY = this.cameras.main.height / 2;
-        this.trailConfig.scale.end = data.trailEndSize;
-        this.trailConfig.lifespan = data.trailsLifeSpace;
-        this.trailConfig.alpha = data.trailsOpacity;
+        // this.voices = data.voices.sort(() => Math.random() - 0.5);
+        // this.coverDocId = data.coverDocId;
+        // this.musicStartOffset = data.musicStartOffset;
+        // this.noOfRaceTracks = data.noOfRaceTracks;
+        // this.selectedTracks = duplicateArrayElemToN(
+        //     data.selectedTracks,
+        //     this.noOfRaceTracks
+        // );
+        // this.marbleRadius = data.width >= 414 ? 23 : 20;
+        // this.enableMotion = data.enableMotion;
+        // this.centerX = this.cameras.main.width / 2;
+        // this.centerY = this.cameras.main.height / 2;
+        // this.trailConfig.scale.end = data.trailEndSize;
+        // this.trailConfig.lifespan = data.trailsLifeSpace;
+        // this.trailConfig.alpha = data.trailsOpacity;
     }
 
     throttledUpdate(index: number) {
@@ -128,81 +127,117 @@ export default class Game extends Phaser.Scene {
     ) => {
         // TODO: Scale the sprite
         startOffset += 151;
-        this.crossRightRotation.push(
-            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+        const maskShape = this.matter.add.sprite(
+            100,
+            100,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 18,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
+        const mask = new Phaser.Display.Masks.BitmapMask(this, maskShape);
+
+        this.make.sprite({ key: "mask" }).setMask(mask);
+
+        const texture = this.textures.addDynamicTexture(
+            "maskedPic",
+            maskShape.width,
+            maskShape.height
         );
-        startOffset += 151 + 40;
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
-                shape: miniShapes["02"],
-                isStatic: true,
-            })
-        );
-        this.crossRightRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 126,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossRightRotation.push(
-            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
-                shape: miniShapes["02"],
-                isStatic: true,
-            })
-        );
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 18,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
-                shape: miniShapes["02"],
-                isStatic: true,
-            })
-        );
-        this.crossRightRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 126,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
+        texture?.draw(maskShape);
+        this.add.sprite(200, 200, "maskedPic");
+
+        // const pic = this.make.image({
+        //     key: "mask",
+        //     origin: { x: 0, y: 0 },
+        //     add: true,
+        // });
+
+        // pic.mask = new Phaser.Display.Masks.BitmapMask(this, maskShape);
+        // texture?.draw(pic);
+
+        // this.matter.add.sprite(200, 200, "maskedPic");
+        // this.matter.add.sprite(200, 200, "maskedPic", "", {
+        //     shape: miniShapes["02"],
+        //     isStatic: true,
+        // });
+
+        // .setOrigin(0, 0);
+
+        // this.crossRightRotation.push(
+
+        // );
+        // this.crossLeftRotation.push(
+        //     this.matter.add.sprite(
+        //         canvasWidth - 18,
+        //         startOffset,
+        //         "02_cross",
+        //         undefined,
+        //         {
+        //             shape: miniShapes["02"],
+        //             isStatic: true,
+        //         }
+        //     )
+        // );
+        // startOffset += 151 + 40;
+        // this.crossLeftRotation.push(
+        //     this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
+        //         shape: miniShapes["02"],
+        //         isStatic: true,
+        //     })
+        // );
+        // this.crossRightRotation.push(
+        //     this.matter.add.sprite(
+        //         canvasWidth - 126,
+        //         startOffset,
+        //         "02_cross",
+        //         undefined,
+        //         {
+        //             shape: miniShapes["02"],
+        //             isStatic: true,
+        //         }
+        //     )
+        // );
+        // startOffset += 151 + 40;
+        // this.crossRightRotation.push(
+        //     this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+        //         shape: miniShapes["02"],
+        //         isStatic: true,
+        //     })
+        // );
+        // this.crossLeftRotation.push(
+        //     this.matter.add.sprite(
+        //         canvasWidth - 18,
+        //         startOffset,
+        //         "02_cross",
+        //         undefined,
+        //         {
+        //             shape: miniShapes["02"],
+        //             isStatic: true,
+        //         }
+        //     )
+        // );
+        // startOffset += 151 + 40;
+        // this.crossLeftRotation.push(
+        //     this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
+        //         shape: miniShapes["02"],
+        //         isStatic: true,
+        //     })
+        // );
+        // this.crossRightRotation.push(
+        //     this.matter.add.sprite(
+        //         canvasWidth - 126,
+        //         startOffset,
+        //         "02_cross",
+        //         undefined,
+        //         {
+        //             shape: miniShapes["02"],
+        //             isStatic: true,
+        //         }
+        //     )
+        // );
         return startOffset + 250;
     };
     createSeesawScreen = (
@@ -768,382 +803,375 @@ export default class Game extends Phaser.Scene {
     create() {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
-        if (!this.enableMotion) {
-            const centerY = this.cameras.main.height / 2;
-            const bg = this.add
-                .image(centerX, centerY, "background")
-                .setScrollFactor(0);
-            bg.setDisplaySize(
-                this.cameras.main.width,
-                this.cameras.main.height
-            );
-        } else {
-            // this.background = this.add.image(0, 0, "background");
-
-            // // Set the origin to the top-left corner
-            // this.background.setOrigin(0, 0);
-
-            // // Scale the background image to fit the game width
-            // let scaleX = this.cameras.main.width / this.background.width;
-            // let scaleY = this.cameras.main.height / this.background.height;
-            // let scale = Math.max(scaleX, scaleY);
-            // this.background.setScale(scale).setScrollFactor(0);
-            this.background = this.add
-                .tileSprite(
-                    0,
-                    0,
-                    this.cameras.main.width,
-                    this.cameras.main.height,
-                    "background"
-                )
-                // .setScale(scale)
-                .setOrigin(0, 0)
-                .setScrollFactor(0);
-            this.add
-                .image(this.centerX, this.centerY, "center_logo")
-                .setDisplaySize(254, 84)
-                .setScrollFactor(0);
-        }
-
-        // Enable camera scrolling
-        const canvasWidth = this.cameras.main.width;
-
+        const centerY = this.cameras.main.height / 2;
+        // this.add.image(centerX, centerY, "background");
         var prodShapes = this.cache.json.get("prod_shapes");
         var miniShapes = this.cache.json.get("mini_shapes");
 
-        let startOffset = 800;
-        const xOffset = canvasWidth / 2;
-        this.selectedTracks.map((trackNo) => {
-            switch (trackNo) {
-                case "01":
-                    startOffset = this.createStaticCircles(
-                        xOffset,
-                        startOffset,
-                        prodShapes
-                    );
-                    break;
-                case "02":
-                    startOffset = this.createCrossScreen(
-                        startOffset,
-                        canvasWidth,
-                        miniShapes
-                    );
-                    break;
-                case "03":
-                    startOffset = this.createStaticTriangles(
-                        xOffset,
-                        startOffset,
-                        prodShapes
-                    );
-                    break;
-                case "06":
-                    startOffset = this.createSeesawScreen(
-                        xOffset,
-                        startOffset,
-                        prodShapes,
-                        miniShapes
-                    );
-                    break;
-                case "07":
-                    startOffset = this.createZigzagSlider(
-                        xOffset,
-                        startOffset,
-                        prodShapes
-                    );
-                    break;
-                case "11":
-                    startOffset = this.createStopperSlider(
-                        xOffset,
-                        startOffset,
-                        prodShapes
-                    );
-                    break;
-                case "14":
-                    startOffset = this.createStarRotations(
-                        startOffset,
-                        miniShapes
-                    );
-                    break;
-                case "16":
-                    startOffset = this.createReduceSizeSlider(
-                        xOffset,
-                        startOffset,
-                        prodShapes
-                    );
-                    break;
-                case "21":
-                    startOffset = this.createCircleBlockers(
-                        xOffset,
-                        startOffset,
-                        prodShapes
-                    );
-                    break;
-                case "22":
-                    startOffset = this.createHorizontalCrosses(
-                        canvasWidth,
-                        startOffset,
-                        miniShapes
-                    );
-                    break;
-            }
-        });
-        const finishOffset = startOffset + 250;
-        this.add.image(centerX, finishOffset, "finish_line").setScale(0.2);
-        this.finishLineOffset = finishOffset;
-        // .setDisplaySize(960, 40);
-        this.cameras.main.setBounds(0, 0, canvasWidth, finishOffset + 250);
-        this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
-
-        this.createMarbles(this.marbleRadius, miniShapes);
-        this.crossLeftRotation.map((baseSprite) =>
-            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
-        this.crossRightRotation.map((baseSprite) =>
-            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
-        [...this.leftRotatableStars, ...this.rightRotatableStars].map(
-            (baseSprite) =>
-                this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
-        [
-            ...this.horizontalCrossLeftRotation,
-            ...this.horizontalCrossRightRotation,
-        ].map((baseSprite) =>
-            this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
-        );
-
-        let coundownValue = 3;
-        // Start Countdown:
-        this.time.addEvent({
-            delay: 1000,
-            repeat: 2,
-            callback: () => {
-                if (this.countdownText) {
-                    coundownValue--;
-                    if (coundownValue > 0) {
-                        this.countdownText.setText(coundownValue.toString());
-                    } else {
-                        this.countdownText.setText("Go!");
-                        console.log("Go!");
-                        // remove the large circle
-                        if (this.largeCircle?.body) {
-                            this.matter.world.remove(
-                                this.largeCircle.body,
-                                true
-                            );
-                            this.largeCircle.destroy();
-                            //     this.matter.world.remove(this.largeCircle);
-                        }
-                        this.isRotating = false;
-                        this.countdownText.destroy();
-                        // const velocity = 2; // Adjust this value to set the desired release velocity
-
-                        // for (let i = 0; i < this.voices.length; i++) {
-                        //     const currentAngle =
-                        //         this.baseAngle + i * this.angleIncrement;
-                        //     const x =
-                        //         this.centerX +
-                        //         this.radius * Math.cos(currentAngle);
-                        //     const y =
-                        //         this.centerY +
-                        //         this.radius * Math.sin(currentAngle);
-
-                        //     // Set the new position of the circle
-                        //     this.matter.body.setPosition(
-                        //         this.marbles[i],
-                        //         { x, y },
-                        //         false
-                        //     );
-
-                        //     // Calculate the velocity components
-                        //     const velocityX = velocity * Math.cos(currentAngle);
-                        //     const velocityY = velocity * Math.sin(currentAngle);
-
-                        //     // Apply the velocity to the body
-                        //     this.matter.body.setVelocity(this.marbles[i], {
-                        //         x: velocityX,
-                        //         y: velocityY,
-                        //     });
-                        // }
-                    }
-                }
-            },
-        });
-        marbleRaceOnlyInstrument(
-            this.coverDocId,
-            120,
-            this.musicStartOffset
-        ).then(() => (this.isInstrumentPlaying = true));
+        this.createCrossScreen(0, 414, miniShapes);
+        // if (!this.enableMotion) {
+        //     const centerY = this.cameras.main.height / 2;
+        //     const bg = this.add
+        //         .image(centerX, centerY, "background")
+        //         .setScrollFactor(0);
+        //     bg.setDisplaySize(
+        //         this.cameras.main.width,
+        //         this.cameras.main.height
+        //     );
+        // } else {
+        //     // this.background = this.add.image(0, 0, "background");
+        //     // // Set the origin to the top-left corner
+        //     // this.background.setOrigin(0, 0);
+        //     // // Scale the background image to fit the game width
+        //     // let scaleX = this.cameras.main.width / this.background.width;
+        //     // let scaleY = this.cameras.main.height / this.background.height;
+        //     // let scale = Math.max(scaleX, scaleY);
+        //     // this.background.setScale(scale).setScrollFactor(0);
+        //     this.background = this.add
+        //         .tileSprite(
+        //             0,
+        //             0,
+        //             this.cameras.main.width,
+        //             this.cameras.main.height,
+        //             "background"
+        //         )
+        //         // .setScale(scale)
+        //         .setOrigin(0, 0)
+        //         .setScrollFactor(0);
+        //     this.add
+        //         .image(this.centerX, this.centerY, "center_logo")
+        //         .setDisplaySize(254, 84)
+        //         .setScrollFactor(0);
+        // }
+        // // Enable camera scrolling
+        // const canvasWidth = this.cameras.main.width;
+        // var prodShapes = this.cache.json.get("prod_shapes");
+        // var miniShapes = this.cache.json.get("mini_shapes");
+        // let startOffset = 800;
+        // const xOffset = canvasWidth / 2;
+        // this.selectedTracks.map((trackNo) => {
+        //     switch (trackNo) {
+        //         case "01":
+        //             startOffset = this.createStaticCircles(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes
+        //             );
+        //             break;
+        //         case "02":
+        //             startOffset = this.createCrossScreen(
+        //                 startOffset,
+        //                 canvasWidth,
+        //                 miniShapes
+        //             );
+        //             break;
+        //         case "03":
+        //             startOffset = this.createStaticTriangles(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes
+        //             );
+        //             break;
+        //         case "06":
+        //             startOffset = this.createSeesawScreen(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes,
+        //                 miniShapes
+        //             );
+        //             break;
+        //         case "07":
+        //             startOffset = this.createZigzagSlider(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes
+        //             );
+        //             break;
+        //         case "11":
+        //             startOffset = this.createStopperSlider(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes
+        //             );
+        //             break;
+        //         case "14":
+        //             startOffset = this.createStarRotations(
+        //                 startOffset,
+        //                 miniShapes
+        //             );
+        //             break;
+        //         case "16":
+        //             startOffset = this.createReduceSizeSlider(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes
+        //             );
+        //             break;
+        //         case "21":
+        //             startOffset = this.createCircleBlockers(
+        //                 xOffset,
+        //                 startOffset,
+        //                 prodShapes
+        //             );
+        //             break;
+        //         case "22":
+        //             startOffset = this.createHorizontalCrosses(
+        //                 canvasWidth,
+        //                 startOffset,
+        //                 miniShapes
+        //             );
+        //             break;
+        //     }
+        // });
+        // const finishOffset = startOffset + 250;
+        // this.add.image(centerX, finishOffset, "finish_line").setScale(0.2);
+        // this.finishLineOffset = finishOffset;
+        // // .setDisplaySize(960, 40);
+        // this.cameras.main.setBounds(0, 0, canvasWidth, finishOffset + 250);
+        // this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
+        // this.createMarbles(this.marbleRadius, miniShapes);
+        // this.crossLeftRotation.map((baseSprite) =>
+        //     this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        // );
+        // this.crossRightRotation.map((baseSprite) =>
+        //     this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        // );
+        // [...this.leftRotatableStars, ...this.rightRotatableStars].map(
+        //     (baseSprite) =>
+        //         this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        // );
+        // [
+        //     ...this.horizontalCrossLeftRotation,
+        //     ...this.horizontalCrossRightRotation,
+        // ].map((baseSprite) =>
+        //     this.createTextureMask(baseSprite.x, baseSprite.y, baseSprite)
+        // );
+        // let coundownValue = 3;
+        // // Start Countdown:
+        // this.time.addEvent({
+        //     delay: 1000,
+        //     repeat: 2,
+        //     callback: () => {
+        //         if (this.countdownText) {
+        //             coundownValue--;
+        //             if (coundownValue > 0) {
+        //                 this.countdownText.setText(coundownValue.toString());
+        //             } else {
+        //                 this.countdownText.setText("Go!");
+        //                 console.log("Go!");
+        //                 // remove the large circle
+        //                 if (this.largeCircle?.body) {
+        //                     this.matter.world.remove(
+        //                         this.largeCircle.body,
+        //                         true
+        //                     );
+        //                     this.largeCircle.destroy();
+        //                     //     this.matter.world.remove(this.largeCircle);
+        //                 }
+        //                 this.isRotating = false;
+        //                 this.countdownText.destroy();
+        //                 // const velocity = 2; // Adjust this value to set the desired release velocity
+        //                 // for (let i = 0; i < this.voices.length; i++) {
+        //                 //     const currentAngle =
+        //                 //         this.baseAngle + i * this.angleIncrement;
+        //                 //     const x =
+        //                 //         this.centerX +
+        //                 //         this.radius * Math.cos(currentAngle);
+        //                 //     const y =
+        //                 //         this.centerY +
+        //                 //         this.radius * Math.sin(currentAngle);
+        //                 //     // Set the new position of the circle
+        //                 //     this.matter.body.setPosition(
+        //                 //         this.marbles[i],
+        //                 //         { x, y },
+        //                 //         false
+        //                 //     );
+        //                 //     // Calculate the velocity components
+        //                 //     const velocityX = velocity * Math.cos(currentAngle);
+        //                 //     const velocityY = velocity * Math.sin(currentAngle);
+        //                 //     // Apply the velocity to the body
+        //                 //     this.matter.body.setVelocity(this.marbles[i], {
+        //                 //         x: velocityX,
+        //                 //         y: velocityY,
+        //                 //     });
+        //                 // }
+        //             }
+        //         }
+        //     },
+        // });
+        // marbleRaceOnlyInstrument(
+        //     this.coverDocId,
+        //     120,
+        //     this.musicStartOffset
+        // ).then(() => (this.isInstrumentPlaying = true));
     }
     update(time: number, delta: number): void {
-        if (this.enableMotion && !this.isRotating)
-            this.background.tilePositionX += 0.08;
-        if (this.marbles.length) {
-            if (this.isRotating) {
-                // Update the base angle to create the circular motion
-                this.baseAngle += 0.01; // Adjust this value to change the speed of rotation
-                this.largeCircle?.setRotation(this.baseAngle);
-                this.matter.body.setAngularVelocity(
-                    this.largeCircle?.body as BodyType,
-                    0.15
-                );
-            }
-            this.marbles.map((voiceBody, i) => {
-                const marbleImage = this.marblesImages[i];
-                // if (this.isRotating) {
-                //     // // Update the position of each circle
-                //     // const currentAngle =
-                //     //     this.baseAngle + i * this.angleIncrement;
-                //     // const x =
-                //     //     this.centerX + this.radius * Math.cos(currentAngle);
-                //     // const y =
-                //     //     this.centerY + this.radius * Math.sin(currentAngle);
-                //     // // Set the new position of the circle
-                //     // this.matter.body.setPosition(voiceBody, { x, y }, false);
-                //     // // this.matter.body.setAngle(voiceBody, currentAngle, false);
-                //     // marbleImage.setPosition(x, y);
-                //     // // marbleImage.setRotation(voiceBody.angle);
-                //     // this.marblesMasks[i].setPosition(
-                //     //     voiceBody.position.x - voiceBody.circleRadius,
-                //     //     voiceBody.position.y - voiceBody.circleRadius
-                //     // );
-                //     // this.labels[i].setPosition(-100, -100);
-                // } else {
-                marbleImage.setPosition(
-                    voiceBody.position.x,
-                    voiceBody.position.y
-                );
-                marbleImage.setRotation(voiceBody.angle);
-                this.marblesMasks[i].setPosition(
-                    voiceBody.position.x - voiceBody.circleRadius,
-                    voiceBody.position.y - voiceBody.circleRadius
-                );
-                // this.marblesMasks[i].setRotation(voiceBody.angle);
-
-                this.labels[i]?.setPosition(
-                    voiceBody.position.x - this.labels[i].width / 2,
-                    voiceBody.position.y - 60
-                );
-                const currentCrossIndex =
-                    this.currentMarblesSizeIndices[i.toString()];
-                if (
-                    this.heightReducedIndices.includes(i) &&
-                    voiceBody.position.y >
-                        this.increaseSizeScreenOffset[currentCrossIndex]
-                ) {
-                    this.currentMarblesSizeIndices[i.toString()] += 1;
-                    this.matter.body.scale(voiceBody, 2, 2);
-                    marbleImage.setDisplaySize(
-                        this.marbleRadius * 2,
-                        this.marbleRadius * 2
-                    );
-                    this.marblesMasks[i].scale = 1;
-                    this.heightReducedIndices =
-                        this.heightReducedIndices.filter((idx) => idx !== i);
-                    this.marbleTrailParticles[i].setConfig(this.trailConfig);
-                } else if (
-                    this.heightReducedIndices.includes(i) === false &&
-                    voiceBody.position.y >
-                        this.reduceSizeScreenOffset[currentCrossIndex] &&
-                    voiceBody.position.y <
-                        this.increaseSizeScreenOffset[currentCrossIndex]
-                ) {
-                    this.heightReducedIndices.push(i);
-                    this.matter.body.scale(voiceBody, 0.5, 0.5);
-                    marbleImage.setDisplaySize(
-                        this.marbleRadius,
-                        this.marbleRadius
-                    );
-                    this.marblesMasks[i].scale = 0.5;
-                    this.marbleTrailParticles[i].setConfig({
-                        ...this.trailConfig,
-                        scale: { start: 0.5, end: 0.01 },
-                    });
-                }
-                // }
-                // this.createTrails(voiceBody, i);
-            });
-        }
-        this.crossRightRotation.map((c) => {
-            c.setAngle(c.angle + 2);
-            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        });
-        this.crossLeftRotation.map((c) => {
-            c.setAngle(c.angle - 2);
-            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        });
-        if (this.isInstrumentPlaying && this.isRotating === false) {
-            const voicesPositions = this.marbles.map((m) => m.position.y);
-            const unFinishedPositions = voicesPositions.filter(
-                (y) => y < this.finishLineOffset
-            );
-            const largest = Math.max(...unFinishedPositions);
-            const secondLargest = Math.max(
-                ...unFinishedPositions.filter((p) => p !== largest)
-            );
-            const index = voicesPositions.findIndex((v) => v === largest);
-            // if (largest > this.finishLineOffset) {
-            //     // Find 2nd largest
-            //     index = voicesPositions.indexOf(
-            //         voicesPositions
-            //             .filter((v) => v !== largest)
-            //             .reduce((a, b) => (a > b ? a : b))
-            //     );
-            // }
-            if (index === -1) return;
-            if (
-                this.prevVoiceIdx !== index &&
-                largest > secondLargest + this.marbleRadius
-            )
-                this.throttledUpdate(index);
-            if (this.autoScroll) {
-                this.cameras.main.scrollY = largest - 300;
-            }
-        }
-        this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
-        this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
-        this.horizontalCrossRightRotation.map((rs) =>
-            rs.setAngle(rs.angle + 2.5)
-        );
-        this.horizontalCrossLeftRotation.map((rs) =>
-            rs.setAngle(rs.angle - 2.5)
-        );
-
-        // Bars up/down motion
-        this.motionTimeForUpDownWard += delta;
-        this.upDownMotionElems.map(
-            ({
-                matter,
-                startX,
-                startY,
-                moveSpeed,
-                maxBottom,
-                maxTop,
-                direction,
-            }) => {
-                const amplitude = (maxBottom - maxTop) / 2;
-                const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
-                // // Calculate new y position using a sine wave for smooth up and down movement
-                // const range = maxBottom - maxTop;
-                // const midPoint = maxTop + range / 2;
-                // Calculate the new position considering the angle
-                if (direction === "right") {
-                    const newX =
-                        startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
-                    const newY =
-                        startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
-                    // Update the rectangle's y position using a sine wave
-                    matter.setPosition(newX, newY);
-                } else {
-                    const newX =
-                        startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
-                    const newY =
-                        startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
-                    // Update the rectangle's y position using a sine wave
-                    matter.setPosition(newX, newY);
-                }
-            }
-        );
+        // if (this.enableMotion && !this.isRotating)
+        //     this.background.tilePositionX += 0.08;
+        // if (this.marbles.length) {
+        //     if (this.isRotating) {
+        //         // Update the base angle to create the circular motion
+        //         this.baseAngle += 0.01; // Adjust this value to change the speed of rotation
+        //         this.largeCircle?.setRotation(this.baseAngle);
+        //         this.matter.body.setAngularVelocity(
+        //             this.largeCircle?.body as BodyType,
+        //             0.15
+        //         );
+        //     }
+        //     this.marbles.map((voiceBody, i) => {
+        //         const marbleImage = this.marblesImages[i];
+        //         // if (this.isRotating) {
+        //         //     // // Update the position of each circle
+        //         //     // const currentAngle =
+        //         //     //     this.baseAngle + i * this.angleIncrement;
+        //         //     // const x =
+        //         //     //     this.centerX + this.radius * Math.cos(currentAngle);
+        //         //     // const y =
+        //         //     //     this.centerY + this.radius * Math.sin(currentAngle);
+        //         //     // // Set the new position of the circle
+        //         //     // this.matter.body.setPosition(voiceBody, { x, y }, false);
+        //         //     // // this.matter.body.setAngle(voiceBody, currentAngle, false);
+        //         //     // marbleImage.setPosition(x, y);
+        //         //     // // marbleImage.setRotation(voiceBody.angle);
+        //         //     // this.marblesMasks[i].setPosition(
+        //         //     //     voiceBody.position.x - voiceBody.circleRadius,
+        //         //     //     voiceBody.position.y - voiceBody.circleRadius
+        //         //     // );
+        //         //     // this.labels[i].setPosition(-100, -100);
+        //         // } else {
+        //         marbleImage.setPosition(
+        //             voiceBody.position.x,
+        //             voiceBody.position.y
+        //         );
+        //         marbleImage.setRotation(voiceBody.angle);
+        //         this.marblesMasks[i].setPosition(
+        //             voiceBody.position.x - voiceBody.circleRadius,
+        //             voiceBody.position.y - voiceBody.circleRadius
+        //         );
+        //         // this.marblesMasks[i].setRotation(voiceBody.angle);
+        //         this.labels[i]?.setPosition(
+        //             voiceBody.position.x - this.labels[i].width / 2,
+        //             voiceBody.position.y - 60
+        //         );
+        //         const currentCrossIndex =
+        //             this.currentMarblesSizeIndices[i.toString()];
+        //         if (
+        //             this.heightReducedIndices.includes(i) &&
+        //             voiceBody.position.y >
+        //                 this.increaseSizeScreenOffset[currentCrossIndex]
+        //         ) {
+        //             this.currentMarblesSizeIndices[i.toString()] += 1;
+        //             this.matter.body.scale(voiceBody, 2, 2);
+        //             marbleImage.setDisplaySize(
+        //                 this.marbleRadius * 2,
+        //                 this.marbleRadius * 2
+        //             );
+        //             this.marblesMasks[i].scale = 1;
+        //             this.heightReducedIndices =
+        //                 this.heightReducedIndices.filter((idx) => idx !== i);
+        //             this.marbleTrailParticles[i].setConfig(this.trailConfig);
+        //         } else if (
+        //             this.heightReducedIndices.includes(i) === false &&
+        //             voiceBody.position.y >
+        //                 this.reduceSizeScreenOffset[currentCrossIndex] &&
+        //             voiceBody.position.y <
+        //                 this.increaseSizeScreenOffset[currentCrossIndex]
+        //         ) {
+        //             this.heightReducedIndices.push(i);
+        //             this.matter.body.scale(voiceBody, 0.5, 0.5);
+        //             marbleImage.setDisplaySize(
+        //                 this.marbleRadius,
+        //                 this.marbleRadius
+        //             );
+        //             this.marblesMasks[i].scale = 0.5;
+        //             this.marbleTrailParticles[i].setConfig({
+        //                 ...this.trailConfig,
+        //                 scale: { start: 0.5, end: 0.01 },
+        //             });
+        //         }
+        //         // }
+        //         // this.createTrails(voiceBody, i);
+        //     });
+        // }
+        // this.crossRightRotation.map((c) => {
+        //     c.setAngle(c.angle + 2);
+        //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+        // });
+        // this.crossLeftRotation.map((c) => {
+        //     c.setAngle(c.angle - 2);
+        //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+        // });
+        // if (this.isInstrumentPlaying && this.isRotating === false) {
+        //     const voicesPositions = this.marbles.map((m) => m.position.y);
+        //     const unFinishedPositions = voicesPositions.filter(
+        //         (y) => y < this.finishLineOffset
+        //     );
+        //     const largest = Math.max(...unFinishedPositions);
+        //     const secondLargest = Math.max(
+        //         ...unFinishedPositions.filter((p) => p !== largest)
+        //     );
+        //     const index = voicesPositions.findIndex((v) => v === largest);
+        //     // if (largest > this.finishLineOffset) {
+        //     //     // Find 2nd largest
+        //     //     index = voicesPositions.indexOf(
+        //     //         voicesPositions
+        //     //             .filter((v) => v !== largest)
+        //     //             .reduce((a, b) => (a > b ? a : b))
+        //     //     );
+        //     // }
+        //     if (index === -1) return;
+        //     if (
+        //         this.prevVoiceIdx !== index &&
+        //         largest > secondLargest + this.marbleRadius
+        //     )
+        //         this.throttledUpdate(index);
+        //     if (this.autoScroll) {
+        //         this.cameras.main.scrollY = largest - 300;
+        //     }
+        // }
+        // this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
+        // this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
+        // this.horizontalCrossRightRotation.map((rs) =>
+        //     rs.setAngle(rs.angle + 2.5)
+        // );
+        // this.horizontalCrossLeftRotation.map((rs) =>
+        //     rs.setAngle(rs.angle - 2.5)
+        // );
+        // // Bars up/down motion
+        // this.motionTimeForUpDownWard += delta;
+        // this.upDownMotionElems.map(
+        //     ({
+        //         matter,
+        //         startX,
+        //         startY,
+        //         moveSpeed,
+        //         maxBottom,
+        //         maxTop,
+        //         direction,
+        //     }) => {
+        //         const amplitude = (maxBottom - maxTop) / 2;
+        //         const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
+        //         // // Calculate new y position using a sine wave for smooth up and down movement
+        //         // const range = maxBottom - maxTop;
+        //         // const midPoint = maxTop + range / 2;
+        //         // Calculate the new position considering the angle
+        //         if (direction === "right") {
+        //             const newX =
+        //                 startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
+        //             const newY =
+        //                 startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
+        //             // Update the rectangle's y position using a sine wave
+        //             matter.setPosition(newX, newY);
+        //         } else {
+        //             const newX =
+        //                 startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
+        //             const newY =
+        //                 startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
+        //             // Update the rectangle's y position using a sine wave
+        //             matter.setPosition(newX, newY);
+        //         }
+        //     }
+        // );
     }
 }
 

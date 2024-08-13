@@ -17,15 +17,22 @@ export default class Preloader extends Phaser.Scene {
     }
 
     preload() {
-        this.load.image("background", this.params.backgroundPath);
-        if (this.params.enableMotion)
-            this.load.image("center_logo", "assets/transparent_logo.png");
-        // TODO: Enable the below and comment out the rest of the images
-        if (this.params.voices.length) {
-            this.params.voices.map((voice) => {
-                this.load.image(voice.id, voice.avatar);
-            });
-        }
+        this.load.image(
+            "background",
+            "https://voxaudio.nusic.fm/marble_race%2Fbackgrounds%2FBG08.png?alt=media"
+        );
+        // if (this.params.enableMotion)
+        //     this.load.image("center_logo", "assets/transparent_logo.png");
+        // // TODO: Enable the below and comment out the rest of the images
+        // if (this.params.voices.length) {
+        //     this.params.voices.map((voice) => {
+        //         this.load.image(voice.id, voice.avatar);
+        //     });
+        // }
+        this.load.image(
+            "mask",
+            "https://voxaudio.nusic.fm/marble_race%2Ftrack_skins%2FsrainyGradient01.png?alt=media"
+        );
         this.load.atlas(
             "prod_texture_loaded_07",
             "assets/sprite/07.png",
@@ -76,12 +83,13 @@ export default class Preloader extends Phaser.Scene {
         this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
         this.load.image("02_cross", "assets/sprite/02_cross.png");
         this.load.image("06b", "assets/sprite/06b.png");
-        this.load.image("textureImage", this.params.skinPath);
-        this.load.image("empty_circle", "assets/empty_circle.png");
+        // this.load.image("textureImage", this.params.skinPath);
+        // this.load.image("empty_circle", "assets/empty_circle.png");
         this.load.image("wheel", "assets/sprite/wheel.png");
         this.load.image("finish_line", "assets/finish.png");
+        this.load.image('bg', 'https://labs.phaser.io/assets/skies/deepblue.png');
         // this.load.image("flame", "assets/flame.png");
-        this.load.image("trail", this.params.trailPath);
+        // this.load.image("trail", this.params.trailPath);
     }
 
     create() {

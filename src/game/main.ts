@@ -1,4 +1,4 @@
-import { AUTO, Game } from "phaser";
+import { AUTO, Game, WEBGL } from "phaser";
 import Preloader from "./scenes/Preloader";
 import GameScene from "./scenes/Game";
 import { IGameDataParams } from "./PhaserGame";
@@ -6,27 +6,33 @@ import { IGameDataParams } from "./PhaserGame";
 //  Find out more information about the Game Config at:
 //  https://newdocs.phaser.io/docs/3.70.0/Phaser.Types.Core.GameConfig
 const config: Phaser.Types.Core.GameConfig = {
-    type: AUTO,
+    type: WEBGL,
     parent: "game-container",
     // backgroundColor: "#028af8",
     physics: {
         default: "matter",
         matter: {
             gravity: { x: 0, y: 0.2 },
-            // setBounds: true
-            // debug: true,
+            setBounds: true,
+            debug: true,
         },
     },
     scene: [Preloader, GameScene],
 };
 
 const StartGame = (parent: string, data: IGameDataParams) => {
-    if (data.gravityY && config.physics?.matter?.gravity)
-        config.physics.matter.gravity.y = data.gravityY;
+    // if (data.gravityY && config.physics?.matter?.gravity)
+    //     config.physics.matter.gravity.y = data.gravityY;
+    // const game = new Game({
+    //     ...config,
+    //     width: data.width,
+    //     height: (data.width * 16) / 9,
+    //     parent,
+    // });
     const game = new Game({
         ...config,
-        width: data.width,
-        height: (data.width * 16) / 9,
+        width: 414,
+        height: window.innerHeight - 100,
         parent,
     });
     game.scene.start("preloader", data);

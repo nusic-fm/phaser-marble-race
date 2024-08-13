@@ -7,67 +7,19 @@ export interface IRefPhaserGame {
     scene: Phaser.Scene | null;
 }
 
-export interface IGameDataParams {
-    voices: GameVoiceInfo[];
-    coverDocId: string;
-    musicStartOffset: number;
-    skinPath: string;
-    backgroundPath: string;
-    selectedTracks: string[];
-    noOfRaceTracks: number;
-    gravityY: number;
-    width: number;
-    enableMotion: boolean;
-    trailPath: string;
-    trailsLifeSpace: number;
-    trailsOpacity: number;
-    trailEndSize: number;
-}
+export interface IGameDataParams {}
 
 interface IProps extends IGameDataParams {
     currentActiveScene?: (scene_instance: Phaser.Scene) => void;
 }
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
-    function PhaserGame(
-        {
-            voices,
-            coverDocId,
-            musicStartOffset,
-            skinPath,
-            backgroundPath,
-            selectedTracks,
-            noOfRaceTracks,
-            gravityY,
-            width,
-            enableMotion,
-            trailPath,
-            trailsLifeSpace,
-            trailsOpacity,
-            trailEndSize,
-        },
-        ref
-    ) {
+    function PhaserGame({}, ref) {
         const game = useRef<Phaser.Game | null>(null!);
 
         useLayoutEffect(() => {
             if (game.current === null) {
-                game.current = StartGame("game-container", {
-                    voices,
-                    coverDocId,
-                    musicStartOffset,
-                    skinPath,
-                    backgroundPath,
-                    selectedTracks,
-                    noOfRaceTracks,
-                    gravityY,
-                    width,
-                    enableMotion,
-                    trailPath,
-                    trailsLifeSpace,
-                    trailsOpacity,
-                    trailEndSize,
-                });
+                game.current = StartGame("game-container", {});
 
                 if (typeof ref === "function") {
                     ref({ game: game.current, scene: null });
