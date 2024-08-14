@@ -1,7 +1,6 @@
 import {
     Box,
     Button,
-    Checkbox,
     Dialog,
     DialogContent,
     Fab,
@@ -151,8 +150,8 @@ function App() {
                 id: v.id,
                 name: v.name,
                 avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
-                    "voice_models/avatars/thumbs/"
-                )}${v.id}_200x200?alt=media`,
+                    "voice_models/avatars/"
+                )}${v.id}?alt=media`,
             }))
         );
         fetchAnalytics();
@@ -168,8 +167,8 @@ function App() {
                     id: v.id,
                     name: v.name,
                     avatar: `https://voxaudio.nusic.fm/${encodeURIComponent(
-                        "voice_models/avatars/thumbs/"
-                    )}${v.id}_200x200?alt=media`,
+                        "voice_models/avatars/"
+                    )}${v.id}?alt=media`,
                 }))
             );
         }

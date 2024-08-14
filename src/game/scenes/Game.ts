@@ -89,7 +89,7 @@ export default class Game extends Phaser.Scene {
             data.selectedTracks,
             this.noOfRaceTracks
         );
-        this.marbleRadius = data.width >= 414 ? 23 : 20;
+        this.marbleRadius = data.width >= 414 ? 23 : 22;
         this.enableMotion = data.enableMotion;
 
         this.centerX = this.cameras.main.width / 2;
@@ -608,7 +608,7 @@ export default class Game extends Phaser.Scene {
             const circleImage = this.add.image(
                 circleBody.position.x,
                 circleBody.position.y,
-                v.id
+                `resized_${v.id}`
             );
 
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2); // Adjust size to match the physics body
