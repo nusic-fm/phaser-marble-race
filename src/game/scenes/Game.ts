@@ -799,16 +799,93 @@ export default class Game extends Phaser.Scene {
     //         // this.trailsGroup[i].clear(true, true);
     //     }
     // };
+    x = 100;
+    resize(img: HTMLImageElement, name: string) {
+        const targetWidth = 46;
+        const targetHeight = 46;
+        // Create an off-screen canvas
+        const canvas = document.createElement("canvas");
+        const ctx = canvas.getContext("2d");
+
+        // Set initial size to original image size
+        let width = img.width;
+        let height = img.height;
+        if (!ctx) return;
+        // Resample in steps
+        while (width > 2 * targetWidth && height > 2 * targetHeight) {
+            width = Math.floor(width / 2);
+            height = Math.floor(height / 2);
+
+            // Resize the canvas to the new size
+            canvas.width = width;
+            canvas.height = height;
+
+            // Draw the image onto the canvas
+            ctx.drawImage(img, 0, 0, width, height);
+        }
+
+        // Now, do the final resize to the target dimensions
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+
+        // Set high quality for the final resize
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = "high";
+
+        // Draw the image at the final size
+        ctx.drawImage(img, 0, 0, 46, 46);
+
+        // canvas.toBlob((blob) => {
+        //     if (blob) {
+        //         const blobUrl = URL.createObjectURL(blob);
+        //         const img = new Image();
+        //         img.src = blobUrl;
+        //         img.crossOrigin = "anonymous";
+        //         const texture = this.textures.addImage("resizedImage", img);
+        //         this.add.image(100, 100, "resizedImage").setOrigin(0.5, 0.5);
+        //     }
+        // });
+
+        // // Pass the resized image data to the callback
+        const dataurl = canvas.toDataURL();
+        // "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII";
+
+        // // Add the newly created image as a texture
+        this.textures
+            .addBase64(`resizedImage_${name}`, dataurl)
+            .on("onload", () => {
+                this.add.image(this.x, 100, `resizedImage_${name}`);
+                this.x + 100;
+            });
+    }
 
     create() {
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         const centerY = this.cameras.main.height / 2;
-        // this.add.image(centerX, centerY, "background");
-        var prodShapes = this.cache.json.get("prod_shapes");
-        var miniShapes = this.cache.json.get("mini_shapes");
+        this.add.image(centerX, centerY, "background");
+        // var prodShapes = this.cache.json.get("prod_shapes");
+        // var miniShapes = this.cache.json.get("mini_shapes");
 
-        this.createCrossScreen(0, 414, miniShapes);
+        // this.createCrossScreen(0, 414, miniShapes);
+        // const circleBody = this.matter.add.circle(100, 100, 23, {
+        //     restitution: 0.4,
+        //     // density: 0.02,
+        //     friction: 0,
+        //     frictionAir: 0,
+        //     frictionStatic: 0,
+        // });
+        // this.add.image(100, 100, "eric").setDisplaySize(46, 46);
+        this.resize(
+            this.textures.get("eric").getSourceImage() as HTMLImageElement,
+            "eric"
+        );
+        this.resize(
+            this.textures.get("kanye").getSourceImage() as HTMLImageElement,
+            "kanye"
+        );
+
+        // this.add.image(300, 100, "res");
         // if (!this.enableMotion) {
         //     const centerY = this.cameras.main.height / 2;
         //     const bg = this.add
