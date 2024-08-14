@@ -18,7 +18,7 @@ export default class Preloader extends Phaser.Scene {
 
     // Create an off-screen canvas
     canvas = document.createElement("canvas");
-    resize(img: HTMLImageElement, name: string) {
+    resize(img: HTMLImageElement) {
         const targetWidth = 46;
         const targetHeight = 46;
         const canvas = this.canvas;
@@ -63,12 +63,8 @@ export default class Preloader extends Phaser.Scene {
         //     }
         // });
 
-        // // Pass the resized image data to the callback
-        const dataurl = canvas.toDataURL();
-        // "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAgAAAAIAQMAAAD+wSzIAAAABlBMVEX///+/v7+jQ3Y5AAAADklEQVQI12P4AIX8EAgALgAD/aNpbtEAAAAASUVORK5CYII";
-
-        console.log("running: ", name);
-        return dataurl;
+        // Pass the resized image data to the callback
+        return canvas.toDataURL();
     }
     preload() {
         this.load.image("background", this.params.backgroundPath);
@@ -83,7 +79,7 @@ export default class Preloader extends Phaser.Scene {
                 image.crossOrigin = "anonymous";
                 new Promise((res) => {
                     image.onload = () => {
-                        const dataUrl = this.resize(image, voice.id);
+                        const dataUrl = this.resize(image);
                         res(dataUrl);
                     };
                 }).then((dataurl) => {
@@ -93,56 +89,85 @@ export default class Preloader extends Phaser.Scene {
                 });
             });
         }
-        this.load.atlas(
-            "prod_texture_loaded_07",
-            "assets/sprite/07.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.atlas(
-            "prod_texture_loaded_01",
-            "assets/sprite/01.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.atlas(
-            "prod_texture_loaded_21",
-            "assets/sprite/21.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.atlas(
-            "prod_texture_loaded_03",
-            "assets/sprite/03.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.atlas(
-            "prod_texture_loaded_06",
-            "assets/sprite/06.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.atlas(
-            "prod_texture_loaded_16",
-            "assets/sprite/16.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.atlas(
-            "prod_texture_loaded_11",
-            "assets/sprite/11.png",
-            "assets/sprite/screen_sprite.json"
-        );
-        this.load.json("prod_shapes", "assets/physics/new_shapes.json");
+        this.params.selectedTracks.map((trackNo) => {
+            switch (trackNo) {
+                case "01":
+                    this.load.atlas(
+                        "prod_texture_loaded_01",
+                        "assets/sprite/01.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+                case "02":
+                case "22":
+                    this.load.image("02_cross", "assets/sprite/02_cross.png");
+                    break;
+                case "03":
+                    this.load.atlas(
+                        "prod_texture_loaded_03",
+                        "assets/sprite/03.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+                case "06":
+                    this.load.atlas(
+                        "prod_texture_loaded_06",
+                        "assets/sprite/06.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    this.load.image("06b", "assets/sprite/06b.png");
+                    break;
+                case "07":
+                    this.load.atlas(
+                        "prod_texture_loaded_07",
+                        "assets/sprite/07.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+                case "11":
+                    this.load.image(
+                        "left_block",
+                        "assets/sprite/left_block.png"
+                    );
+                    this.load.image(
+                        "right_block",
+                        "assets/sprite/right_block.png"
+                    );
+                    this.load.atlas(
+                        "prod_texture_loaded_11",
+                        "assets/sprite/11.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+                case "14":
+                    this.load.image("mini_star", "assets/sprite/14_mini.png");
+                    this.load.atlas(
+                        "14_mini",
+                        "assets/sprite/14_mini.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+                case "16":
+                    this.load.atlas(
+                        "prod_texture_loaded_16",
+                        "assets/sprite/16.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+                case "21":
+                    this.load.atlas(
+                        "prod_texture_loaded_21",
+                        "assets/sprite/21.png",
+                        "assets/sprite/screen_sprite.json"
+                    );
+                    break;
+            }
+        });
 
-        this.load.image("mini_star", "assets/sprite/14_mini.png");
-        this.load.image("left_block", "assets/sprite/left_block.png");
-        this.load.image("right_block", "assets/sprite/right_block.png");
+        this.load.json("prod_shapes", "assets/physics/new_shapes.json");
         // Mini
-        this.load.atlas(
-            "14_mini",
-            "assets/sprite/14_mini.png",
-            "assets/sprite/screen_sprite.json"
-        );
         this.load.image("bar", "assets/sprite/bar.png");
         this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
-        this.load.image("02_cross", "assets/sprite/02_cross.png");
-        this.load.image("06b", "assets/sprite/06b.png");
         this.load.image("textureImage", this.params.skinPath);
         this.load.image("wheel", "assets/sprite/wheel.png");
         this.load.image("finish_line", "assets/finish.png");
