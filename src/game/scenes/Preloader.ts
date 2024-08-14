@@ -89,13 +89,16 @@ export default class Preloader extends Phaser.Scene {
                 });
             });
         }
+        // this.load.json(
+        //     "screen_sprite_data",
+        //     "assets/sprite/screen_sprite.json"
+        // );
         this.params.selectedTracks.map((trackNo) => {
             switch (trackNo) {
                 case "01":
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_01",
-                        "assets/sprite/01.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/01.png"
                     );
                     break;
                 case "02":
@@ -103,25 +106,22 @@ export default class Preloader extends Phaser.Scene {
                     this.load.image("02_cross", "assets/sprite/02_cross.png");
                     break;
                 case "03":
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_03",
-                        "assets/sprite/03.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/03.png"
                     );
                     break;
                 case "06":
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_06",
-                        "assets/sprite/06.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/06.png"
                     );
                     this.load.image("06b", "assets/sprite/06b.png");
                     break;
                 case "07":
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_07",
-                        "assets/sprite/07.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/07.png"
                     );
                     break;
                 case "11":
@@ -133,32 +133,25 @@ export default class Preloader extends Phaser.Scene {
                         "right_block",
                         "assets/sprite/right_block.png"
                     );
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_11",
-                        "assets/sprite/11.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/11.png"
                     );
                     break;
                 case "14":
                     this.load.image("mini_star", "assets/sprite/14_mini.png");
-                    this.load.atlas(
-                        "14_mini",
-                        "assets/sprite/14_mini.png",
-                        "assets/sprite/screen_sprite.json"
-                    );
+                    this.load.image("14_mini", "assets/sprite/14_mini.png");
                     break;
                 case "16":
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_16",
-                        "assets/sprite/16.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/16.png"
                     );
                     break;
                 case "21":
-                    this.load.atlas(
+                    this.load.image(
                         "prod_texture_loaded_21",
-                        "assets/sprite/21.png",
-                        "assets/sprite/screen_sprite.json"
+                        "assets/sprite/21.png"
                     );
                     break;
             }
@@ -172,6 +165,94 @@ export default class Preloader extends Phaser.Scene {
         this.load.image("wheel", "assets/sprite/wheel.png");
         this.load.image("finish_line", "assets/finish.png");
         this.load.image("trail", this.params.trailPath);
+
+        // this.load.once("complete", () => {
+        //     const spriteData = this.cache.json.get("screen_sprite_data");
+
+        //     this.params.selectedTracks.map((trackNo) => {
+        //         switch (trackNo) {
+        //             case "01":
+        //                 const texture01 = this.textures
+        //                     .get("prod_texture_loaded_01")
+        //                     .getSourceImage();
+        //                 this.textures.addAtlas(
+        //                     "prod_texture_loaded_01",
+        //                     texture01 as HTMLImageElement,
+        //                     spriteData
+        //                 );
+        //                 break;
+        //             case "02":
+        //             case "22":
+        //                 this.load.image(
+        //                     "02_cross",
+        //                     "assets/sprite/02_cross.png"
+        //                 );
+        //                 break;
+        //             case "03":
+        //                 this.load.atlas(
+        //                     "prod_texture_loaded_03",
+        //                     "assets/sprite/03.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 break;
+        //             case "06":
+        //                 this.load.atlas(
+        //                     "prod_texture_loaded_06",
+        //                     "assets/sprite/06.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 this.load.image("06b", "assets/sprite/06b.png");
+        //                 break;
+        //             case "07":
+        //                 this.load.atlas(
+        //                     "prod_texture_loaded_07",
+        //                     "assets/sprite/07.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 break;
+        //             case "11":
+        //                 this.load.image(
+        //                     "left_block",
+        //                     "assets/sprite/left_block.png"
+        //                 );
+        //                 this.load.image(
+        //                     "right_block",
+        //                     "assets/sprite/right_block.png"
+        //                 );
+        //                 this.load.atlas(
+        //                     "prod_texture_loaded_11",
+        //                     "assets/sprite/11.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 break;
+        //             case "14":
+        //                 this.load.image(
+        //                     "mini_star",
+        //                     "assets/sprite/14_mini.png"
+        //                 );
+        //                 this.load.atlas(
+        //                     "14_mini",
+        //                     "assets/sprite/14_mini.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 break;
+        //             case "16":
+        //                 this.load.atlas(
+        //                     "prod_texture_loaded_16",
+        //                     "assets/sprite/16.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 break;
+        //             case "21":
+        //                 this.load.atlas(
+        //                     "prod_texture_loaded_21",
+        //                     "assets/sprite/21.png",
+        //                     "assets/sprite/screen_sprite.json"
+        //                 );
+        //                 break;
+        //         }
+        //     });
+        // });
     }
 
     create() {
