@@ -24,6 +24,7 @@ export interface IGameDataParams {
     trailsOpacity: number;
     trailEndSize: number;
     recordDuration: number;
+    isRecord: boolean;
 }
 
 interface IProps extends IGameDataParams {
@@ -56,6 +57,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             trailsOpacity,
             trailEndSize,
             recordDuration,
+            isRecord,
         },
         ref
     ) {
@@ -126,6 +128,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                     trailsOpacity,
                     trailEndSize,
                     recordDuration,
+                    isRecord,
                 });
 
                 if (typeof ref === "function") {
@@ -133,7 +136,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                 } else if (ref) {
                     ref.current = { game: game.current, scene: null };
                 }
-                if (game.current) {
+                if (game.current && isRecord) {
                     startRecording(game.current.canvas);
                 }
             } else {

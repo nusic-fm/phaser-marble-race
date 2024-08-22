@@ -7,6 +7,7 @@ import {
     IconButton,
     Slider,
     Stack,
+    Switch,
     TextField,
     Typography,
     useMediaQuery,
@@ -105,6 +106,7 @@ function App() {
         const savedRecordDuration = localStorage.getItem("recordDuration");
         return parseFloat(savedRecordDuration || "60") || 60;
     });
+    const [isRecord, setIsRecord] = useState(false);
 
     const fetchAnalytics = async () => {
         try {
@@ -352,6 +354,7 @@ function App() {
                                             trailEndSize={trailEndSize}
                                             trailsOpacity={trailsOpacity}
                                             recordDuration={recordDuration}
+                                            isRecord={isRecord}
                                         />
                                     ) : (
                                         <Stack
@@ -565,6 +568,13 @@ function App() {
                                             );
                                         }}
                                         sx={{ width: 80 }}
+                                    />
+                                    <Switch
+                                        value={isRecord}
+                                        onChange={(e, checked) => {
+                                            setIsRecord(checked);
+                                        }}
+                                        color={isRecord ? "error" : "success"}
                                     />
                                 </Stack>
                                 {coverDoc && (
@@ -826,6 +836,7 @@ function App() {
                                 trailEndSize={trailEndSize}
                                 trailsOpacity={trailsOpacity}
                                 recordDuration={recordDuration}
+                                isRecord={isRecord}
                             />
                         ) : (
                             <Stack
@@ -981,6 +992,13 @@ function App() {
                                     );
                                 }}
                                 sx={{ width: 80 }}
+                            />
+                            <Switch
+                                value={isRecord}
+                                onChange={(e, checked) => {
+                                    setIsRecord(checked);
+                                }}
+                                color={isRecord ? "error" : "success"}
                             />
                         </Stack>
                         {coverDoc && (
