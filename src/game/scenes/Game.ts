@@ -639,7 +639,7 @@ export default class Game extends Phaser.Scene {
             this.labels.push(label);
         });
         this.countdownText = this.add
-            .text(this.centerX, this.centerY, "3", {
+            .text(this.centerX, this.centerY - 100, "3", {
                 fontSize: "64px",
                 color: "#ffffff",
             })

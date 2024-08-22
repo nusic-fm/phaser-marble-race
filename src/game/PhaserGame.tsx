@@ -23,6 +23,7 @@ export interface IGameDataParams {
     trailsLifeSpace: number;
     trailsOpacity: number;
     trailEndSize: number;
+    recordDuration: number;
 }
 
 interface IProps extends IGameDataParams {
@@ -54,6 +55,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             trailsLifeSpace,
             trailsOpacity,
             trailEndSize,
+            recordDuration,
         },
         ref
     ) {
@@ -98,7 +100,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
 
             setTimeout(() => {
                 stopRecording(recorder);
-            }, 60000);
+            }, recordDuration * 1000);
         };
 
         const stopRecording = (recorder: MediaRecorder) => {
@@ -123,6 +125,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                     trailsLifeSpace,
                     trailsOpacity,
                     trailEndSize,
+                    recordDuration,
                 });
 
                 if (typeof ref === "function") {

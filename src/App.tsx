@@ -7,6 +7,7 @@ import {
     IconButton,
     Slider,
     Stack,
+    TextField,
     Typography,
     useMediaQuery,
     useTheme,
@@ -100,6 +101,10 @@ function App() {
     const [trailsLifeSpace, setTrailsLifeSpan] = useState(400);
     const [trailsOpacity, setTrailsOpacity] = useState(0.5);
     const [trailEndSize, setTrailEndSize] = useState(0.5);
+    const [recordDuration, setRecordDuration] = useState(() => {
+        const savedRecordDuration = localStorage.getItem("recordDuration");
+        return parseFloat(savedRecordDuration || "60") || 60;
+    });
 
     const fetchAnalytics = async () => {
         try {
@@ -346,6 +351,7 @@ function App() {
                                             trailsLifeSpace={trailsLifeSpace}
                                             trailEndSize={trailEndSize}
                                             trailsOpacity={trailsOpacity}
+                                            recordDuration={recordDuration}
                                         />
                                     ) : (
                                         <Stack
@@ -536,6 +542,29 @@ function App() {
                                         }
                                         marks
                                         valueLabelDisplay="auto"
+                                    />
+                                </Stack>
+                                <Stack
+                                    gap={2}
+                                    direction="row"
+                                    alignItems={"center"}
+                                    mb={1}
+                                >
+                                    <Typography>Record Duration</Typography>
+                                    <TextField
+                                        size="small"
+                                        type={"number"}
+                                        value={recordDuration}
+                                        onChange={(e) => {
+                                            setRecordDuration(
+                                                parseFloat(e.target.value)
+                                            );
+                                            localStorage.setItem(
+                                                "recordDuration",
+                                                e.target.value
+                                            );
+                                        }}
+                                        sx={{ width: 80 }}
                                     />
                                 </Stack>
                                 {coverDoc && (
@@ -796,6 +825,7 @@ function App() {
                                 trailsLifeSpace={trailsLifeSpace}
                                 trailEndSize={trailEndSize}
                                 trailsOpacity={trailsOpacity}
+                                recordDuration={recordDuration}
                             />
                         ) : (
                             <Stack
@@ -928,6 +958,29 @@ function App() {
                                 }
                                 marks
                                 valueLabelDisplay="auto"
+                            />
+                        </Stack>
+                        <Stack
+                            gap={2}
+                            direction="row"
+                            alignItems={"center"}
+                            mb={1}
+                        >
+                            <Typography>Record Duration</Typography>
+                            <TextField
+                                size="small"
+                                type={"number"}
+                                value={recordDuration}
+                                onChange={(e) => {
+                                    setRecordDuration(
+                                        parseFloat(e.target.value)
+                                    );
+                                    localStorage.setItem(
+                                        "recordDuration",
+                                        e.target.value
+                                    );
+                                }}
+                                sx={{ width: 80 }}
                             />
                         </Stack>
                         {coverDoc && (
