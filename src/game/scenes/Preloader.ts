@@ -67,6 +67,7 @@ export default class Preloader extends Phaser.Scene {
         return canvas.toDataURL();
     }
     preload() {
+        console.log("Preloader...");
         this.load.image("background", this.params.backgroundPath);
         if (this.params.enableMotion)
             this.load.image("center_logo", "assets/transparent_logo.png");

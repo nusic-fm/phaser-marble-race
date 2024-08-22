@@ -62,7 +62,6 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         ref
     ) {
         const game = useRef<Phaser.Game | null>(null!);
-        const gameStarted = useRef<boolean>(true);
 
         const [mediaRecorder, setMediaRecorder] =
             useState<null | MediaRecorder>(null);
@@ -111,36 +110,32 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         };
 
         useLayoutEffect(() => {
-            if (gameStarted.current === false) {
-                game.current = StartGame("game-container", {
-                    voices,
-                    coverDocId,
-                    musicStartOffset,
-                    skinPath,
-                    backgroundPath,
-                    selectedTracks,
-                    noOfRaceTracks,
-                    gravityY,
-                    width,
-                    enableMotion,
-                    trailPath,
-                    trailsLifeSpace,
-                    trailsOpacity,
-                    trailEndSize,
-                    recordDuration,
-                    isRecord,
-                });
+            game.current = StartGame("game-container", {
+                voices,
+                coverDocId,
+                musicStartOffset,
+                skinPath,
+                backgroundPath,
+                selectedTracks,
+                noOfRaceTracks,
+                gravityY,
+                width,
+                enableMotion,
+                trailPath,
+                trailsLifeSpace,
+                trailsOpacity,
+                trailEndSize,
+                recordDuration,
+                isRecord,
+            });
 
-                if (typeof ref === "function") {
-                    ref({ game: game.current, scene: null });
-                } else if (ref) {
-                    ref.current = { game: game.current, scene: null };
-                }
-                if (game.current && isRecord) {
-                    startRecording(game.current.canvas);
-                }
-            } else {
-                gameStarted.current = false;
+            if (typeof ref === "function") {
+                ref({ game: game.current, scene: null });
+            } else if (ref) {
+                ref.current = { game: game.current, scene: null };
+            }
+            if (game.current && isRecord) {
+                startRecording(game.current.canvas);
             }
 
             return () => {

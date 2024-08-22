@@ -766,6 +766,7 @@ export default class Game extends Phaser.Scene {
     // };
 
     create() {
+        console.log("Game Scene...");
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         if (!this.enableMotion) {

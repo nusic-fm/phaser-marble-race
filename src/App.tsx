@@ -321,7 +321,9 @@ function App() {
                                     width={canvasElemWidth}
                                     height={(canvasElemWidth * 16) / 9}
                                     sx={{
-                                        background: `url(${selectedBackground})`,
+                                        background: ready
+                                            ? "unset"
+                                            : `url(${selectedBackground})`,
                                         backgroundPosition: "center",
                                         backgroundSize: "contain",
                                         // borderRadius: 8,
@@ -802,7 +804,9 @@ function App() {
                         width={canvasElemWidth}
                         height={(canvasElemWidth * 16) / 9}
                         sx={{
-                            background: `url(${selectedBackground})`,
+                            background: ready
+                                ? "unset"
+                                : `url(${selectedBackground})`,
                             backgroundPosition: "center",
                             backgroundSize: "contain",
                             backgroundRepeat: "no-repeat",
