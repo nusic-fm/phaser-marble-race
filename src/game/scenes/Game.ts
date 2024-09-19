@@ -805,7 +805,15 @@ export default class Game extends Phaser.Scene {
                 .setDisplaySize(254, 84)
                 .setScrollFactor(0);
         }
-
+        const siteUrl = this.add
+            .text(this.centerX, this.centerY + 100, "marblerace.ai", {
+                fontSize: "28px",
+                color: "#ffffff",
+                stroke: "rgba(0,0,0,1)",
+                strokeThickness: 2,
+            })
+            .setScrollFactor(0);
+        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 50);
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 
