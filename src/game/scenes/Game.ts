@@ -634,7 +634,8 @@ export default class Game extends Phaser.Scene {
     createStaticCircles = (
         xOffset: number,
         startOffset: number,
-        prodShapes: any
+        prodShapes: any,
+        obstaclesShapes: any
     ) => {
         const yOffset = startOffset + 835 / 2;
         const baseSprite = this.matter.add
@@ -645,6 +646,39 @@ export default class Game extends Phaser.Scene {
             .setScale(this.cameras.main.width / 414);
         // .setDisplaySize(this.cameras.main.width + 96, 835);
         this.createTextureMask(xOffset, yOffset, baseSprite);
+        const randomObstaclePosition = _.sample([
+            [150, startOffset],
+            [350, startOffset],
+            [150, startOffset + 300],
+            [this.centerX, startOffset + 200],
+            [390, startOffset + 200],
+            [150, startOffset + 400],
+            [350, startOffset + 400],
+            [this.centerX, startOffset + 600],
+        ]);
+        const randomObstacle = _.sample(ObstacleNames);
+        const target = this.matter.add
+            .sprite(
+                randomObstaclePosition[0],
+                randomObstaclePosition[1],
+                `obstacle_${randomObstacle}`,
+                undefined,
+                {
+                    shape: obstaclesShapes[
+                        randomObstacle as keyof typeof obstaclesShapes
+                    ],
+                    // angle: 124,
+                    friction: 0,
+                    frictionAir: 0,
+                    frictionStatic: 0,
+                }
+            )
+            .setScale(0.17);
+        target.setInteractive();
+        target.on("pointerdown", (e: any) => {
+            this.handleDamage(target, e);
+        });
+
         return startOffset + 835;
     };
     createZigzagSlider = (
@@ -907,7 +941,7 @@ export default class Game extends Phaser.Scene {
 
     renderWeapons() {
         this.level1Hammer = this.add
-            .sprite(380, 600, "hammer_1")
+            .sprite(350, 550, "hammer_1")
             .setScale(0.1)
             .setScrollFactor(0)
             .setInteractive()
@@ -916,7 +950,7 @@ export default class Game extends Phaser.Scene {
             });
 
         this.level2Hammer = this.add
-            .sprite(380, 680, "hammer_2")
+            .sprite(350, 630, "hammer_2")
             .setScale(0.1)
             .setScrollFactor(0)
             .setInteractive()
@@ -993,7 +1027,8 @@ export default class Game extends Phaser.Scene {
                     startOffset = this.createStaticCircles(
                         xOffset,
                         startOffset,
-                        prodShapes
+                        prodShapes,
+                        obstaclesShapes
                     );
                     break;
                 case "02":
