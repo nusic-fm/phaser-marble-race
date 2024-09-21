@@ -6,6 +6,16 @@ export type GameVoiceInfo = {
     name: string;
     avatar: string;
 };
+export const ObstacleNames = [
+    "shiba",
+    "appalled_girlfriend",
+    "distracted_boyfriend",
+    "harold",
+    "meme_man",
+    "pedro",
+    "roll_safe",
+    "wojack",
+];
 export default class Preloader extends Phaser.Scene {
     public params: IGameDataParams;
     constructor() {
@@ -69,6 +79,14 @@ export default class Preloader extends Phaser.Scene {
     preload() {
         console.log("Preloader...");
         this.load.image("background", this.params.backgroundPath);
+        ObstacleNames.map((name) => {
+            this.load.image(
+                `obstacle_${name}`,
+                `assets/sprite/obstacles/${name}.png`
+            );
+        });
+        this.load.image("hammer_1", "assets/sprite/weapons/hammer_level_1.png");
+        this.load.image("hammer_2", "assets/sprite/weapons/hammer_level_2.png");
         if (this.params.enableMotion)
             this.load.image("center_logo", "assets/transparent_logo.png");
         // TODO: Enable the below and comment out the rest of the images
@@ -159,6 +177,10 @@ export default class Preloader extends Phaser.Scene {
         });
 
         this.load.json("prod_shapes", "assets/physics/new_shapes.json");
+        this.load.json(
+            "obstacles_shapes",
+            "assets/physics/obstacles_shapes.json"
+        );
         // Mini
         this.load.image("bar", "assets/sprite/bar.png");
         this.load.json("mini_shapes", "assets/physics/mini_shapes.json");
