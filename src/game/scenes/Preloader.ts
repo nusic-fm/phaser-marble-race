@@ -93,25 +93,27 @@ export default class Preloader extends Phaser.Scene {
         if (this.params.voices.length) {
             this.params.voices.map((voice) => {
                 // this.load.image(voice.id, voice.avatar);
-                const image = new Image();
-                image.src = voice.avatar;
-                image.crossOrigin = "anonymous";
-                new Promise((res) => {
-                    image.onload = () => {
-                        const dataUrl = this.resize(image);
-                        res(dataUrl);
-                    };
-                }).then((dataurl) => {
-                    // Add the newly created image as a texture
-                    // this.textures.addBase64(`resized_${voice.id}`, dataurl);
-                    this.load.image(`resized_${voice.id}`, dataurl as string);
-                });
+                // const image = new Image();
+                // image.src = voice.avatar;
+                // image.crossOrigin = "anonymous";
+                // new Promise((res) => {
+                //     image.onload = () => {
+                //         const dataUrl = this.resize(image);
+                //         res(dataUrl);
+                //     };
+                // }).then((dataurl) => {
+                //     // Add the newly created image as a texture
+                //     // this.textures.addBase64(`resized_${voice.id}`, dataurl);
+                //     this.load.image(`resized_${voice.id}`, dataurl as string);
+                // });
+                this.load.image(`resized_${voice.id}`, voice.avatar);
             });
         }
         // this.load.json(
         //     "screen_sprite_data",
         //     "assets/sprite/screen_sprite.json"
         // );
+        // ["01", "16", "03", "07", "06"]
         this.params.selectedTracks.map((trackNo) => {
             switch (trackNo) {
                 case "01":
