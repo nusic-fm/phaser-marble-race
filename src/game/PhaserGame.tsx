@@ -65,7 +65,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         },
         ref
     ) {
-        const height = (width * 16) / 9;
+        const height = (width * 16) / 10;
         const game = useRef<Phaser.Game | null>(null!);
 
         const [, setMediaRecorder] = useState<null | MediaRecorder>(null);

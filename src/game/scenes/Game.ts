@@ -97,10 +97,10 @@ export default class Game extends Phaser.Scene {
             data.selectedTracks,
             this.noOfRaceTracks
         );
-        this.marbleRadius =
-            (data.width >= 414 ? 22 : 20) * window.devicePixelRatio;
         this.enableMotion = data.enableMotion;
         this.canvasWidth = data.width;
+        this.marbleRadius =
+            (22 / 414) * this.canvasWidth * window.devicePixelRatio;
         if (data.height) this.canvasHeight = data.height;
         this.centerX = this.cameras.main.width / 2;
         this.centerY = this.cameras.main.height / 2;
@@ -134,17 +134,6 @@ export default class Game extends Phaser.Scene {
 
         // Optionally, hide the base sprite if you only want to show the texture
         baseSprite.setVisible(false);
-    };
-
-    scaleBaseSprite = (
-        baseSprite: Phaser.Physics.Matter.Sprite | Phaser.Physics.Matter.Image,
-        barsWidth: number = 0
-    ) => {
-        baseSprite.setScale(
-            ((this.canvasWidth + barsWidth) / baseSprite.width) *
-                window.devicePixelRatio,
-            window.devicePixelRatio
-        );
     };
 
     handleDamage(target: Phaser.Physics.Matter.Sprite, e: any) {
@@ -197,82 +186,107 @@ export default class Game extends Phaser.Scene {
     ) => {
         // TODO: Scale the sprite
         startOffset += 151;
-        this.crossRightRotation.push(
-            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+        const l1CrossLeft = this.matter.add.sprite(
+            18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 18,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
+        l1CrossLeft.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l1CrossLeft);
+        const l1CrossRight = this.matter.add.sprite(
+            canvasWidth - 18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossRightRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 126,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossRightRotation.push(
-            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+        l1CrossRight.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l1CrossRight);
+        startOffset += 200 * window.devicePixelRatio;
+        const l2CrossLeft = this.matter.add.sprite(
+            126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 18,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
+        l2CrossLeft.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l2CrossLeft);
+        const l2CrossRight = this.matter.add.sprite(
+            canvasWidth - 126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossRightRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 126,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
+        l2CrossRight.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l2CrossRight);
+        startOffset += 200 * window.devicePixelRatio;
+        const l3CrossLeft = this.matter.add.sprite(
+            18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
         );
-        return startOffset + 250;
+        l3CrossLeft.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l3CrossLeft);
+        const l3CrossRight = this.matter.add.sprite(
+            canvasWidth - 18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l3CrossRight.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l3CrossRight);
+        startOffset += 200 * window.devicePixelRatio;
+        const l4CrossLeft = this.matter.add.sprite(
+            126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l4CrossLeft.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l4CrossLeft);
+        const l4CrossRight = this.matter.add.sprite(
+            canvasWidth - 126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l4CrossRight.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l4CrossRight);
+
+        return startOffset + 500 * window.devicePixelRatio;
     };
     createSeesawScreen = (
         xOffset: number,
@@ -282,21 +296,23 @@ export default class Game extends Phaser.Scene {
         obstaclesShapes: any
     ) => {
         // const scaleFactor = this.cameras.main.width / 414;
-        const yOffset = startOffset + 835 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_06",
-            undefined,
-            {
+
+        const baseSprite = this.matter.add
+            .sprite(xOffset, startOffset, "prod_texture_loaded_06", undefined, {
                 shape: prodShapes["06"],
                 isStatic: true,
-            }
-        );
-        // .setScale(scaleFactor);
-        this.scaleBaseSprite(baseSprite, this.canvasWidth === 414 ? 100 : 90);
+            })
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
+        const yOffset = startOffset + baseSprite.height / 2;
+        baseSprite.setPosition(xOffset, yOffset);
         const seesawX = xOffset - 2;
-        const seesawY = yOffset - 130;
+        // 132 for 414 width
+        // 110 for 344 width
+        // FOrumula (132/414)*width + 30
+        const seesawContraintY = -(132 / 414) * this.canvasWidth;
+        const seesawY = yOffset + seesawContraintY;
         const seesaw = this.matter.add
             .sprite(seesawX, seesawY, "06b", undefined, {
                 shape: miniShapes["06b"],
@@ -307,7 +323,10 @@ export default class Game extends Phaser.Scene {
             bodyA: seesaw.body as BodyType,
             bodyB: baseSprite.body as BodyType,
             pointA: { x: 0, y: 0 },
-            pointB: { x: -2, y: -130 * window.devicePixelRatio },
+            pointB: {
+                x: -2,
+                y: seesawContraintY * window.devicePixelRatio,
+            },
             stiffness: 1,
             length: 0,
         });
@@ -357,9 +376,11 @@ export default class Game extends Phaser.Scene {
                 shape: prodShapes["21"],
                 isStatic: true,
             })
-            .setScale(this.cameras.main.width / 414);
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        return startOffset + 880;
+        return startOffset + baseSprite.height * window.devicePixelRatio;
     };
     createStarRotations = (_startOffset: number, miniShapes: any) => {
         // TODO: Scale the sprite
@@ -384,101 +405,179 @@ export default class Game extends Phaser.Scene {
         // First Row
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(115 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((115 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
                 .setAngle(35)
         );
 
         this.rightRotatableStars.push(
-            this.matter.add.sprite(
-                305 + barWidth,
-                startOffset,
-                "mini_star",
-                undefined,
-                {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                }
-            )
+            this.matter.add
+                .sprite(
+                    ((305 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
         );
         // Second Row
-        startOffset += 165;
+        startOffset += 165 * window.devicePixelRatio;
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((10 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
                 .setAngle(5)
         );
         this.rightRotatableStars.push(
-            this.matter.add.sprite(
-                206 + barWidth,
-                startOffset,
-                "mini_star",
-                undefined,
-                {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                }
-            )
+            this.matter.add
+                .sprite(
+                    ((206 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
             // .setAngle()
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((400 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(35)
         );
         // Third Row
-        startOffset += 180;
+        startOffset += 180 * window.devicePixelRatio;
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(115 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((115 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(30)
         );
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(305 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((305 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(5)
         );
         // Fourth Row
-        startOffset += 160;
+        startOffset += 160 * window.devicePixelRatio;
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((10 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(8)
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(210 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((210 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(30)
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((400 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(35)
         );
-        return startOffset + 149;
+        return startOffset + 500 * window.devicePixelRatio;
     };
 
     createStaticTriangles = (
@@ -488,17 +587,14 @@ export default class Game extends Phaser.Scene {
         obstaclesShapes: any
     ) => {
         const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_03",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_03", undefined, {
                 shape: prodShapes["03"],
                 isStatic: true,
-            }
-        );
-        this.scaleBaseSprite(baseSprite, this.canvasWidth === 414 ? 100 : 90); // TODO: Fix this
+            })
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
         // baseSprite.setScale(
         //     (this.cameras.main.width / baseSprite.width) *
         //         window.devicePixelRatio
@@ -544,17 +640,20 @@ export default class Game extends Phaser.Scene {
     ) => {
         this.reduceSizeScreenOffset.push(startOffset - 400);
         const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset + 3.5,
-            yOffset,
-            "prod_texture_loaded_16",
-            undefined,
-            {
-                shape: prodShapes["16"],
-                isStatic: true,
-            }
-        );
-        this.scaleBaseSprite(baseSprite, this.canvasWidth === 414 ? 100 : 120);
+        const baseSprite = this.matter.add
+            .sprite(
+                xOffset + 3.5,
+                yOffset,
+                "prod_texture_loaded_16",
+                undefined,
+                {
+                    shape: prodShapes["16"],
+                    isStatic: true,
+                }
+            )
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
         // .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         startOffset += baseSprite.height * window.devicePixelRatio;
@@ -674,22 +773,16 @@ export default class Game extends Phaser.Scene {
         prodShapes: any,
         obstaclesShapes: any
     ) => {
-        const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add.sprite(
-            xOffset,
-            yOffset,
-            "prod_texture_loaded_01",
-            undefined,
-            {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, startOffset, "prod_texture_loaded_01", undefined, {
                 shape: prodShapes["01"],
                 isStatic: true,
-            }
-        );
-        this.scaleBaseSprite(baseSprite, 100);
-        // baseSprite.setScale(
-        //     ((414 + 100) / baseSprite.width) * window.devicePixelRatio,
-        //     window.devicePixelRatio
-        // );
+            })
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
+        const yOffset = startOffset + baseSprite.height / 2;
+        baseSprite.setPosition(baseSprite.x, yOffset);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         const randomObstaclePosition = _.sample([
             [150, startOffset],
@@ -732,10 +825,9 @@ export default class Game extends Phaser.Scene {
         prodShapes: any,
         obstaclesShapes: any
     ) => {
-        const yOffset = startOffset + 833 / 2;
         const baseSprite = this.matter.add.sprite(
             xOffset,
-            yOffset,
+            startOffset,
             "prod_texture_loaded_07",
             undefined,
             {
@@ -743,8 +835,18 @@ export default class Game extends Phaser.Scene {
                 isStatic: true,
             }
         );
-        this.scaleBaseSprite(baseSprite, this.canvasWidth === 414 ? 100 : 90); // TODO: Fix this
-        this.createTextureMask(xOffset, yOffset, baseSprite);
+        baseSprite.setPosition(
+            baseSprite.x,
+            startOffset + baseSprite.height / 2
+        );
+        baseSprite.setScale(
+            window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+        );
+        this.createTextureMask(
+            xOffset,
+            startOffset + baseSprite.height / 2,
+            baseSprite
+        );
         const randomObstaclePosition = _.sample([
             [150, startOffset],
             [350, startOffset],
@@ -791,6 +893,9 @@ export default class Game extends Phaser.Scene {
                 friction: 1,
             }
         );
+        // For Testing
+        // this.largeCircle.setScale(0.1);
+        // this.isRotating = false;
         this.largeCircle.setScale(
             (this.canvasWidth / this.largeCircle.width) *
                 window.devicePixelRatio
@@ -882,7 +987,7 @@ export default class Game extends Phaser.Scene {
         _startOffset: number,
         miniShapes: any
     ) => {
-        this.reduceSizeScreenOffset.push(_startOffset);
+        this.reduceSizeScreenOffset.push(_startOffset - 300);
         let startOffset = _startOffset + 200;
         let leftOffset = 20;
         let rightOffset = canvasWidth - 20;
@@ -893,11 +998,14 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            leftOffset += 80;
+            leftOffset +=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
-        startOffset += 250;
+        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
         new Array(5).fill("").map(() => {
             this.horizontalCrossLeftRotation.push(
                 this.matter.add
@@ -905,12 +1013,15 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            rightOffset -= 80;
+            rightOffset -=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
         leftOffset = 20;
-        startOffset += 250;
+        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
         new Array(5).fill("").map(() => {
             this.horizontalCrossRightRotation.push(
                 this.matter.add
@@ -918,12 +1029,15 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            leftOffset += 80;
+            leftOffset +=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
         rightOffset = canvasWidth - 20;
-        startOffset += 250;
+        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
         new Array(5).fill("").map(() => {
             this.horizontalCrossLeftRotation.push(
                 this.matter.add
@@ -931,12 +1045,15 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            rightOffset -= 80;
+            rightOffset -=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
         this.increaseSizeScreenOffset.push(startOffset);
-        return startOffset + 230;
+        return startOffset + 500 * window.devicePixelRatio;
     };
     // createTrails = (voiceSprite: MatterJS.BodyType, i: number) => {
     //     const velocity = Math.sqrt(

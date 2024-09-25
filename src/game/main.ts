@@ -27,6 +27,7 @@ const config: Phaser.Types.Core.GameConfig = {
     // },
     // mode: Phaser.Scale.FIT,
     // autoRound: false,
+    powerPreference: "high-performance",
     scene: [Preloader, GameScene],
 };
 
