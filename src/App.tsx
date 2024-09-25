@@ -539,7 +539,7 @@ function App() {
                                     <Typography>Speed</Typography>
                                     <Slider
                                         sx={{ width: 200 }}
-                                        min={0.1}
+                                        min={0.2}
                                         step={0.2}
                                         max={2}
                                         value={marbleSpeed}
@@ -965,7 +965,7 @@ function App() {
                             <Typography>Speed</Typography>
                             <Slider
                                 sx={{ width: 200 }}
-                                min={0.1}
+                                min={0.2}
                                 step={0.2}
                                 max={2}
                                 value={marbleSpeed}

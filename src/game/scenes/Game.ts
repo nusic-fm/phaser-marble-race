@@ -1143,7 +1143,7 @@ export default class Game extends Phaser.Scene {
         this.level2Hammer = this.add
             .sprite(
                 350 * window.devicePixelRatio,
-                610 * window.devicePixelRatio,
+                630 * window.devicePixelRatio,
                 "hammer_2"
             )
             .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
@@ -1345,7 +1345,7 @@ export default class Game extends Phaser.Scene {
 
         let coundownValue = 3;
         // Start Countdown:
-        this.time.addEvent({
+        const clock = this.time.addEvent({
             delay: 1000,
             repeat: 2,
             callback: () => {
@@ -1367,6 +1367,7 @@ export default class Game extends Phaser.Scene {
                         }
                         this.isRotating = false;
                         this.countdownText.destroy();
+                        clock.destroy();
                     }
                 }
             },
@@ -1382,12 +1383,20 @@ export default class Game extends Phaser.Scene {
     update(): void {
         if (this.damageMultipliyer === 1) {
             // Highlight level 1 hammer
-            this.level2Hammer?.setScale(0.1);
-            this.level1Hammer?.setScale(0.2);
+            this.level2Hammer?.setScale(
+                (0.1 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
+            this.level1Hammer?.setScale(
+                (0.2 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         } else if (this.damageMultipliyer === 1.5) {
             // Highlight level 2 hammer
-            this.level1Hammer?.setScale(0.1);
-            this.level2Hammer?.setScale(0.2);
+            this.level1Hammer?.setScale(
+                (0.1 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
+            this.level2Hammer?.setScale(
+                (0.2 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         }
         // if (this.enableMotion && !this.isRotating)
         //     this.background.tilePositionX += 0.08;
@@ -1401,27 +1410,16 @@ export default class Game extends Phaser.Scene {
                     0.15
                 );
             }
-            this.marbles.map((voiceBody, i) => {
+            // Optimize marble updates
+            for (let i = 0; i < this.marbles.length; i++) {
+                const voiceBody = this.marbles[i];
                 const marbleImage = this.marblesImages[i];
-                // if (this.isRotating) {
-                //     // // Update the position of each circle
-                //     // const currentAngle =
-                //     //     this.baseAngle + i * this.angleIncrement;
-                //     // const x =
-                //     //     this.centerX + this.radius * Math.cos(currentAngle);
-                //     // const y =
-                //     //     this.centerY + this.radius * Math.sin(currentAngle);
-                //     // // Set the new position of the circle
-                //     // this.matter.body.setPosition(voiceBody, { x, y }, false);
-                //     // // this.matter.body.setAngle(voiceBody, currentAngle, false);
-                //     // marbleImage.setPosition(x, y);
-                //     // // marbleImage.setRotation(voiceBody.angle);
-                //     // this.marblesMasks[i].setPosition(
-                //     //     voiceBody.position.x - voiceBody.circleRadius,
-                //     //     voiceBody.position.y - voiceBody.circleRadius
-                //     // );
-                //     // this.labels[i].setPosition(-100, -100);
-                // } else {
+                const marbleMask = this.marblesMasks[i];
+                const label = this.labels[i];
+                const currentCrossIndex =
+                    this.currentMarblesSizeIndices[i.toString()];
+
+                // Update marble image position and rotation
                 if (marbleImage) {
                     marbleImage.setPosition(
                         voiceBody.position.x,
@@ -1429,157 +1427,164 @@ export default class Game extends Phaser.Scene {
                     );
                     marbleImage.setRotation(voiceBody.angle);
                 }
-                if (this.marblesMasks[i])
-                    this.marblesMasks[i].setPosition(
+
+                // Update marble mask position
+                if (marbleMask) {
+                    marbleMask.setPosition(
                         voiceBody.position.x - voiceBody.circleRadius,
                         voiceBody.position.y - voiceBody.circleRadius
                     );
-                // this.marblesMasks[i].setRotation(voiceBody.angle);
-                this.labels[i]?.setPosition(
-                    voiceBody.position.x - this.labels[i].width / 2,
-                    voiceBody.position.y - 60
-                );
-                const currentCrossIndex =
-                    this.currentMarblesSizeIndices[i.toString()];
+                }
+
+                // Update label position
+                if (label) {
+                    label.setPosition(
+                        voiceBody.position.x - label.width / 2,
+                        voiceBody.position.y - 60
+                    );
+                }
+
+                // Check for size changes
+                const isHeightReduced = this.heightReducedIndices.includes(i);
+                const y = voiceBody.position.y;
 
                 if (
-                    this.heightReducedIndices.includes(i) &&
-                    voiceBody.position.y >
-                        this.increaseSizeScreenOffset[currentCrossIndex]
+                    isHeightReduced &&
+                    y > this.increaseSizeScreenOffset[currentCrossIndex]
                 ) {
-                    this.currentMarblesSizeIndices[i.toString()] += 1;
+                    // Increase size
+                    this.currentMarblesSizeIndices[i.toString()]++;
                     this.matter.body.scale(voiceBody, 2, 2);
-                    marbleImage?.setDisplaySize(
-                        this.marbleRadius * 2,
-                        this.marbleRadius * 2
-                    );
-                    if (this.marblesMasks[i]) this.marblesMasks[i].scale = 1;
+                    if (marbleImage)
+                        marbleImage.setDisplaySize(
+                            this.marbleRadius * 2,
+                            this.marbleRadius * 2
+                        );
+                    if (marbleMask) marbleMask.scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
                     this.marbleTrailParticles[i].setConfig(this.trailConfig);
                 } else if (
-                    this.heightReducedIndices.includes(i) === false &&
-                    voiceBody.position.y >
-                        this.reduceSizeScreenOffset[currentCrossIndex] &&
-                    voiceBody.position.y <
-                        this.increaseSizeScreenOffset[currentCrossIndex]
+                    !isHeightReduced &&
+                    y > this.reduceSizeScreenOffset[currentCrossIndex] &&
+                    y < this.increaseSizeScreenOffset[currentCrossIndex]
                 ) {
+                    // Reduce size
                     this.heightReducedIndices.push(i);
                     this.matter.body.scale(voiceBody, 0.5, 0.5);
-                    marbleImage?.setDisplaySize(
-                        this.marbleRadius,
-                        this.marbleRadius
-                    );
-                    if (this.marblesMasks[i]) this.marblesMasks[i].scale = 0.5;
+                    if (marbleImage)
+                        marbleImage.setDisplaySize(
+                            this.marbleRadius,
+                            this.marbleRadius
+                        );
+                    if (marbleMask) marbleMask.scale = 0.5;
                     this.marbleTrailParticles[i].setConfig({
                         ...this.trailConfig,
                         scale: { start: 0.5, end: 0.01 },
                     });
                 }
-                // }
-                // this.createTrails(voiceBody, i);
-            });
-        }
-        // TODO: Uncomment this
-        // this.crossRightRotation.map((c) => {
-        //     c.setAngle(c.angle + 2);
-        //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        // });
-        // this.crossLeftRotation.map((c) => {
-        //     c.setAngle(c.angle - 2);
-        //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        // });
-        if (this.isInstrumentPlaying && this.isRotating === false) {
-            let largest = -Infinity;
-            let secondLargest = -Infinity;
-            let index = -1;
+            }
+            // TODO: Uncomment this
+            // this.crossRightRotation.map((c) => {
+            //     c.setAngle(c.angle + 2);
+            //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+            // });
+            // this.crossLeftRotation.map((c) => {
+            //     c.setAngle(c.angle - 2);
+            //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+            // });
+            if (this.isInstrumentPlaying && this.isRotating === false) {
+                let largest = -Infinity;
+                let secondLargest = -Infinity;
+                let index = -1;
 
-            for (let i = 0; i < this.marbles.length; i++) {
-                const y = this.marbles[i].position.y;
-                if (y < this.finishLineOffset) {
-                    if (y > largest) {
-                        secondLargest = largest;
-                        largest = y;
-                        index = i;
-                    } else if (y > secondLargest) {
-                        secondLargest = y;
+                for (let i = 0; i < this.marbles.length; i++) {
+                    const y = this.marbles[i].position.y;
+                    if (y < this.finishLineOffset) {
+                        if (y > largest) {
+                            secondLargest = largest;
+                            largest = y;
+                            index = i;
+                        } else if (y > secondLargest) {
+                            secondLargest = y;
+                        }
                     }
+                }
+
+                if (index === -1) return;
+                if (
+                    this.prevVoiceIdx !== index &&
+                    largest > secondLargest + this.marbleRadius
+                )
+                    this.throttledUpdate(index);
+                if (this.autoScroll) {
+                    this.cameras.main.scrollY = largest - 300;
                 }
             }
 
-            if (index === -1) return;
-            if (
-                this.prevVoiceIdx !== index &&
-                largest > secondLargest + this.marbleRadius
-            )
-                this.throttledUpdate(index);
-            if (this.autoScroll) {
-                this.cameras.main.scrollY = largest - 300;
-            }
+            // Optimised Code
+            // let largest = -Infinity;
+            // let secondLargest = -Infinity;
+            // let index = -1;
+
+            // for (let i = 0; i < this.marbles.length; i++) {
+            //     const y = this.marbles[i].position.y;
+            //     if (y < this.finishLineOffset) {
+            //         if (y > largest) {
+            //             secondLargest = largest;
+            //             largest = y;
+            //             index = i;
+            //         } else if (y > secondLargest) {
+            //             secondLargest = y;
+            //         }
+            //     }
+            // }
+            // TODO: Uncomment this
+            // this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
+            // this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
+            // this.horizontalCrossRightRotation.map((rs) =>
+            //     rs.setAngle(rs.angle + 2.5)
+            // );
+            // this.horizontalCrossLeftRotation.map((rs) =>
+            //     rs.setAngle(rs.angle - 2.5)
+            // );
+
+            // Bars up/down motion
+            // this.motionTimeForUpDownWard += delta;
+            // this.upDownMotionElems.map(
+            //     ({
+            //         matter,
+            //         startX,
+            //         startY,
+            //         moveSpeed,
+            //         maxBottom,
+            //         maxTop,
+            //         direction,
+            //     }) => {
+            //         const amplitude = (maxBottom - maxTop) / 2;
+            //         const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
+            //         // // Calculate new y position using a sine wave for smooth up and down movement
+            //         // const range = maxBottom - maxTop;
+            //         // const midPoint = maxTop + range / 2;
+            //         // Calculate the new position considering the angle
+            //         if (direction === "right") {
+            //             const newX =
+            //                 startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
+            //             const newY =
+            //                 startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
+            //             // Update the rectangle's y position using a sine wave
+            //             matter.setPosition(newX, newY);
+            //         } else {
+            //             const newX =
+            //                 startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
+            //             const newY =
+            //                 startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
+            //             // Update the rectangle's y position using a sine wave
+            //             matter.setPosition(newX, newY);
+            //         }
+            //     }
+            // );
         }
-
-        // Optimised Code
-        // let largest = -Infinity;
-        // let secondLargest = -Infinity;
-        // let index = -1;
-
-        // for (let i = 0; i < this.marbles.length; i++) {
-        //     const y = this.marbles[i].position.y;
-        //     if (y < this.finishLineOffset) {
-        //         if (y > largest) {
-        //             secondLargest = largest;
-        //             largest = y;
-        //             index = i;
-        //         } else if (y > secondLargest) {
-        //             secondLargest = y;
-        //         }
-        //     }
-        // }
-        // TODO: Uncomment this
-        // this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
-        // this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
-        // this.horizontalCrossRightRotation.map((rs) =>
-        //     rs.setAngle(rs.angle + 2.5)
-        // );
-        // this.horizontalCrossLeftRotation.map((rs) =>
-        //     rs.setAngle(rs.angle - 2.5)
-        // );
-
-        // Bars up/down motion
-        // this.motionTimeForUpDownWard += delta;
-        // this.upDownMotionElems.map(
-        //     ({
-        //         matter,
-        //         startX,
-        //         startY,
-        //         moveSpeed,
-        //         maxBottom,
-        //         maxTop,
-        //         direction,
-        //     }) => {
-        //         const amplitude = (maxBottom - maxTop) / 2;
-        //         const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
-        //         // // Calculate new y position using a sine wave for smooth up and down movement
-        //         // const range = maxBottom - maxTop;
-        //         // const midPoint = maxTop + range / 2;
-        //         // Calculate the new position considering the angle
-        //         if (direction === "right") {
-        //             const newX =
-        //                 startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
-        //             const newY =
-        //                 startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
-        //             // Update the rectangle's y position using a sine wave
-        //             matter.setPosition(newX, newY);
-        //         } else {
-        //             const newX =
-        //                 startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
-        //             const newY =
-        //                 startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
-        //             // Update the rectangle's y position using a sine wave
-        //             matter.setPosition(newX, newY);
-        //         }
-        //     }
-        // );
     }
 }
 
