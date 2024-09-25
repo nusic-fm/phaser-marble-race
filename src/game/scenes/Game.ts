@@ -61,8 +61,8 @@ export default class Game extends Phaser.Scene {
     largeCircle: Phaser.Physics.Matter.Image | undefined;
     isRotating = true;
     baseAngle = 0;
-    centerX = 256 - 94 / 2;
-    centerY = 256;
+    centerX = 0;
+    centerY = 0;
     radius = 100;
     angleIncrement = (2 * Math.PI) / 5;
     countdownText: Phaser.GameObjects.Text | undefined;
@@ -165,6 +165,10 @@ export default class Game extends Phaser.Scene {
                 [],
                 this
             );
+            // Play sound
+            if (this.damageMultipliyer === 1)
+                this.sound.play("low_whack", { volume: 0.5 });
+            else this.sound.play("high_whack", { volume: 0.5 });
         }
         if (target.scale <= 0.08) {
             target.destroy();
@@ -355,7 +359,9 @@ export default class Game extends Phaser.Scene {
                     frictionStatic: 0,
                 }
             )
-            .setScale(0.17);
+            .setScale(
+                (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
@@ -625,7 +631,9 @@ export default class Game extends Phaser.Scene {
                 frictionStatic: 0,
             }
         );
-        target.setScale(this.marbleRadius / target.width);
+        target.setScale(
+            (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+        );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
@@ -811,7 +819,9 @@ export default class Game extends Phaser.Scene {
                 // ignoreGravity: true,
             }
         );
-        target.setScale(this.marbleRadius / target.width);
+        target.setScale(
+            (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+        );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
@@ -848,7 +858,7 @@ export default class Game extends Phaser.Scene {
             baseSprite
         );
         const randomObstaclePosition = _.sample([
-            [150, startOffset],
+            [140, startOffset],
             [350, startOffset],
             [150, startOffset + 200],
             [350, startOffset + 200],
@@ -872,7 +882,9 @@ export default class Game extends Phaser.Scene {
                     frictionStatic: 0,
                 }
             )
-            .setScale(0.17);
+            .setScale(
+                (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
@@ -1116,8 +1128,12 @@ export default class Game extends Phaser.Scene {
 
     renderWeapons() {
         this.level1Hammer = this.add
-            .sprite(350, 550, "hammer_1")
-            .setScale(0.1)
+            .sprite(
+                350 * window.devicePixelRatio,
+                550 * window.devicePixelRatio,
+                "hammer_1"
+            )
+            .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
             .setScrollFactor(0)
             .setInteractive()
             .on("pointerdown", () => {
@@ -1125,8 +1141,12 @@ export default class Game extends Phaser.Scene {
             });
 
         this.level2Hammer = this.add
-            .sprite(350, 630, "hammer_2")
-            .setScale(0.1)
+            .sprite(
+                350 * window.devicePixelRatio,
+                610 * window.devicePixelRatio,
+                "hammer_2"
+            )
+            .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
             .setScrollFactor(0)
             .setInteractive()
             .on("pointerdown", () => {
@@ -1140,6 +1160,8 @@ export default class Game extends Phaser.Scene {
 
     create() {
         console.log("Game Scene...");
+        this.sound.add("low_whack", { loop: false, volume: 0.5 });
+        this.sound.add("high_whack", { loop: false, volume: 0.5 });
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         if (!this.enableMotion) {
@@ -1176,14 +1198,22 @@ export default class Game extends Phaser.Scene {
                 .setScrollFactor(0);
         }
         const siteUrl = this.add
-            .text(this.centerX, this.centerY + 100, "marblerace.ai", {
+            .text(this.centerX, this.centerY, "marblerace.ai", {
                 fontSize: "28px",
                 color: "#ffffff",
                 stroke: "rgba(0,0,0,1)",
                 strokeThickness: 4,
             })
             .setScrollFactor(0);
-        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 50);
+        // Below line placed at the right position when setScale is not used
+        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 100);
+
+        siteUrl.setScale(window.devicePixelRatio);
+        // Fix the position of the siteUrl when setScale is used
+        siteUrl.setPosition(
+            siteUrl.x - siteUrl.width / 2,
+            siteUrl.y - siteUrl.height / 2
+        );
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 
@@ -1347,18 +1377,18 @@ export default class Game extends Phaser.Scene {
             this.musicStartOffset
         ).then(() => (this.isInstrumentPlaying = true));
 
-        // this.renderWeapons();
+        this.renderWeapons();
     }
-    update(time: number, delta: number): void {
-        // if (this.damageMultipliyer === 1) {
-        //     // Highlight level 1 hammer
-        //     this.level2Hammer?.setScale(0.1);
-        //     this.level1Hammer?.setScale(0.2);
-        // } else if (this.damageMultipliyer === 1.5) {
-        //     // Highlight level 2 hammer
-        //     this.level1Hammer?.setScale(0.1);
-        //     this.level2Hammer?.setScale(0.2);
-        // }
+    update(): void {
+        if (this.damageMultipliyer === 1) {
+            // Highlight level 1 hammer
+            this.level2Hammer?.setScale(0.1);
+            this.level1Hammer?.setScale(0.2);
+        } else if (this.damageMultipliyer === 1.5) {
+            // Highlight level 2 hammer
+            this.level1Hammer?.setScale(0.1);
+            this.level2Hammer?.setScale(0.2);
+        }
         // if (this.enableMotion && !this.isRotating)
         //     this.background.tilePositionX += 0.08;
         if (this.marbles.length) {
@@ -1450,32 +1480,33 @@ export default class Game extends Phaser.Scene {
                 // this.createTrails(voiceBody, i);
             });
         }
-        this.crossRightRotation.map((c) => {
-            c.setAngle(c.angle + 2);
-            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        });
-        this.crossLeftRotation.map((c) => {
-            c.setAngle(c.angle - 2);
-            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        });
+        // TODO: Uncomment this
+        // this.crossRightRotation.map((c) => {
+        //     c.setAngle(c.angle + 2);
+        //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+        // });
+        // this.crossLeftRotation.map((c) => {
+        //     c.setAngle(c.angle - 2);
+        //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+        // });
         if (this.isInstrumentPlaying && this.isRotating === false) {
-            const voicesPositions = this.marbles.map((m) => m.position.y);
-            const unFinishedPositions = voicesPositions.filter(
-                (y) => y < this.finishLineOffset
-            );
-            const largest = Math.max(...unFinishedPositions);
-            const secondLargest = Math.max(
-                ...unFinishedPositions.filter((p) => p !== largest)
-            );
-            const index = voicesPositions.findIndex((v) => v === largest);
-            // if (largest > this.finishLineOffset) {
-            //     // Find 2nd largest
-            //     index = voicesPositions.indexOf(
-            //         voicesPositions
-            //             .filter((v) => v !== largest)
-            //             .reduce((a, b) => (a > b ? a : b))
-            //     );
-            // }
+            let largest = -Infinity;
+            let secondLargest = -Infinity;
+            let index = -1;
+
+            for (let i = 0; i < this.marbles.length; i++) {
+                const y = this.marbles[i].position.y;
+                if (y < this.finishLineOffset) {
+                    if (y > largest) {
+                        secondLargest = largest;
+                        largest = y;
+                        index = i;
+                    } else if (y > secondLargest) {
+                        secondLargest = y;
+                    }
+                }
+            }
+
             if (index === -1) return;
             if (
                 this.prevVoiceIdx !== index &&
@@ -1486,49 +1517,69 @@ export default class Game extends Phaser.Scene {
                 this.cameras.main.scrollY = largest - 300;
             }
         }
-        this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
-        this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
-        this.horizontalCrossRightRotation.map((rs) =>
-            rs.setAngle(rs.angle + 2.5)
-        );
-        this.horizontalCrossLeftRotation.map((rs) =>
-            rs.setAngle(rs.angle - 2.5)
-        );
+
+        // Optimised Code
+        // let largest = -Infinity;
+        // let secondLargest = -Infinity;
+        // let index = -1;
+
+        // for (let i = 0; i < this.marbles.length; i++) {
+        //     const y = this.marbles[i].position.y;
+        //     if (y < this.finishLineOffset) {
+        //         if (y > largest) {
+        //             secondLargest = largest;
+        //             largest = y;
+        //             index = i;
+        //         } else if (y > secondLargest) {
+        //             secondLargest = y;
+        //         }
+        //     }
+        // }
+        // TODO: Uncomment this
+        // this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
+        // this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
+        // this.horizontalCrossRightRotation.map((rs) =>
+        //     rs.setAngle(rs.angle + 2.5)
+        // );
+        // this.horizontalCrossLeftRotation.map((rs) =>
+        //     rs.setAngle(rs.angle - 2.5)
+        // );
+
         // Bars up/down motion
-        this.motionTimeForUpDownWard += delta;
-        this.upDownMotionElems.map(
-            ({
-                matter,
-                startX,
-                startY,
-                moveSpeed,
-                maxBottom,
-                maxTop,
-                direction,
-            }) => {
-                const amplitude = (maxBottom - maxTop) / 2;
-                const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
-                // // Calculate new y position using a sine wave for smooth up and down movement
-                // const range = maxBottom - maxTop;
-                // const midPoint = maxTop + range / 2;
-                // Calculate the new position considering the angle
-                if (direction === "right") {
-                    const newX =
-                        startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
-                    const newY =
-                        startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
-                    // Update the rectangle's y position using a sine wave
-                    matter.setPosition(newX, newY);
-                } else {
-                    const newX =
-                        startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
-                    const newY =
-                        startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
-                    // Update the rectangle's y position using a sine wave
-                    matter.setPosition(newX, newY);
-                }
-            }
-        );
+        // this.motionTimeForUpDownWard += delta;
+        // this.upDownMotionElems.map(
+        //     ({
+        //         matter,
+        //         startX,
+        //         startY,
+        //         moveSpeed,
+        //         maxBottom,
+        //         maxTop,
+        //         direction,
+        //     }) => {
+        //         const amplitude = (maxBottom - maxTop) / 2;
+        //         const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
+        //         // // Calculate new y position using a sine wave for smooth up and down movement
+        //         // const range = maxBottom - maxTop;
+        //         // const midPoint = maxTop + range / 2;
+        //         // Calculate the new position considering the angle
+        //         if (direction === "right") {
+        //             const newX =
+        //                 startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
+        //             const newY =
+        //                 startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
+        //             // Update the rectangle's y position using a sine wave
+        //             matter.setPosition(newX, newY);
+        //         } else {
+        //             const newX =
+        //                 startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
+        //             const newY =
+        //                 startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
+        //             // Update the rectangle's y position using a sine wave
+        //             matter.setPosition(newX, newY);
+        //         }
+        //     }
+        // );
     }
 }
 

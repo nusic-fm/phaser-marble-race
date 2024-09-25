@@ -35,15 +35,15 @@ import axios from "axios";
 import Close from "@mui/icons-material/Close";
 export const tracks = [
     "01",
-    "02",
+    // "02",
     "03",
     "06",
     "07",
-    "11",
-    "14",
+    // "11",
+    // "14",
     "16",
-    "21",
-    "22",
+    // "21",
+    // "22",
 ];
 
 function App() {
@@ -67,7 +67,9 @@ function App() {
             if (localTracks) {
                 const arr = JSON.parse(localTracks);
                 // unique array
-                return [...new Set(arr)] as string[];
+                return [...new Set(arr)].filter((t) =>
+                    tracks.includes(t as string)
+                ) as string[];
             }
             return tracks?.slice(0, 10);
         }
@@ -964,8 +966,8 @@ function App() {
                             <Slider
                                 sx={{ width: 200 }}
                                 min={0.1}
-                                step={0.1}
-                                max={0.8}
+                                step={0.2}
+                                max={2}
                                 value={marbleSpeed}
                                 onChange={(_, val) =>
                                     setMarbleSpeed(val as number)

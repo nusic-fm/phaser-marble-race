@@ -87,6 +87,9 @@ export default class Preloader extends Phaser.Scene {
         });
         this.load.image("hammer_1", "assets/sprite/weapons/hammer_level_1.png");
         this.load.image("hammer_2", "assets/sprite/weapons/hammer_level_2.png");
+        this.load.image("whack", "/assets/sprite/weapons/whack.png");
+        this.load.audio("low_whack", "/assets/sounds/low_whack.wav");
+        this.load.audio("high_whack", "/assets/sounds/high_whack.wav");
         if (this.params.enableMotion)
             this.load.image("center_logo", "assets/transparent_logo.png");
         // TODO: Enable the below and comment out the rest of the images
