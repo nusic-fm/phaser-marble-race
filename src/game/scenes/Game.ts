@@ -13,6 +13,10 @@ export default class Game extends Phaser.Scene {
     constructor() {
         super("game");
         this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
+        this.throttledUpdateGif = _.throttle(
+            this.throttledUpdateGif.bind(this),
+            100
+        ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
     public marbles: MatterJS.BodyType[] = [];
@@ -113,6 +117,25 @@ export default class Game extends Phaser.Scene {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
         marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
+    }
+
+    throttledUpdateGif(largestIndex: number) {
+        // Switch between mouth and normal image on each update to create a singing animation effect
+        const marbleImage = this.marblesImages[largestIndex];
+        const voiceId = this.voices[largestIndex].id;
+        const isMouthOpen =
+            marbleImage.texture.key === `resized_${voiceId}_mouth`;
+        const newTexture = isMouthOpen
+            ? `resized_${voiceId}`
+            : `resized_${voiceId}_mouth`;
+        // const newSize = this.marbleRadius * 2;
+
+        marbleImage.setTexture(newTexture);
+        marbleImage.setDisplaySize(
+            this.marbleRadius * 2,
+            this.marbleRadius * 2
+        );
+        marbleImage.setOrigin(0.5, 0.5);
     }
 
     createTextureMask = (
@@ -962,6 +985,7 @@ export default class Game extends Phaser.Scene {
             );
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2);
             circleImage.setOrigin(0.5, 0.5);
+            // Circle mask
             const maskShape = this.make.graphics();
             maskShape.fillStyle(0xffffff);
             maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
@@ -1496,7 +1520,7 @@ export default class Game extends Phaser.Scene {
             if (this.isInstrumentPlaying && this.isRotating === false) {
                 let largest = -Infinity;
                 let secondLargest = -Infinity;
-                let index = -1;
+                let largestIndex = -1;
 
                 for (let i = 0; i < this.marbles.length; i++) {
                     const y = this.marbles[i].position.y;
@@ -1504,19 +1528,33 @@ export default class Game extends Phaser.Scene {
                         if (y > largest) {
                             secondLargest = largest;
                             largest = y;
-                            index = i;
+                            largestIndex = i;
                         } else if (y > secondLargest) {
                             secondLargest = y;
                         }
                     }
                 }
 
-                if (index === -1) return;
+                if (largestIndex === -1) return;
                 if (
-                    this.prevVoiceIdx !== index &&
+                    this.prevVoiceIdx !== largestIndex &&
                     largest > secondLargest + this.marbleRadius
-                )
-                    this.throttledUpdate(index);
+                ) {
+                    this.throttledUpdate(largestIndex);
+                    // // Remove previous mouth image using this.prevVoiceIdx
+                    // const prevMarbleImage =
+                    //     this.marblesImages[this.prevVoiceIdx];
+                    // const id = this.voices[this.prevVoiceIdx].id;
+                    // if (
+                    //     prevMarbleImage &&
+                    //     prevMarbleImage.texture.key === `resized_${id}_mouth`
+                    // ) {
+                    //     prevMarbleImage.setTexture(`resized_${id}`);
+                    //     prevMarbleImage.setDisplaySize(newSize, newSize);
+                    //     prevMarbleImage.setOrigin(0.5, 0.5);
+                    // }
+                }
+                this.throttledUpdateGif(largestIndex);
                 if (this.autoScroll) {
                     this.cameras.main.scrollY = largest - 300;
                 }

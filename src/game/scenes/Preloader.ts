@@ -110,6 +110,10 @@ export default class Preloader extends Phaser.Scene {
                 //     this.load.image(`resized_${voice.id}`, dataurl as string);
                 // });
                 this.load.image(`resized_${voice.id}`, voice.avatar);
+                this.load.image(
+                    `resized_${voice.id}_mouth`,
+                    `https://voxaudio.nusic.fm/voice_models%2Favatars%2Fthumbs%2Fgifs%2F${voice.id}_200x200.png?alt=media`
+                );
             });
         }
         // this.load.json(
