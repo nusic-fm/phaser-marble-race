@@ -965,13 +965,14 @@ export default class Game extends Phaser.Scene {
                 }
             );
             this.marbles.push(circleBody);
-
-            this.marbleTrailParticles.push(
-                this.add.particles(0, 0, "trail", {
-                    ...this.trailConfig,
-                    follow: circleBody.position,
-                })
-            );
+            // TODO: Add Trails back
+            this.marbleTrailParticles
+                .push
+                // this.add.particles(0, 0, "trail", {
+                //     ...this.trailConfig,
+                //     follow: circleBody.position,
+                // })
+                ();
 
             // circleBody.emitter = emitter;
             // this.trailsGroup.push(this.add.group());
@@ -1487,7 +1488,7 @@ export default class Game extends Phaser.Scene {
                     if (marbleMask) marbleMask.scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
-                    this.marbleTrailParticles[i].setConfig(this.trailConfig);
+                    // this.marbleTrailParticles[i].setConfig(this.trailConfig);
                 } else if (
                     !isHeightReduced &&
                     y > this.reduceSizeScreenOffset[currentCrossIndex] &&
@@ -1502,10 +1503,10 @@ export default class Game extends Phaser.Scene {
                             this.marbleRadius
                         );
                     if (marbleMask) marbleMask.scale = 0.5;
-                    this.marbleTrailParticles[i].setConfig({
-                        ...this.trailConfig,
-                        scale: { start: 0.5, end: 0.01 },
-                    });
+                    // this.marbleTrailParticles[i].setConfig({
+                    //     ...this.trailConfig,
+                    //     scale: { start: 0.5, end: 0.01 },
+                    // });
                 }
             }
             // TODO: Uncomment this
@@ -1554,7 +1555,7 @@ export default class Game extends Phaser.Scene {
                     //     prevMarbleImage.setOrigin(0.5, 0.5);
                     // }
                 }
-                this.throttledUpdateGif(largestIndex);
+                // this.throttledUpdateGif(largestIndex);
                 if (this.autoScroll) {
                     this.cameras.main.scrollY = largest - 300;
                 }
