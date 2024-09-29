@@ -966,19 +966,14 @@ export default class Game extends Phaser.Scene {
             );
             this.marbles.push(circleBody);
             // TODO: Add Trails back
-            this.marbleTrailParticles
-                .push
-                // this.add.particles(0, 0, "trail", {
-                //     ...this.trailConfig,
-                //     follow: circleBody.position,
-                // })
-                ();
+            this.marbleTrailParticles.push(
+                this.add.particles(0, 0, "trail", {
+                    ...this.trailConfig,
+                    follow: circleBody.position,
+                })
+            );
 
-            // circleBody.emitter = emitter;
-            // this.trailsGroup.push(this.add.group());
-            // this.trailGraphics.push(this.add.graphics());
-            // this.trailPoints.push([]);
-            // // Create an image and attach it to the circle body
+            // Create an image and attach it to the circle body
             const circleImage = this.add.image(
                 circleBody.position.x,
                 circleBody.position.y,
@@ -986,19 +981,20 @@ export default class Game extends Phaser.Scene {
             );
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2);
             circleImage.setOrigin(0.5, 0.5);
-            // TODO: Add Mask back
-            // // Circle mask
-            // const maskShape = this.make.graphics({
-            //     x: circleBody.position.x * window.devicePixelRatio,
-            //     y: circleBody.position.y * window.devicePixelRatio,
-            // });
-            // maskShape.fillStyle(0xffffff);
-            // maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
-            // const mask = maskShape.createGeometryMask();
 
-            // // Apply the mask to the image
-            // circleImage.setMask(mask);
-            // this.marblesMasks.push(maskShape);
+            // Ensure the image is visible
+            circleImage.setDepth(1);
+            circleImage.setVisible(true);
+
+            // Circle mask
+            const maskShape = this.make.graphics();
+            maskShape.fillStyle(0xffffff);
+            maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
+            const mask = new Phaser.Display.Masks.GeometryMask(this, maskShape);
+
+            // Apply the mask to the image
+            circleImage.setMask(mask);
+            this.marblesMasks.push(maskShape);
 
             this.marblesImages.push(circleImage);
             // Create label for each circle
