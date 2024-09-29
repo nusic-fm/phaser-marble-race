@@ -1555,7 +1555,7 @@ export default class Game extends Phaser.Scene {
                     //     prevMarbleImage.setOrigin(0.5, 0.5);
                     // }
                 }
-                // this.throttledUpdateGif(largestIndex);
+                this.throttledUpdateGif(largestIndex);
                 if (this.autoScroll) {
                     this.cameras.main.scrollY = largest - 300;
                 }
