@@ -986,15 +986,19 @@ export default class Game extends Phaser.Scene {
             );
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2);
             circleImage.setOrigin(0.5, 0.5);
-            // Circle mask
-            const maskShape = this.make.graphics();
-            maskShape.fillStyle(0xffffff);
-            maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
-            const mask = maskShape.createGeometryMask();
+            // TODO: Add Mask back
+            // // Circle mask
+            // const maskShape = this.make.graphics({
+            //     x: circleBody.position.x * window.devicePixelRatio,
+            //     y: circleBody.position.y * window.devicePixelRatio,
+            // });
+            // maskShape.fillStyle(0xffffff);
+            // maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
+            // const mask = maskShape.createGeometryMask();
 
-            // Apply the mask to the image
-            circleImage.setMask(mask);
-            this.marblesMasks.push(maskShape);
+            // // Apply the mask to the image
+            // circleImage.setMask(mask);
+            // this.marblesMasks.push(maskShape);
 
             this.marblesImages.push(circleImage);
             // Create label for each circle
