@@ -166,7 +166,7 @@ export default class Game extends Phaser.Scene {
             target.setScale(target.scale / (1.1 * this.damageMultipliyer));
             const particleConfig = {
                 speed: { min: -50, max: 50 },
-                scale: { start: 1, end: 10 },
+                scale: { start: 0.01, end: 0.1 },
                 blendMode: "ADD",
                 // lifespan: 400,
                 alpha: 0.5,
@@ -175,7 +175,7 @@ export default class Game extends Phaser.Scene {
             const particle = this.add.particles(
                 e.worldX,
                 e.worldY,
-                "trail",
+                "whack",
                 particleConfig
             );
             // Add an event listener to destroy the emitter after the particles' lifespan
@@ -1224,7 +1224,7 @@ export default class Game extends Phaser.Scene {
         }
         const siteUrl = this.add
             .text(this.centerX, this.centerY, "marblerace.ai", {
-                fontSize: "28px",
+                fontSize: `${28 * window.devicePixelRatio}px`,
                 color: "#ffffff",
                 stroke: "rgba(0,0,0,1)",
                 strokeThickness: 4,
@@ -1233,12 +1233,12 @@ export default class Game extends Phaser.Scene {
         // Below line placed at the right position when setScale is not used
         siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 100);
 
-        siteUrl.setScale(window.devicePixelRatio);
-        // Fix the position of the siteUrl when setScale is used
-        siteUrl.setPosition(
-            siteUrl.x - siteUrl.width / 2,
-            siteUrl.y - siteUrl.height / 2
-        );
+        // siteUrl.setScale(window.devicePixelRatio);
+        // // Fix the position of the siteUrl when setScale is used
+        // siteUrl.setPosition(
+        //     siteUrl.x - siteUrl.width / 2,
+        //     siteUrl.y - siteUrl.height / 2
+        // );
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 
@@ -1480,11 +1480,12 @@ export default class Game extends Phaser.Scene {
                     // Increase size
                     this.currentMarblesSizeIndices[i.toString()]++;
                     this.matter.body.scale(voiceBody, 2, 2);
-                    if (marbleImage)
+                    if (marbleImage) {
                         marbleImage.setDisplaySize(
                             this.marbleRadius * 2,
                             this.marbleRadius * 2
                         );
+                    }
                     if (marbleMask) marbleMask.scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
@@ -1497,11 +1498,12 @@ export default class Game extends Phaser.Scene {
                     // Reduce size
                     this.heightReducedIndices.push(i);
                     this.matter.body.scale(voiceBody, 0.5, 0.5);
-                    if (marbleImage)
+                    if (marbleImage) {
                         marbleImage.setDisplaySize(
                             this.marbleRadius,
                             this.marbleRadius
                         );
+                    }
                     if (marbleMask) marbleMask.scale = 0.5;
                     // this.marbleTrailParticles[i].setConfig({
                     //     ...this.trailConfig,
