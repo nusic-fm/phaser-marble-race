@@ -54,7 +54,7 @@ type Props = {
     onGotoControls?: (coverDocId: string, coverDoc: CoverV1) => void;
 };
 const Rows = ({ onCoverSelection, onPlay, onGotoControls }: Props) => {
-    const [recordsLimit, setRecordsLimit] = useState(15);
+    const [recordsLimit, setRecordsLimit] = useState(2);
     const [isLatest, setIsLatest] = useState(false);
     const [coversCollectionSnapshot, coversLoading, error] = useCollection(
         getRowsQuery(recordsLimit, isLatest)

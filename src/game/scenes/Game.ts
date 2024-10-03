@@ -1,22 +1,21 @@
 import Phaser from "phaser";
 import {
+    getToneCurrentTime,
     marbleRaceOnlyInstrument,
     marbleRacePlayVocals,
 } from "../../hooks/useTonejs";
 import _ from "lodash";
 import { GameVoiceInfo, ObstacleNames } from "./Preloader";
-import { IGameDataParams } from "../PhaserGame";
-import { duplicateArrayElemToN } from "../../helpers";
 import { BodyType } from "matter";
+import { duplicateArrayElemToN } from "../../helpers";
+import { EventBus } from "../EventBus";
+import { IGameDataParams } from "../PhaserGame";
+import { Circle } from "@mui/icons-material";
 
 export default class Game extends Phaser.Scene {
     constructor() {
         super("game");
         this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
-        this.throttledUpdateGif = _.throttle(
-            this.throttledUpdateGif.bind(this),
-            100
-        ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
     public marbles: MatterJS.BodyType[] = [];
@@ -49,7 +48,7 @@ export default class Game extends Phaser.Scene {
     // public trails: { x: number; y: number }[][] = [];
     // public trailGraphics: Phaser.GameObjects.Graphics[] = [];
     // public trailsGroup: Phaser.GameObjects.Group[] = [];
-    public trailLength: number;
+    public trailLength: number = 0;
     public trailPoints: {
         x: number;
         y: number;
@@ -58,10 +57,10 @@ export default class Game extends Phaser.Scene {
     }[][] = [];
     // public shape: any;
     public voices: GameVoiceInfo[] = [];
-    public coverDocId: string;
-    public musicStartOffset: number;
-    public selectedTracks: string[];
-    public noOfRaceTracks: number;
+    public coverDocId: string = "";
+    public musicStartOffset: number = 0;
+    public selectedTracks: string[] = [];
+    public noOfRaceTracks: number = 0;
     largeCircle: Phaser.Physics.Matter.Image | undefined;
     isRotating = true;
     baseAngle = 0;
@@ -72,70 +71,86 @@ export default class Game extends Phaser.Scene {
     countdownText: Phaser.GameObjects.Text | undefined;
     finishLineOffset: number = 0;
     marbleRadius = 23;
-    background: Phaser.GameObjects.TileSprite;
+    background: Phaser.GameObjects.TileSprite | undefined;
     enableMotion: boolean = false;
     marbleTrailParticles: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
-    trailConfig = {
-        speed: { min: -50, max: 50 },
-        scale: {
-            start: window.devicePixelRatio,
-            end: window.devicePixelRatio * 0.5,
-        },
-        blendMode: "ADD",
-        lifespan: 400,
-        alpha: 0.5,
-    };
+    isGameOver: boolean = false;
+    winnerIdx: number = -1;
+    isResultShown = false;
     damageMultipliyer: number = 1;
     level1Hammer: Phaser.GameObjects.Sprite | undefined;
     level2Hammer: Phaser.GameObjects.Sprite | undefined;
     canvasWidth: number = 0;
     canvasHeight: number = 0;
+    dpr: number = window.devicePixelRatio || 2;
+    trailConfig = {
+        speed: { min: -50, max: 50 },
+        scale: {
+            start: this.dpr,
+            end: this.dpr * 0.5,
+        },
+        blendMode: "ADD",
+        lifespan: 400,
+        alpha: 0.5,
+    };
+    showObstacles: boolean = false;
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
-        this.voices = data.voices.sort(() => Math.random() - 0.5);
+        this.voices = data.voices;
+        // .sort(() => Math.random() - 0.5);
         this.coverDocId = data.coverDocId;
         this.musicStartOffset = data.musicStartOffset;
-        this.noOfRaceTracks = data.noOfRaceTracks;
+        this.noOfRaceTracks = data.noOfRaceTracks || 5;
         this.selectedTracks = duplicateArrayElemToN(
             data.selectedTracks,
             this.noOfRaceTracks
         );
         this.enableMotion = data.enableMotion;
         this.canvasWidth = data.width;
-        this.marbleRadius =
-            (22 / 414) * this.canvasWidth * window.devicePixelRatio;
+        this.marbleRadius = (22 / 414) * this.canvasWidth * this.dpr;
         if (data.height) this.canvasHeight = data.height;
         this.centerX = this.cameras.main.width / 2;
         this.centerY = this.cameras.main.height / 2;
         this.trailConfig.scale.end = data.trailEndSize;
         this.trailConfig.lifespan = data.trailsLifeSpace;
         this.trailConfig.alpha = data.trailsOpacity;
+        this.dpr = window.devicePixelRatio || 2;
+        this.showObstacles = data.showObstacles || false;
     }
 
-    throttledUpdate(index: number) {
+    throttledUpdate(index: number, switchOld: boolean = true) {
         this.prevVoiceIdx = index;
         // Logic that should be throttled
         marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
     }
 
-    throttledUpdateGif(largestIndex: number) {
-        // Switch between mouth and normal image on each update to create a singing animation effect
-        const marbleImage = this.marblesImages[largestIndex];
-        const voiceId = this.voices[largestIndex].id;
-        const isMouthOpen =
-            marbleImage.texture.key === `resized_${voiceId}_mouth`;
-        const newTexture = isMouthOpen
-            ? `resized_${voiceId}`
-            : `resized_${voiceId}_mouth`;
-        // const newSize = this.marbleRadius * 2;
+    renderWeapons() {
+        this.level1Hammer = this.add
+            .sprite(
+                (350 / 414) * this.canvasWidth * this.dpr,
+                (550 / 414) * this.canvasWidth * this.dpr,
+                "hammer_1"
+            )
+            .setScale((0.1 / 414) * this.canvasWidth * this.dpr)
+            .setScrollFactor(0)
+            .setInteractive()
+            .on("pointerdown", () => {
+                this.damageMultipliyer = 1;
+            });
 
-        marbleImage.setTexture(newTexture);
-        marbleImage.setDisplaySize(
-            this.marbleRadius * 2,
-            this.marbleRadius * 2
-        );
-        marbleImage.setOrigin(0.5, 0.5);
+        this.level2Hammer = this.add
+            .sprite(
+                (350 / 414) * this.canvasWidth * this.dpr,
+                (630 / 414) * this.canvasWidth * this.dpr,
+                "hammer_2"
+            )
+            .setScale((0.1 / 414) * this.canvasWidth * this.dpr)
+            .setScrollFactor(0)
+            .setInteractive()
+            .on("pointerdown", () => {
+                this.damageMultipliyer = 1.5;
+            });
     }
 
     createTextureMask = (
@@ -145,11 +160,7 @@ export default class Game extends Phaser.Scene {
     ) => {
         // Create the texture sprite
         const textureSprite = this.add.sprite(xOffset, yOffset, "textureImage");
-        // textureSprite.setScale(
-        //     (this.canvasWidth / textureSprite.width) * window.devicePixelRatio,
-        //     (this.canvasHeight / textureSprite.height) * window.devicePixelRatio
-        // );
-        textureSprite.setScale(window.devicePixelRatio);
+        textureSprite.setScale(this.dpr);
 
         // Use the base sprite's texture as a mask for the texture sprite
         const mask = new Phaser.Display.Masks.BitmapMask(this, baseSprite);
@@ -157,6 +168,437 @@ export default class Game extends Phaser.Scene {
 
         // Optionally, hide the base sprite if you only want to show the texture
         baseSprite.setVisible(false);
+    };
+
+    createCrossScreen = (
+        startOffset: number,
+        canvasWidth: number,
+        miniShapes: any
+    ) => {
+        // TODO: Scale the sprite
+        startOffset += 151;
+        const l1CrossLeft = this.matter.add.sprite(
+            18 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l1CrossLeft.setScale(this.dpr);
+        this.crossRightRotation.push(l1CrossLeft);
+        const l1CrossRight = this.matter.add.sprite(
+            canvasWidth - 18 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l1CrossRight.setScale(this.dpr);
+        this.crossLeftRotation.push(l1CrossRight);
+        startOffset += 200 * this.dpr;
+        const l2CrossLeft = this.matter.add.sprite(
+            126 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l2CrossLeft.setScale(this.dpr);
+        this.crossLeftRotation.push(l2CrossLeft);
+        const l2CrossRight = this.matter.add.sprite(
+            canvasWidth - 126 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l2CrossRight.setScale(this.dpr);
+        this.crossRightRotation.push(l2CrossRight);
+        startOffset += 200 * this.dpr;
+        const l3CrossLeft = this.matter.add.sprite(
+            18 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l3CrossLeft.setScale(this.dpr);
+        this.crossRightRotation.push(l3CrossLeft);
+        const l3CrossRight = this.matter.add.sprite(
+            canvasWidth - 18 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l3CrossRight.setScale(this.dpr);
+        this.crossLeftRotation.push(l3CrossRight);
+        startOffset += 200 * this.dpr;
+        const l4CrossLeft = this.matter.add.sprite(
+            126 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l4CrossLeft.setScale(this.dpr);
+        this.crossLeftRotation.push(l4CrossLeft);
+        const l4CrossRight = this.matter.add.sprite(
+            canvasWidth - 126 * this.dpr,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l4CrossRight.setScale(this.dpr);
+        this.crossRightRotation.push(l4CrossRight);
+
+        return startOffset + 500 * this.dpr;
+    };
+    createSeesawScreen = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any,
+        miniShapes: any,
+        obstaclesShapes: any
+    ) => {
+        const baseSprite = this.matter.add
+            .sprite(xOffset, startOffset, "prod_texture_loaded_06", undefined, {
+                shape: prodShapes["06"],
+                isStatic: true,
+            })
+            .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
+        const yOffset = startOffset + baseSprite.height / 2;
+        baseSprite.setPosition(xOffset, yOffset);
+        const seesawX = xOffset - 2;
+        // 132 for 414 width
+        // 110 for 344 width
+        // FOrumula (132/414)*width + 30
+        const seesawContraintY = -(132 / 414) * this.canvasWidth;
+        const seesawY = yOffset + seesawContraintY;
+        const seesaw = this.matter.add
+            .sprite(seesawX, seesawY, "06b", undefined, {
+                shape: miniShapes["06b"],
+                // isStatic: true,
+            })
+            .setScale(this.dpr);
+        const contraint = this.matter.constraint.create({
+            bodyA: seesaw.body as BodyType,
+            bodyB: baseSprite.body as BodyType,
+            pointA: { x: 0, y: 0 },
+            pointB: {
+                x: -2,
+                y: seesawContraintY * this.dpr,
+            },
+            stiffness: 1,
+            length: 0,
+        });
+        if (this.showObstacles) {
+            const randomObstaclePosition = _.sample([
+                [this.centerX, seesawY - 200],
+                [this.centerX - 100, seesawY],
+                [this.centerX + 100, seesawY],
+                [this.centerX, seesawY + 200],
+                [this.centerX - 100, seesawY + 400],
+                [this.centerX + 100, seesawY + 400],
+            ]);
+
+            const randomObstacle = _.sample(ObstacleNames);
+            if (randomObstaclePosition && randomObstacle) {
+                const target = this.matter.add
+                    .sprite(
+                        randomObstaclePosition[0],
+                        randomObstaclePosition[1],
+                        `obstacle_${randomObstacle}`,
+                        undefined,
+                        {
+                            shape: obstaclesShapes[
+                                randomObstacle as keyof typeof obstaclesShapes
+                            ],
+                            friction: 0,
+                            frictionAir: 0,
+                            frictionStatic: 0,
+                        }
+                    )
+                    .setScale((0.17 / 414) * this.canvasWidth * this.dpr);
+                target.setInteractive();
+                target.on("pointerdown", (e: any) => {
+                    this.handleDamage(target, e);
+                });
+            }
+        }
+        this.matter.world.add(contraint);
+        this.createTextureMask(seesawX, seesawY, seesaw);
+        this.createTextureMask(xOffset, yOffset, baseSprite);
+        return startOffset + baseSprite.height * this.dpr;
+    };
+    createCircleBlockers = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any
+    ) => {
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_21", undefined, {
+                shape: prodShapes["21"],
+                isStatic: true,
+            })
+            .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
+        this.createTextureMask(xOffset, yOffset, baseSprite);
+        return startOffset + baseSprite.height * this.dpr;
+    };
+    createStarRotations = (_startOffset: number, miniShapes: any) => {
+        // TODO: Scale the sprite
+        // Stars
+        const barWidth = 0;
+        let startOffset = _startOffset + 250;
+        // this.matter.add.sprite(
+        //     barWidth / 2,
+        //     startOffset + 270,
+        //     "bar",
+        //     undefined,
+        //     {
+        //         shape: miniShapes["bar"],
+        //         isStatic: true,
+        //     }
+        // );
+        // this.matter.add.sprite(487, startOffset + 270, "bar", undefined, {
+        //     shape: miniShapes["bar"],
+        //     isStatic: true,
+        // });
+
+        // First Row
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((115 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale((1 / 414) * this.canvasWidth * this.dpr)
+                .setAngle(35)
+        );
+
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((305 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale((1 / 414) * this.canvasWidth * this.dpr)
+        );
+        // Second Row
+        startOffset += 165 * this.dpr;
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((10 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale((1 / 414) * this.canvasWidth * this.dpr)
+                .setAngle(5)
+        );
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((206 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale((1 / 414) * this.canvasWidth * this.dpr)
+            // .setAngle()
+        );
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((400 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(this.dpr)
+                .setAngle(35)
+        );
+        // Third Row
+        startOffset += 180 * this.dpr;
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((115 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(this.dpr)
+                .setAngle(30)
+        );
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((305 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(this.dpr)
+                .setAngle(5)
+        );
+        // Fourth Row
+        startOffset += 160 * this.dpr;
+        this.rightRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((10 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(this.dpr)
+                .setAngle(8)
+        );
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((210 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(this.dpr)
+                .setAngle(30)
+        );
+        this.leftRotatableStars.push(
+            this.matter.add
+                .sprite(
+                    ((400 / 414) * this.canvasWidth + barWidth) * this.dpr,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(this.dpr)
+                .setAngle(35)
+        );
+        return startOffset + 500 * this.dpr;
+    };
+
+    createStaticTriangles = (
+        xOffset: number,
+        startOffset: number,
+        prodShapes: any,
+        obstaclesShapes: any
+    ) => {
+        const yOffset = startOffset + 833 / 2;
+        const baseSprite = this.matter.add
+            .sprite(xOffset, yOffset, "prod_texture_loaded_03", undefined, {
+                shape: prodShapes["03"],
+                isStatic: true,
+            })
+            .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
+        this.createTextureMask(xOffset, yOffset, baseSprite);
+        if (this.showObstacles) {
+            const randomObstaclePosition = _.sample([
+                [100, startOffset],
+                [350, startOffset],
+                [this.centerX, startOffset + 200],
+                [100, startOffset + 400],
+                [400, startOffset + 400],
+            ]);
+
+            const randomObstacle = _.sample(ObstacleNames);
+            if (randomObstaclePosition && randomObstacle) {
+                const target = this.matter.add.sprite(
+                    randomObstaclePosition[0],
+                    randomObstaclePosition[1],
+                    `obstacle_${randomObstacle}`,
+                    undefined,
+                    {
+                        shape: obstaclesShapes[
+                            randomObstacle as keyof typeof obstaclesShapes
+                        ],
+                        // angle: 124,
+                        friction: 0,
+                        frictionAir: 0,
+                        frictionStatic: 0,
+                    }
+                );
+                target.setScale((0.17 / 414) * this.canvasWidth * this.dpr);
+                target.setInteractive();
+                target.on("pointerdown", (e: any) => {
+                    this.handleDamage(target, e);
+                });
+            }
+        }
+        return startOffset + baseSprite.height * this.dpr;
     };
 
     handleDamage(target: Phaser.Physics.Matter.Sprite, e: any) {
@@ -206,463 +648,6 @@ export default class Game extends Phaser.Scene {
         //     target.destroy(); // Destroy the target if health is 0
         // }
     }
-    createCrossScreen = (
-        startOffset: number,
-        canvasWidth: number,
-        miniShapes: any
-    ) => {
-        // TODO: Scale the sprite
-        startOffset += 151;
-        const l1CrossLeft = this.matter.add.sprite(
-            18 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l1CrossLeft.setScale(window.devicePixelRatio);
-        this.crossRightRotation.push(l1CrossLeft);
-        const l1CrossRight = this.matter.add.sprite(
-            canvasWidth - 18 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l1CrossRight.setScale(window.devicePixelRatio);
-        this.crossLeftRotation.push(l1CrossRight);
-        startOffset += 200 * window.devicePixelRatio;
-        const l2CrossLeft = this.matter.add.sprite(
-            126 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l2CrossLeft.setScale(window.devicePixelRatio);
-        this.crossLeftRotation.push(l2CrossLeft);
-        const l2CrossRight = this.matter.add.sprite(
-            canvasWidth - 126 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l2CrossRight.setScale(window.devicePixelRatio);
-        this.crossRightRotation.push(l2CrossRight);
-        startOffset += 200 * window.devicePixelRatio;
-        const l3CrossLeft = this.matter.add.sprite(
-            18 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l3CrossLeft.setScale(window.devicePixelRatio);
-        this.crossRightRotation.push(l3CrossLeft);
-        const l3CrossRight = this.matter.add.sprite(
-            canvasWidth - 18 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l3CrossRight.setScale(window.devicePixelRatio);
-        this.crossLeftRotation.push(l3CrossRight);
-        startOffset += 200 * window.devicePixelRatio;
-        const l4CrossLeft = this.matter.add.sprite(
-            126 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l4CrossLeft.setScale(window.devicePixelRatio);
-        this.crossLeftRotation.push(l4CrossLeft);
-        const l4CrossRight = this.matter.add.sprite(
-            canvasWidth - 126 * window.devicePixelRatio,
-            startOffset,
-            "02_cross",
-            undefined,
-            {
-                shape: miniShapes["02"],
-                isStatic: true,
-            }
-        );
-        l4CrossRight.setScale(window.devicePixelRatio);
-        this.crossRightRotation.push(l4CrossRight);
-
-        return startOffset + 500 * window.devicePixelRatio;
-    };
-    createSeesawScreen = (
-        xOffset: number,
-        startOffset: number,
-        prodShapes: any,
-        miniShapes: any,
-        obstaclesShapes: any
-    ) => {
-        // const scaleFactor = this.cameras.main.width / 414;
-
-        const baseSprite = this.matter.add
-            .sprite(xOffset, startOffset, "prod_texture_loaded_06", undefined, {
-                shape: prodShapes["06"],
-                isStatic: true,
-            })
-            .setScale(
-                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
-            );
-        const yOffset = startOffset + baseSprite.height / 2;
-        baseSprite.setPosition(xOffset, yOffset);
-        const seesawX = xOffset - 2;
-        // 132 for 414 width
-        // 110 for 344 width
-        // FOrumula (132/414)*width + 30
-        const seesawContraintY = -(132 / 414) * this.canvasWidth;
-        const seesawY = yOffset + seesawContraintY;
-        const seesaw = this.matter.add
-            .sprite(seesawX, seesawY, "06b", undefined, {
-                shape: miniShapes["06b"],
-                // isStatic: true,
-            })
-            .setScale(window.devicePixelRatio);
-        const contraint = this.matter.constraint.create({
-            bodyA: seesaw.body as BodyType,
-            bodyB: baseSprite.body as BodyType,
-            pointA: { x: 0, y: 0 },
-            pointB: {
-                x: -2,
-                y: seesawContraintY * window.devicePixelRatio,
-            },
-            stiffness: 1,
-            length: 0,
-        });
-        const randomObstaclePosition = _.sample([
-            [this.centerX, seesawY - 200],
-            [this.centerX - 100, seesawY],
-            [this.centerX + 100, seesawY],
-            [this.centerX, seesawY + 200],
-            [this.centerX - 100, seesawY + 400],
-            [this.centerX + 100, seesawY + 400],
-        ]);
-
-        const randomObstacle = _.sample(ObstacleNames);
-        const target = this.matter.add
-            .sprite(
-                randomObstaclePosition[0],
-                randomObstaclePosition[1],
-                `obstacle_${randomObstacle}`,
-                undefined,
-                {
-                    shape: obstaclesShapes[
-                        randomObstacle as keyof typeof obstaclesShapes
-                    ],
-                    friction: 0,
-                    frictionAir: 0,
-                    frictionStatic: 0,
-                }
-            )
-            .setScale(
-                (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
-            );
-        target.setInteractive();
-        target.on("pointerdown", (e: any) => {
-            this.handleDamage(target, e);
-        });
-        this.matter.world.add(contraint);
-        this.createTextureMask(seesawX, seesawY, seesaw);
-        this.createTextureMask(xOffset, yOffset, baseSprite);
-        return startOffset + baseSprite.height * window.devicePixelRatio;
-    };
-    createCircleBlockers = (
-        xOffset: number,
-        startOffset: number,
-        prodShapes: any
-    ) => {
-        const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add
-            .sprite(xOffset, yOffset, "prod_texture_loaded_21", undefined, {
-                shape: prodShapes["21"],
-                isStatic: true,
-            })
-            .setScale(
-                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
-            );
-        this.createTextureMask(xOffset, yOffset, baseSprite);
-        return startOffset + baseSprite.height * window.devicePixelRatio;
-    };
-    createStarRotations = (_startOffset: number, miniShapes: any) => {
-        // TODO: Scale the sprite
-        // Stars
-        const barWidth = 0;
-        let startOffset = _startOffset + 250;
-        // this.matter.add.sprite(
-        //     barWidth / 2,
-        //     startOffset + 270,
-        //     "bar",
-        //     undefined,
-        //     {
-        //         shape: miniShapes["bar"],
-        //         isStatic: true,
-        //     }
-        // );
-        // this.matter.add.sprite(487, startOffset + 270, "bar", undefined, {
-        //     shape: miniShapes["bar"],
-        //     isStatic: true,
-        // });
-
-        // First Row
-        this.leftRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((115 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(
-                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
-                )
-                .setAngle(35)
-        );
-
-        this.rightRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((305 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(
-                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
-                )
-        );
-        // Second Row
-        startOffset += 165 * window.devicePixelRatio;
-        this.rightRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((10 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(
-                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
-                )
-                .setAngle(5)
-        );
-        this.rightRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((206 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(
-                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
-                )
-            // .setAngle()
-        );
-        this.leftRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((400 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(window.devicePixelRatio)
-                .setAngle(35)
-        );
-        // Third Row
-        startOffset += 180 * window.devicePixelRatio;
-        this.leftRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((115 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(window.devicePixelRatio)
-                .setAngle(30)
-        );
-        this.rightRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((305 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(window.devicePixelRatio)
-                .setAngle(5)
-        );
-        // Fourth Row
-        startOffset += 160 * window.devicePixelRatio;
-        this.rightRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((10 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(window.devicePixelRatio)
-                .setAngle(8)
-        );
-        this.leftRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((210 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(window.devicePixelRatio)
-                .setAngle(30)
-        );
-        this.leftRotatableStars.push(
-            this.matter.add
-                .sprite(
-                    ((400 / 414) * this.canvasWidth + barWidth) *
-                        window.devicePixelRatio,
-                    startOffset,
-                    "mini_star",
-                    undefined,
-                    {
-                        shape: miniShapes["14"],
-                        isStatic: true,
-                    }
-                )
-                .setScale(window.devicePixelRatio)
-                .setAngle(35)
-        );
-        return startOffset + 500 * window.devicePixelRatio;
-    };
-
-    createStaticTriangles = (
-        xOffset: number,
-        startOffset: number,
-        prodShapes: any,
-        obstaclesShapes: any
-    ) => {
-        const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add
-            .sprite(xOffset, yOffset, "prod_texture_loaded_03", undefined, {
-                shape: prodShapes["03"],
-                isStatic: true,
-            })
-            .setScale(
-                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
-            );
-        // baseSprite.setScale(
-        //     (this.cameras.main.width / baseSprite.width) *
-        //         window.devicePixelRatio
-        // );
-        this.createTextureMask(xOffset, yOffset, baseSprite);
-
-        const randomObstaclePosition = _.sample([
-            [100, startOffset],
-            [350, startOffset],
-            [this.centerX, startOffset + 200],
-            [100, startOffset + 400],
-            [400, startOffset + 400],
-        ]);
-
-        const randomObstacle = _.sample(ObstacleNames);
-        const target = this.matter.add.sprite(
-            randomObstaclePosition[0],
-            randomObstaclePosition[1],
-            `obstacle_${randomObstacle}`,
-            undefined,
-            {
-                shape: obstaclesShapes[
-                    randomObstacle as keyof typeof obstaclesShapes
-                ],
-                // angle: 124,
-                friction: 0,
-                frictionAir: 0,
-                frictionStatic: 0,
-            }
-        );
-        target.setScale(
-            (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
-        );
-        target.setInteractive();
-        target.on("pointerdown", (e: any) => {
-            this.handleDamage(target, e);
-        });
-        return startOffset + baseSprite.height * window.devicePixelRatio;
-    };
 
     createReduceSizeSlider = (
         xOffset: number,
@@ -682,12 +667,10 @@ export default class Game extends Phaser.Scene {
                     isStatic: true,
                 }
             )
-            .setScale(
-                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
-            );
+            .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
         // .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        startOffset += baseSprite.height * window.devicePixelRatio;
+        startOffset += baseSprite.height * this.dpr;
         this.increaseSizeScreenOffset.push(startOffset);
         startOffset += 300;
         return startOffset;
@@ -809,48 +792,45 @@ export default class Game extends Phaser.Scene {
                 shape: prodShapes["01"],
                 isStatic: true,
             })
-            .setScale(
-                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
-            );
+            .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
         const yOffset = startOffset + baseSprite.height / 2;
         baseSprite.setPosition(baseSprite.x, yOffset);
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        const randomObstaclePosition = _.sample([
-            [150, startOffset],
-            [350, startOffset],
-            [150, startOffset + 300],
-            [this.centerX, startOffset + 200],
-            [390, startOffset + 200],
-            [150, startOffset + 400],
-            [350, startOffset + 400],
-            [this.centerX, startOffset + 600],
-        ]);
-        const randomObstacle = _.sample(ObstacleNames);
-        const target = this.matter.add.sprite(
-            randomObstaclePosition[0],
-            randomObstaclePosition[1],
-            `obstacle_${randomObstacle}`,
-            undefined,
-            {
-                shape: obstaclesShapes[
-                    randomObstacle as keyof typeof obstaclesShapes
-                ],
-                // angle: 124,
-                friction: 0,
-                frictionAir: 0,
-                frictionStatic: 0,
-                // ignoreGravity: true,
+        if (this.showObstacles) {
+            const randomObstaclePosition = _.sample([
+                [150, startOffset],
+                [350, startOffset],
+                [150, startOffset + 300],
+                [this.centerX, startOffset + 200],
+                [390, startOffset + 200],
+                [150, startOffset + 400],
+                [350, startOffset + 400],
+                [this.centerX, startOffset + 600],
+            ]);
+            const randomObstacle = _.sample(ObstacleNames);
+            if (randomObstaclePosition && randomObstacle) {
+                const target = this.matter.add.sprite(
+                    randomObstaclePosition[0],
+                    randomObstaclePosition[1],
+                    `obstacle_${randomObstacle}`,
+                    undefined,
+                    {
+                        shape: obstaclesShapes[
+                            randomObstacle as keyof typeof obstaclesShapes
+                        ],
+                        friction: 0,
+                        frictionAir: 0,
+                        frictionStatic: 0,
+                    }
+                );
+                target.setScale((0.17 / 414) * this.canvasWidth * this.dpr);
+                target.setInteractive();
+                target.on("pointerdown", (e: any) => {
+                    this.handleDamage(target, e);
+                });
             }
-        );
-        target.setScale(
-            (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
-        );
-        target.setInteractive();
-        target.on("pointerdown", (e: any) => {
-            this.handleDamage(target, e);
-        });
-
-        return startOffset + baseSprite.height * window.devicePixelRatio;
+        }
+        return startOffset + baseSprite.height * this.dpr;
     };
     createZigzagSlider = (
         xOffset: number,
@@ -872,48 +852,47 @@ export default class Game extends Phaser.Scene {
             baseSprite.x,
             startOffset + baseSprite.height / 2
         );
-        baseSprite.setScale(
-            window.devicePixelRatio * (this.canvasWidth / (512 - 100))
-        );
+        baseSprite.setScale(this.dpr * (this.canvasWidth / (512 - 100)));
         this.createTextureMask(
             xOffset,
             startOffset + baseSprite.height / 2,
             baseSprite
         );
-        const randomObstaclePosition = _.sample([
-            [140, startOffset],
-            [350, startOffset],
-            [150, startOffset + 200],
-            [350, startOffset + 200],
-            [150, startOffset + 400],
-            [350, startOffset + 400],
-        ]);
-        const randomObstacle = _.sample(ObstacleNames);
-        const target = this.matter.add
-            .sprite(
-                randomObstaclePosition[0],
-                randomObstaclePosition[1],
-                `obstacle_${randomObstacle}`,
-                undefined,
-                {
-                    shape: obstaclesShapes[
-                        randomObstacle as keyof typeof obstaclesShapes
-                    ],
-                    // angle: 124,
-                    friction: 0,
-                    frictionAir: 0,
-                    frictionStatic: 0,
-                }
-            )
-            .setScale(
-                (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
-            );
-        target.setInteractive();
-        target.on("pointerdown", (e: any) => {
-            this.handleDamage(target, e);
-        });
-
-        return startOffset + baseSprite.height * window.devicePixelRatio;
+        if (this.showObstacles) {
+            const randomObstaclePosition = _.sample([
+                [140, startOffset],
+                [350, startOffset],
+                [150, startOffset + 200],
+                [350, startOffset + 200],
+                [150, startOffset + 400],
+                [350, startOffset + 400],
+            ]);
+            const randomObstacle = _.sample(ObstacleNames);
+            if (randomObstaclePosition && randomObstacle) {
+                const target = this.matter.add
+                    .sprite(
+                        randomObstaclePosition[0],
+                        randomObstaclePosition[1],
+                        `obstacle_${randomObstacle}`,
+                        undefined,
+                        {
+                            shape: obstaclesShapes[
+                                randomObstacle as keyof typeof obstaclesShapes
+                            ],
+                            // angle: 124,
+                            friction: 0,
+                            frictionAir: 0,
+                            frictionStatic: 0,
+                        }
+                    )
+                    .setScale((0.17 / 414) * this.canvasWidth * this.dpr);
+                target.setInteractive();
+                target.on("pointerdown", (e: any) => {
+                    this.handleDamage(target, e);
+                });
+            }
+        }
+        return startOffset + baseSprite.height * this.dpr;
     };
     createMarbles = (marbleRadius: number, miniShapes: any) => {
         this.largeCircle = this.matter.add.sprite(
@@ -932,8 +911,7 @@ export default class Game extends Phaser.Scene {
         // this.largeCircle.setScale(0.1);
         // this.isRotating = false;
         this.largeCircle.setScale(
-            (this.canvasWidth / this.largeCircle.width) *
-                window.devicePixelRatio
+            (this.canvasWidth / this.largeCircle.width) * this.dpr
         );
         // .setScale(0.8);
         const xOffsetValues = [
@@ -958,14 +936,9 @@ export default class Game extends Phaser.Scene {
                     friction: 0,
                     frictionAir: 0,
                     frictionStatic: 0,
-                    // Add colors
-                    render: {
-                        fillColor: 0xff0000,
-                    },
                 }
             );
             this.marbles.push(circleBody);
-            // TODO: Add Trails back
             this.marbleTrailParticles.push(
                 this.add.particles(0, 0, "trail", {
                     ...this.trailConfig,
@@ -973,7 +946,11 @@ export default class Game extends Phaser.Scene {
                 })
             );
 
-            // Create an image and attach it to the circle body
+            // circleBody.emitter = emitter;
+            // this.trailsGroup.push(this.add.group());
+            // this.trailGraphics.push(this.add.graphics());
+            // this.trailPoints.push([]);
+            // // Create an image and attach it to the circle body
             const circleImage = this.add.image(
                 circleBody.position.x,
                 circleBody.position.y,
@@ -981,16 +958,11 @@ export default class Game extends Phaser.Scene {
             );
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2);
             circleImage.setOrigin(0.5, 0.5);
-
-            // Ensure the image is visible
-            circleImage.setDepth(1);
-            circleImage.setVisible(true);
-
             // Circle mask
             const maskShape = this.make.graphics();
             maskShape.fillStyle(0xffffff);
             maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
-            const mask = new Phaser.Display.Masks.GeometryMask(this, maskShape);
+            const mask = maskShape.createGeometryMask();
 
             // Apply the mask to the image
             circleImage.setMask(mask);
@@ -1014,7 +986,7 @@ export default class Game extends Phaser.Scene {
         });
         this.countdownText = this.add
             .text(this.centerX, this.centerY - 100, "3", {
-                fontSize: `${64 * window.devicePixelRatio}px`,
+                fontSize: `${64 * this.dpr}px`,
                 color: "#ffffff",
             })
             .setOrigin(0.5);
@@ -1035,14 +1007,11 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(
-                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
-                    )
+                    .setScale((0.8 / 414) * this.canvasWidth * this.dpr)
             );
-            leftOffset +=
-                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
+            leftOffset += (80 / 414) * this.canvasWidth * this.dpr;
         });
-        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
+        startOffset += (250 / 414) * this.canvasWidth * this.dpr;
         new Array(5).fill("").map(() => {
             this.horizontalCrossLeftRotation.push(
                 this.matter.add
@@ -1050,15 +1019,12 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(
-                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
-                    )
+                    .setScale((0.8 / 414) * this.canvasWidth * this.dpr)
             );
-            rightOffset -=
-                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
+            rightOffset -= (80 / 414) * this.canvasWidth * this.dpr;
         });
         leftOffset = 20;
-        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
+        startOffset += (250 / 414) * this.canvasWidth * this.dpr;
         new Array(5).fill("").map(() => {
             this.horizontalCrossRightRotation.push(
                 this.matter.add
@@ -1066,15 +1032,12 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(
-                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
-                    )
+                    .setScale((0.8 / 414) * this.canvasWidth * this.dpr)
             );
-            leftOffset +=
-                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
+            leftOffset += (80 / 414) * this.canvasWidth * this.dpr;
         });
         rightOffset = canvasWidth - 20;
-        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
+        startOffset += (250 / 414) * this.canvasWidth * this.dpr;
         new Array(5).fill("").map(() => {
             this.horizontalCrossLeftRotation.push(
                 this.matter.add
@@ -1082,111 +1045,54 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(
-                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
-                    )
+                    .setScale((0.8 / 414) * this.canvasWidth * this.dpr)
             );
-            rightOffset -=
-                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
+            rightOffset -= (80 / 414) * this.canvasWidth * this.dpr;
         });
         this.increaseSizeScreenOffset.push(startOffset);
-        return startOffset + 500 * window.devicePixelRatio;
+        return startOffset + 500 * this.dpr;
     };
-    // createTrails = (voiceSprite: MatterJS.BodyType, i: number) => {
-    //     const velocity = Math.sqrt(
-    //         voiceSprite.velocity.x ** 2 + voiceSprite.velocity.y ** 2
-    //     );
-    //     // If velocity is zero, do not draw the trail
-    //     if (velocity > 0) {
-    //         // Calculate the position directly behind the circle relative to its velocity vector
-    //         // const offsetX = (-voiceSprite.velocity.x / velocity) * 23;
-    //         // const offsetY = (-voiceSprite.velocity.y / velocity) * 23;
-    //         const trailX = voiceSprite.position.x;
-    //         const trailY = voiceSprite.position.y;
-    //         //     // Calculate the angle of the trail image
-    //         const angle =
-    //             Math.atan2(voiceSprite.velocity.y, voiceSprite.velocity.x) *
-    //             (180 / Math.PI);
-    //         // Add the current trail position to the trail points array
-    //         this.trailPoints[i].push({
-    //             x: trailX,
-    //             y: trailY,
-    //             angle,
-    //         });
-    //         // Adjust trail length based on velocity
-    //         this.trailLength = Phaser.Math.Clamp(
-    //             velocity * 2,
-    //             10,
-    //             this.isRotating ? 20 : 100
-    //         );
-    //         // Limit the number of points in the trail to the trail length
-    //         if (this.trailPoints[i].length > this.trailLength) {
-    //             this.trailPoints[i].shift();
-    //         }
-    //         // Clear the previous trail
-    //         this.trailGraphics[i].clear();
-    //         //     this.trailsGroup[i].clear(true, true);
-    //         //     // Draw the trail
-    //         for (let j = 0; j < this.trailPoints[i].length; j++) {
-    //             const point = this.trailPoints[i][j];
-    //             const alpha = (j + 0.01) / this.trailPoints[i].length; // Gradually decrease alpha
-    //             this.trailGraphics[i].fillStyle(0x0cffffff, alpha * 0.2);
-    //             // this.trailGraphics.fillCircle(point.x, point.y, 20);
-    //             const trailRadius = this.heightReducedIndices.includes(i)
-    //                 ? 11
-    //                 : 22;
-    //             this.trailGraphics[i].fillRoundedRect(
-    //                 point.x - trailRadius,
-    //                 point.y - trailRadius,
-    //                 trailRadius * 2,
-    //                 trailRadius * 2,
-    //                 trailRadius
-    //             );
-    //             // .setAngle(point.angle);
-    //         }
-    //     } else {
-    //         // Clear the trail if velocity is zero
-    //         this.trailGraphics[i].clear();
-    //         // this.trailsGroup[i].clear(true, true);
-    //     }
-    // };
+    showResult() {
+        const labelContent = this.winnerIdx === 1 ? "You Win!" : "You Lose";
+        const xpContent = this.winnerIdx === 1 ? "+500 XP" : "+0 XP";
 
-    renderWeapons() {
-        this.level1Hammer = this.add
-            .sprite(
-                350 * window.devicePixelRatio,
-                550 * window.devicePixelRatio,
-                "hammer_1"
-            )
-            .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
-            .setScrollFactor(0)
-            .setInteractive()
-            .on("pointerdown", () => {
-                this.damageMultipliyer = 1;
-            });
-
-        this.level2Hammer = this.add
-            .sprite(
-                350 * window.devicePixelRatio,
-                630 * window.devicePixelRatio,
-                "hammer_2"
-            )
-            .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
-            .setScrollFactor(0)
-            .setInteractive()
-            .on("pointerdown", () => {
-                this.damageMultipliyer = 1.5;
-            });
-
-        // w.setPosition(w.x - w.width, w.y - w.height);
-
-        // .setScrollFactor(0);
+        const label = this.add
+            .text(this.centerX, this.centerY - 180, labelContent, {
+                fontSize: `${64 * this.dpr}px`,
+                color: "#ffffff",
+                stroke: "#000",
+                strokeThickness: 4,
+            })
+            .setScrollFactor(0);
+        label.setDepth(1);
+        label.setPosition(
+            label.x - label.width / 2,
+            label.y - label.height / 2
+        );
+        const labelXp = this.add
+            .text(this.centerX, this.centerY + 250, xpContent, {
+                fontSize: `${52 * this.dpr}px`,
+                color: "#573FC8",
+                stroke: "#fff",
+                strokeThickness: 4,
+            })
+            .setScrollFactor(0);
+        // .setScale(this.dpr);
+        labelXp.setDepth(1);
+        labelXp.setPosition(
+            labelXp.x - labelXp.width / 2,
+            labelXp.y - labelXp.height / 2
+        );
+        EventBus.emit("game-over", this.winnerIdx === 1);
+        this.isResultShown = true;
     }
 
     create() {
         console.log("Game Scene...");
-        this.sound.add("low_whack", { loop: false, volume: 0.5 });
-        this.sound.add("high_whack", { loop: false, volume: 0.5 });
+        if (this.showObstacles) {
+            this.sound.add("low_whack", { loop: false, volume: 0.5 });
+            this.sound.add("high_whack", { loop: false, volume: 0.5 });
+        }
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         if (!this.enableMotion) {
@@ -1199,46 +1105,31 @@ export default class Game extends Phaser.Scene {
                 this.cameras.main.height
             );
         } else {
-            // this.background = this.add.image(0, 0, "background");
-
-            // // Set the origin to the top-left corner
-            // this.background.setOrigin(0, 0);
-
-            // // Scale the background image to fit the game width
-            // let scaleX = this.cameras.main.width / this.background.width;
-            // let scaleY = this.cameras.main.height / this.background.height;
-            // let scale = Math.max(scaleX, scaleY);
-            // this.background.setScale(scale).setScrollFactor(0);
             this.background = this.add
                 .tileSprite(0, 0, 0, 0, "background")
                 .setScrollFactor(0)
                 .setOrigin(0, 0);
             this.background.setScale(
-                (414 / this.background.width) * window.devicePixelRatio,
-                (736 / this.background.height) * window.devicePixelRatio
+                (414 / this.background.width) * this.dpr,
+                (736 / this.background.height) * this.dpr
             );
             this.add
                 .image(this.centerX, this.centerY, "center_logo")
                 .setDisplaySize(254, 84)
                 .setScrollFactor(0);
         }
+
         const siteUrl = this.add
             .text(this.centerX, this.centerY, "marblerace.ai", {
-                fontSize: `${28 * window.devicePixelRatio}px`,
+                fontSize: `${24 * this.dpr}px`,
                 color: "#ffffff",
-                stroke: "rgba(0,0,0,1)",
-                strokeThickness: 4,
+                stroke: "rgba(0,0,0,0.5)",
+                strokeThickness: 2,
             })
             .setScrollFactor(0);
-        // Below line placed at the right position when setScale is not used
-        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 100);
-
-        // siteUrl.setScale(window.devicePixelRatio);
-        // // Fix the position of the siteUrl when setScale is used
-        // siteUrl.setPosition(
-        //     siteUrl.x - siteUrl.width / 2,
-        //     siteUrl.y - siteUrl.height / 2
-        // );
+        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, siteUrl.y + 100);
+        // siteUrl.setScale(this.dpr);
+        // siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, siteUrl.y);
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 
@@ -1246,7 +1137,7 @@ export default class Game extends Phaser.Scene {
         var miniShapes = this.cache.json.get("mini_shapes");
         var obstaclesShapes = this.cache.json.get("obstacles_shapes");
 
-        let startOffset = 800 * window.devicePixelRatio;
+        let startOffset = 800 * this.dpr;
         const xOffset = this.centerX;
         // this.selectedTracks = ["06", "07", "03", "01", "16"];
         this.selectedTracks.map((trackNo) => {
@@ -1329,14 +1220,8 @@ export default class Game extends Phaser.Scene {
         });
         const finishOffset = startOffset + 250;
         this.add.image(centerX, finishOffset, "finish_line").setScale(0.5);
-        // finishLineImage.setScale(
-        //     (this.canvasWidth / finishLineImage.width) *
-        //         window.devicePixelRatio,
-        //     window.devicePixelRatio
-        // );
-        // .setScale(window.devicePixelRatio);
         this.finishLineOffset = finishOffset;
-        // // .setDisplaySize(960, 40);
+        // .setDisplaySize(960, 40);
         this.cameras.main.setBounds(
             0,
             0,
@@ -1402,26 +1287,218 @@ export default class Game extends Phaser.Scene {
             120,
             this.musicStartOffset
         ).then(() => (this.isInstrumentPlaying = true));
-
-        this.renderWeapons();
+        // if (this.showObstacles) this.renderWeapons();
+        this.renderJoystickButtons();
     }
+
+    graphics: Phaser.GameObjects.Graphics | undefined;
+    circle1: Phaser.GameObjects.Sprite | undefined;
+    outlineCircle1: Phaser.GameObjects.Sprite | undefined;
+    circle2: Phaser.GameObjects.Sprite | undefined;
+    outlineCircle2: Phaser.GameObjects.Sprite | undefined;
+    circle3: Phaser.GameObjects.Sprite | undefined;
+    outlineCircle3: Phaser.GameObjects.Sprite | undefined;
+    circle4: Phaser.GameObjects.Sprite | undefined;
+    outlineCircle4: Phaser.GameObjects.Sprite | undefined;
+    setIntervals: NodeJS.Timeout[] = [];
+    setTimeouts: NodeJS.Timeout[] = [];
+
+    buttonRadius = 80;
+
+    renderJoystickButtons() {
+        this.circle1 = this.add
+            .sprite(
+                this.cameras.main.width / 2 - 200,
+                this.cameras.main.height / 2 + 200,
+                "green_dot"
+            )
+            .setDisplaySize(10, 10)
+            .setScrollFactor(0);
+
+        this.outlineCircle1 = this.add
+            .sprite(
+                this.cameras.main.width / 2 - 200,
+                this.cameras.main.height / 2 + 200,
+                "green_dot_outline"
+            )
+            .setScrollFactor(0)
+            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
+        this.circle2 = this.add
+            .sprite(
+                this.cameras.main.width / 2 + 200,
+                this.cameras.main.height / 2 + 200,
+                "green_dot"
+            )
+            .setDisplaySize(10, 10)
+            .setScrollFactor(0);
+
+        this.outlineCircle2 = this.add
+            .sprite(
+                this.cameras.main.width / 2 + 200,
+                this.cameras.main.height / 2 + 200,
+                "green_dot_outline"
+            )
+            .setScrollFactor(0)
+            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
+        this.circle3 = this.add
+            .sprite(
+                this.cameras.main.width / 2 - 200,
+                this.cameras.main.height / 2 + 400,
+                "green_dot"
+            )
+            .setDisplaySize(10, 10)
+            .setScrollFactor(0);
+
+        this.outlineCircle3 = this.add
+            .sprite(
+                this.cameras.main.width / 2 - 200,
+                this.cameras.main.height / 2 + 400,
+                "green_dot_outline"
+            )
+            .setScrollFactor(0)
+            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
+        this.circle4 = this.add
+            .sprite(
+                this.cameras.main.width / 2 + 200,
+                this.cameras.main.height / 2 + 400,
+                "green_dot"
+            )
+            .setDisplaySize(10, 10)
+            .setScrollFactor(0);
+
+        this.outlineCircle4 = this.add
+            .sprite(
+                this.cameras.main.width / 2 + 200,
+                this.cameras.main.height / 2 + 400,
+                "green_dot_outline"
+            )
+            .setScrollFactor(0)
+            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
+        this.availableCircles = [
+            this.circle1,
+            this.circle2,
+            this.circle3,
+            this.circle4,
+        ];
+        this.events.on("destroy", () => {
+            this.setTimeouts.map((timeout) => clearTimeout(timeout));
+            this.setIntervals.map((interval) => clearInterval(interval));
+        });
+    }
+    tapTimings: number[] = [];
+    circleShouldFillIn = 2500;
+
+    allTapTimings = [
+        12.36, 14.86, 17.31, 19.8, 22.26, 24.75, 27.21, 29.7, 32.16, 34.65,
+        37.11, 39.6, 42.05, 44.55, 47, 49.5, 51.95, 54.44, 56.9, 59.39, 61.85,
+        64.34, 66.8, 69.29, 71.74, 74.24, 76.69, 79.18, 81.64, 84.14,
+    ];
+    availableCircles: Phaser.GameObjects.Sprite[] = [];
+    currentTapIndex = 0;
+    resultLabel: Phaser.GameObjects.Text | undefined;
+
+    // update(time: number, delta: number): void {
     update(): void {
+        const currentTime = getToneCurrentTime();
+        const nextTapTiming = this.allTapTimings[this.currentTapIndex] - 2.5;
+        if (currentTime >= nextTapTiming) {
+            console.log("hitting: ", currentTime);
+            this.currentTapIndex++;
+            const circleToFill = _.sample(this.availableCircles);
+            if (circleToFill) {
+                this.availableCircles = this.availableCircles.filter(
+                    (c) => c !== circleToFill
+                );
+                circleToFill.setInteractive();
+                circleToFill.on("pointerdown", () => {
+                    // Add a Label at the center of the screen with scrollFactor 0
+                    const newCurrentTime = getToneCurrentTime();
+                    const expectedTapTime =
+                        this.allTapTimings[this.currentTapIndex - 1];
+                    const difference = expectedTapTime - newCurrentTime;
+                    console.log("difference: ", difference);
+                    const resultText =
+                        difference < 0.5
+                            ? "Perfect"
+                            : difference < 1
+                            ? "Good"
+                            : "Miss";
+                    const resultLabel = this.add
+                        .text(
+                            this.cameras.main.width / 2,
+                            this.cameras.main.height / 2,
+                            resultText,
+                            {
+                                fontSize: `${42 * this.dpr}px`,
+                                color:
+                                    resultText === "Perfect"
+                                        ? "green"
+                                        : resultText === "Good"
+                                        ? "yellow"
+                                        : "red",
+                                stroke: "rgba(0,0,0,1)",
+                                strokeThickness: 6,
+                            }
+                        )
+                        .setScrollFactor(0);
+                    resultLabel.setPosition(
+                        resultLabel.x - resultLabel.width / 2,
+                        resultLabel.y - resultLabel.height / 2
+                    );
+                    // Destroy the label after 1 second
+                    const timeout = setTimeout(() => {
+                        resultLabel.destroy();
+                    }, 500);
+                    this.setTimeouts.push(timeout);
+                    circleToFill.removeInteractive();
+                });
+                // circleToFill.setDisplaySize(0, 0);
+                // Gradually Increase the radius of the circle to be 80
+                // Create a SetInterval
+                const interval = setInterval(() => {
+                    if (circleToFill) {
+                        const radiuToIncreasePerMs =
+                            this.buttonRadius / (this.circleShouldFillIn / 10);
+
+                        circleToFill.setDisplaySize(
+                            circleToFill.displayWidth +
+                                radiuToIncreasePerMs * 2,
+                            circleToFill.displayHeight +
+                                radiuToIncreasePerMs * 2
+                        );
+                    }
+                }, 10);
+                this.setIntervals.push(interval);
+                const timeout = setTimeout(() => {
+                    circleToFill.setDisplaySize(0, 0);
+                    this.availableCircles.push(circleToFill);
+                    circleToFill.removeInteractive();
+                    clearInterval(interval);
+                }, this.circleShouldFillIn);
+                this.setTimeouts.push(timeout);
+            }
+        }
+
         if (this.damageMultipliyer === 1) {
             // Highlight level 1 hammer
             this.level2Hammer?.setScale(
-                (0.1 / 414) * this.canvasWidth * window.devicePixelRatio
+                (0.1 / 414) * this.canvasWidth * this.dpr
             );
             this.level1Hammer?.setScale(
-                (0.2 / 414) * this.canvasWidth * window.devicePixelRatio
+                (0.2 / 414) * this.canvasWidth * this.dpr
             );
         } else if (this.damageMultipliyer === 1.5) {
             // Highlight level 2 hammer
             this.level1Hammer?.setScale(
-                (0.1 / 414) * this.canvasWidth * window.devicePixelRatio
+                (0.1 / 414) * this.canvasWidth * this.dpr
             );
             this.level2Hammer?.setScale(
-                (0.2 / 414) * this.canvasWidth * window.devicePixelRatio
+                (0.2 / 414) * this.canvasWidth * this.dpr
             );
+        }
+        if (this.isGameOver && this.isResultShown === false) {
+            // if (this.isResultShown) return;
+            this.showResult();
         }
         // if (this.enableMotion && !this.isRotating)
         //     this.background.tilePositionX += 0.08;
@@ -1480,16 +1557,15 @@ export default class Game extends Phaser.Scene {
                     // Increase size
                     this.currentMarblesSizeIndices[i.toString()]++;
                     this.matter.body.scale(voiceBody, 2, 2);
-                    if (marbleImage) {
+                    if (marbleImage)
                         marbleImage.setDisplaySize(
                             this.marbleRadius * 2,
                             this.marbleRadius * 2
                         );
-                    }
                     if (marbleMask) marbleMask.scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
-                    // this.marbleTrailParticles[i].setConfig(this.trailConfig);
+                    this.marbleTrailParticles[i].setConfig(this.trailConfig);
                 } else if (
                     !isHeightReduced &&
                     y > this.reduceSizeScreenOffset[currentCrossIndex] &&
@@ -1498,20 +1574,19 @@ export default class Game extends Phaser.Scene {
                     // Reduce size
                     this.heightReducedIndices.push(i);
                     this.matter.body.scale(voiceBody, 0.5, 0.5);
-                    if (marbleImage) {
+                    if (marbleImage)
                         marbleImage.setDisplaySize(
                             this.marbleRadius,
                             this.marbleRadius
                         );
-                    }
                     if (marbleMask) marbleMask.scale = 0.5;
-                    // this.marbleTrailParticles[i].setConfig({
-                    //     ...this.trailConfig,
-                    //     scale: { start: 0.5, end: 0.01 },
-                    // });
+                    this.marbleTrailParticles[i].setConfig({
+                        ...this.trailConfig,
+                        scale: { start: 0.5, end: 0.01 },
+                    });
                 }
             }
-            // TODO: Uncomment this
+            // TODO: Optimized Code
             // this.crossRightRotation.map((c) => {
             //     c.setAngle(c.angle + 2);
             //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
@@ -1521,45 +1596,74 @@ export default class Game extends Phaser.Scene {
             //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
             // });
             if (this.isInstrumentPlaying && this.isRotating === false) {
-                let largest = -Infinity;
-                let secondLargest = -Infinity;
-                let largestIndex = -1;
+                /*
+        let largest = -Infinity;
+        let secondLargest = -Infinity;
+        let largestIndex = -1;
+        let finishedPositions = [];
+        let voicesPositions = [];
 
+        for (let i = 0; i < this.marbles.length; i++) {
+          const y = this.marbles[i].position.y;
+          voicesPositions.push(y);
+          if (y < this.finishLineOffset) {
+            finishedPositions.push(y);
+            if (y > largest) {
+              secondLargest = largest;
+              largest = y;
+              largestIndex = i;
+            } else if (y > secondLargest) {
+              secondLargest = y;
+            }
+          }
+        }
+        */
+                const unFinishedPositions = [];
+                const finishedPositions = [];
+                const voicesPositions = [];
                 for (let i = 0; i < this.marbles.length; i++) {
                     const y = this.marbles[i].position.y;
+                    voicesPositions.push(y);
                     if (y < this.finishLineOffset) {
-                        if (y > largest) {
-                            secondLargest = largest;
-                            largest = y;
-                            largestIndex = i;
-                        } else if (y > secondLargest) {
-                            secondLargest = y;
-                        }
+                        unFinishedPositions.push(y);
+                    } else if (y > this.finishLineOffset) {
+                        finishedPositions.push(y);
                     }
                 }
+                // Above is the refactored code
+                // const voicesPositions = this.marbles.map((m) => m.position.y);
+                // const unFinishedPositions = voicesPositions.filter(
+                //   (y) => y < this.finishLineOffset
+                // );
+                // const finishedPositions = voicesPositions.filter(
+                //   (y) => y > this.finishLineOffset
+                // );
 
-                if (largestIndex === -1) return;
+                if (this.winnerIdx === -1 && finishedPositions.length) {
+                    this.winnerIdx = voicesPositions.indexOf(
+                        finishedPositions[0]
+                    );
+                }
+                const largest = Math.max(...unFinishedPositions);
+                const largestIndex = voicesPositions.findIndex(
+                    (v) => v === largest
+                );
+                const secondLargest = Math.max(
+                    ...unFinishedPositions.filter((p) => p !== largest)
+                );
+                if (largestIndex === -1) {
+                    this.isGameOver = true;
+                    return;
+                }
                 if (
                     this.prevVoiceIdx !== largestIndex &&
                     largest > secondLargest + this.marbleRadius
-                ) {
+                )
                     this.throttledUpdate(largestIndex);
-                    // // Remove previous mouth image using this.prevVoiceIdx
-                    // const prevMarbleImage =
-                    //     this.marblesImages[this.prevVoiceIdx];
-                    // const id = this.voices[this.prevVoiceIdx].id;
-                    // if (
-                    //     prevMarbleImage &&
-                    //     prevMarbleImage.texture.key === `resized_${id}_mouth`
-                    // ) {
-                    //     prevMarbleImage.setTexture(`resized_${id}`);
-                    //     prevMarbleImage.setDisplaySize(newSize, newSize);
-                    //     prevMarbleImage.setOrigin(0.5, 0.5);
-                    // }
-                }
-                this.throttledUpdateGif(largestIndex);
+                // else if (secondLargest >= largest - this.marbleRadius * 2)
+                //   this.throttledUpdate(secondLargestIndex, false);
                 if (this.autoScroll) {
-                    this.cameras.main.scrollY = largest - 300;
+                    this.cameras.main.scrollY = largest - 300 * this.dpr;
                 }
             }
 
@@ -1628,4 +1732,8 @@ export default class Game extends Phaser.Scene {
         }
     }
 }
+
+// !wget -c "https://github.com/CPJKU/beat_this/raw/main/tests/It%20Don't%20Mean%20A%20Thing%20-%20Kings%20of%20Swing.mp3" -O music.mp3
+
+// !ffmpeg -i music.mp3 -f segment -segment_time 10 -c copy "music-%03d.mp3"
 

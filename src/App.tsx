@@ -76,7 +76,7 @@ function App() {
     );
     const [selectedVoices, setSelectedVoices] = useState<GameVoiceInfo[]>([]);
     const [downloadProgress, setDownloadProgress] = useState(0);
-    const [startSectionIdx, setStartSectionIdx] = useState(3);
+    const [startSectionIdx, setStartSectionIdx] = useState(1);
     const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
     const [marbleSpeed, setMarbleSpeed] = useState(0.8);
     const theme = useTheme();

@@ -29,6 +29,7 @@ export interface IGameDataParams {
     height?: number;
     dprAdjustedWidth?: number;
     dprAdjustedHeight?: number;
+    showObstacles?: boolean;
 }
 
 interface IProps extends IGameDataParams {
