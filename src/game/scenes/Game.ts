@@ -1389,9 +1389,12 @@ export default class Game extends Phaser.Scene {
     circleShouldFillIn = 2500;
 
     allTapTimings = [
-        12.36, 14.86, 17.31, 19.8, 22.26, 24.75, 27.21, 29.7, 32.16, 34.65,
-        37.11, 39.6, 42.05, 44.55, 47, 49.5, 51.95, 54.44, 56.9, 59.39, 61.85,
-        64.34, 66.8, 69.29, 71.74, 74.24, 76.69, 79.18, 81.64, 84.14,
+        12.36, 13.61, 14.86, 16.11, 17.31, 18.56, 19.8, 21.05, 22.26, 23.51,
+        24.75, 26, 27.21, 28.46, 29.7, 30.95, 32.16, 33.41, 34.65, 35.9, 37.11,
+        38.36, 39.6, 40.85, 42.05, 43.3, 44.55, 45.8, 47, 48.25, 49.5, 50.75,
+        51.95, 53.2, 54.44, 55.69, 56.9, 58.15, 59.39, 60.64, 61.85, 63.1,
+        64.34, 65.59, 66.8, 68.05, 69.29, 70.54, 71.74, 72.99, 74.24, 75.49,
+        76.69, 77.94, 79.18, 80.43, 81.64, 82.89, 84.14,
     ];
     availableCircles: Phaser.GameObjects.Sprite[] = [];
     currentTapIndex = 0;
@@ -1403,6 +1406,7 @@ export default class Game extends Phaser.Scene {
         const nextTapTiming = this.allTapTimings[this.currentTapIndex] - 2.5;
         if (currentTime >= nextTapTiming) {
             console.log("hitting: ", currentTime);
+            const _currentTapIndex = this.currentTapIndex;
             this.currentTapIndex++;
             const circleToFill = _.sample(this.availableCircles);
             if (circleToFill) {
@@ -1414,7 +1418,7 @@ export default class Game extends Phaser.Scene {
                     // Add a Label at the center of the screen with scrollFactor 0
                     const newCurrentTime = getToneCurrentTime();
                     const expectedTapTime =
-                        this.allTapTimings[this.currentTapIndex - 1];
+                        this.allTapTimings[_currentTapIndex];
                     const difference = expectedTapTime - newCurrentTime;
                     console.log("difference: ", difference);
                     const resultText =
