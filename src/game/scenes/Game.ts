@@ -110,7 +110,7 @@ export default class Game extends Phaser.Scene {
             this.musicStartOffset
         );
         this.circleShouldFillInMs =
-            (this.allTapTimings[1] - this.allTapTimings[0]) * 1000;
+            (this.allTapTimings[1] - this.allTapTimings[0]) * 3 * 1000;
         this.showTapTimings = createBeatsGroupWithInterval(
             this.allTapTimings,
             this.beatsGroupLength,
@@ -1338,12 +1338,14 @@ export default class Game extends Phaser.Scene {
     tapScore: number = 0;
     isBoosted = false;
 
-    buttonRadius = 60;
+    buttonRadius = 40 * this.dpr;
     joystickHolder: Phaser.GameObjects.Container | undefined;
     joystickFrame: Phaser.GameObjects.Image | undefined;
 
     renderJoystickButtons() {
-        let circleYOffset = this.cameras.main.height / 2 + 360;
+        const frameHeight = this.cameras.main.height / 3;
+        let circleYOffset =
+            this.cameras.main.height / 2 + frameHeight - this.buttonRadius;
         // .image(0, 0, "joystick_frame")
         // .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
         this.circle1 = this.add
@@ -1380,10 +1382,10 @@ export default class Game extends Phaser.Scene {
             )
             .setScrollFactor(0)
             .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-        circleYOffset += 150;
+        circleYOffset += this.buttonRadius * 2;
         this.circle3 = this.add
             .sprite(
-                this.cameras.main.width / 2 - 100,
+                this.cameras.main.width / 2 - this.buttonRadius,
                 circleYOffset,
                 "green_dot"
             )
@@ -1392,7 +1394,7 @@ export default class Game extends Phaser.Scene {
 
         this.outlineCircle3 = this.add
             .sprite(
-                this.cameras.main.width / 2 - 100,
+                this.cameras.main.width / 2 - this.buttonRadius,
                 circleYOffset,
                 "green_dot_outline"
             )
@@ -1400,7 +1402,7 @@ export default class Game extends Phaser.Scene {
             .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
         this.circle4 = this.add
             .sprite(
-                this.cameras.main.width / 2 + 100,
+                this.cameras.main.width / 2 + this.buttonRadius,
                 circleYOffset,
                 "green_dot"
             )
@@ -1409,7 +1411,7 @@ export default class Game extends Phaser.Scene {
 
         this.outlineCircle4 = this.add
             .sprite(
-                this.cameras.main.width / 2 + 100,
+                this.cameras.main.width / 2 + this.buttonRadius,
                 circleYOffset,
                 "green_dot_outline"
             )
@@ -1449,7 +1451,6 @@ export default class Game extends Phaser.Scene {
             this.setTimeouts.map((timeout) => clearTimeout(timeout));
             this.setIntervals.map((interval) => clearInterval(interval));
         });
-        const frameHeight = this.cameras.main.height / 3;
         this.joystickFrame = this.add
             .image(
                 this.cameras.main.width / 2,
@@ -1579,9 +1580,9 @@ export default class Game extends Phaser.Scene {
                         const difference = expectedTapTime - newCurrentTime;
 
                         const resultText =
-                            difference < 0.5
+                            difference < this.circleShouldFillInMs / 3
                                 ? "Perfect"
-                                : difference < 1
+                                : difference < this.circleShouldFillInMs / 2
                                 ? "Good"
                                 : "Miss";
                         this.tapScore +=
