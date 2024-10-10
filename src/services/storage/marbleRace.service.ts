@@ -1,9 +1,9 @@
-import { listAll, ref } from "firebase/storage";
+import { list, ref } from "firebase/storage";
 import { storage } from "../firebase.service";
 
 export const listAllTrackSkins = async (): Promise<string[]> => {
     const folderRef = ref(storage, "marble_race/track_skins");
-    const listResult = await listAll(folderRef);
+    const listResult = await list(folderRef, { maxResults: 5 });
     return listResult.items.map(
         (item) =>
             `https://voxaudio.nusic.fm/${encodeURIComponent(
@@ -13,7 +13,7 @@ export const listAllTrackSkins = async (): Promise<string[]> => {
 };
 export const listAllTrackBackgrounds = async (): Promise<string[][]> => {
     const folderRef = ref(storage, "marble_race/backgrounds");
-    const listResult = await listAll(folderRef);
+    const listResult = await list(folderRef, { maxResults: 5 });
     const motionBgs = listResult.items.filter((item) =>
         item.name.startsWith("motion")
     );
@@ -39,7 +39,7 @@ export const listAllTrackBackgrounds = async (): Promise<string[][]> => {
 
 export const listAllTrails = async (): Promise<string[]> => {
     const folderRef = ref(storage, "marble_race/trails");
-    const listResult = await listAll(folderRef);
+    const listResult = await list(folderRef, { maxResults: 5 });
     return listResult.items.map(
         (item) =>
             `https://voxaudio.nusic.fm/${encodeURIComponent(
@@ -47,3 +47,4 @@ export const listAllTrails = async (): Promise<string[]> => {
             )}?alt=media`
     );
 };
+

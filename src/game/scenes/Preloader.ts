@@ -78,6 +78,18 @@ export default class Preloader extends Phaser.Scene {
     }
     preload() {
         console.log("Preloader...");
+        this.load.image(
+            "green_dot",
+            "assets/sprite/rhythmicpads/green_dot.png"
+        );
+        this.load.image(
+            "green_dot_outline",
+            "assets/sprite/rhythmicpads/green_dot_outline.png"
+        );
+        this.load.image(
+            "joystick_frame",
+            "assets/sprite/rhythmicpads/joystick_frame.jpg"
+        );
         this.load.image("background", this.params.backgroundPath);
         ObstacleNames.map((name) => {
             this.load.image(
@@ -87,31 +99,40 @@ export default class Preloader extends Phaser.Scene {
         });
         this.load.image("hammer_1", "assets/sprite/weapons/hammer_level_1.png");
         this.load.image("hammer_2", "assets/sprite/weapons/hammer_level_2.png");
+        this.load.image("whack", "/assets/sprite/weapons/whack.png");
+        this.load.audio("low_whack", "/assets/sounds/low_whack.wav");
+        this.load.audio("high_whack", "/assets/sounds/high_whack.wav");
         if (this.params.enableMotion)
             this.load.image("center_logo", "assets/transparent_logo.png");
         // TODO: Enable the below and comment out the rest of the images
         if (this.params.voices.length) {
             this.params.voices.map((voice) => {
                 // this.load.image(voice.id, voice.avatar);
-                const image = new Image();
-                image.src = voice.avatar;
-                image.crossOrigin = "anonymous";
-                new Promise((res) => {
-                    image.onload = () => {
-                        const dataUrl = this.resize(image);
-                        res(dataUrl);
-                    };
-                }).then((dataurl) => {
-                    // Add the newly created image as a texture
-                    // this.textures.addBase64(`resized_${voice.id}`, dataurl);
-                    this.load.image(`resized_${voice.id}`, dataurl as string);
-                });
+                // const image = new Image();
+                // image.src = voice.avatar;
+                // image.crossOrigin = "anonymous";
+                // new Promise((res) => {
+                //     image.onload = () => {
+                //         const dataUrl = this.resize(image);
+                //         res(dataUrl);
+                //     };
+                // }).then((dataurl) => {
+                //     // Add the newly created image as a texture
+                //     // this.textures.addBase64(`resized_${voice.id}`, dataurl);
+                //     this.load.image(`resized_${voice.id}`, dataurl as string);
+                // });
+                this.load.image(`resized_${voice.id}`, voice.avatar);
+                this.load.image(
+                    `resized_${voice.id}_mouth`,
+                    `https://voxaudio.nusic.fm/voice_models%2Favatars%2Fthumbs%2Fgifs%2F${voice.id}_200x200.png?alt=media`
+                );
             });
         }
         // this.load.json(
         //     "screen_sprite_data",
         //     "assets/sprite/screen_sprite.json"
         // );
+        // ["01", "16", "03", "07", "06"]
         this.params.selectedTracks.map((trackNo) => {
             switch (trackNo) {
                 case "01":

@@ -97,7 +97,7 @@ const SelectVoices = ({ selectedVoices, setSelectedVoices, voices }: Props) => {
             >
                 <Stack p={2} gap={1}>
                     <Typography>Choose Voice</Typography>
-                    <Stack direction={"row"} gap={1}>
+                    <Stack direction={"row"} gap={1} flexWrap={"wrap"}>
                         {voices
                             .filter(
                                 (v) =>
