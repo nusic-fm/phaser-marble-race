@@ -78,10 +78,17 @@ export default class Preloader extends Phaser.Scene {
     }
     preload() {
         console.log("Preloader...");
-        this.load.image("green_dot", "assets/sprite/green_dot.png");
+        this.load.image(
+            "green_dot",
+            "assets/sprite/rhythmicpads/green_dot.png"
+        );
         this.load.image(
             "green_dot_outline",
-            "assets/sprite/green_dot_outline.png"
+            "assets/sprite/rhythmicpads/green_dot_outline.png"
+        );
+        this.load.image(
+            "joystick_frame",
+            "assets/sprite/rhythmicpads/joystick_frame.jpg"
         );
         this.load.image("background", this.params.backgroundPath);
         ObstacleNames.map((name) => {

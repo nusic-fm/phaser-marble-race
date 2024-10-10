@@ -915,7 +915,6 @@ export default class Game extends Phaser.Scene {
         this.largeCircle.setScale(
             (this.canvasWidth / this.largeCircle.width) * this.dpr
         );
-        // .setScale(0.8);
         const xOffsetValues = [
             this.centerX - 46,
             this.centerX + 23,
@@ -938,6 +937,7 @@ export default class Game extends Phaser.Scene {
                     friction: 0,
                     frictionAir: 0,
                     frictionStatic: 0,
+                    label: v.id,
                 }
             );
             this.marbles.push(circleBody);
@@ -953,11 +953,13 @@ export default class Game extends Phaser.Scene {
             // this.trailGraphics.push(this.add.graphics());
             // this.trailPoints.push([]);
             // // Create an image and attach it to the circle body
-            const circleImage = this.add.image(
-                circleBody.position.x,
-                circleBody.position.y,
-                `resized_${v.id}`
-            );
+            const circleImage = this.add
+                .image(
+                    circleBody.position.x,
+                    circleBody.position.y,
+                    `resized_${v.id}`
+                )
+                .setDepth(1);
             circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2);
             circleImage.setOrigin(0.5, 0.5);
             // Circle mask
@@ -1280,6 +1282,7 @@ export default class Game extends Phaser.Scene {
                         this.isRotating = false;
                         this.countdownText.destroy();
                         clock.destroy();
+                        this.cameras.main.startFollow(this.marblesImages[0]);
                     }
                 }
             },
@@ -1345,22 +1348,27 @@ export default class Game extends Phaser.Scene {
     tapScore: number = 0;
     isBoosted = false;
 
-    buttonRadius = 80;
+    buttonRadius = 60;
+    joystickHolder: Phaser.GameObjects.Container | undefined;
+    joystickFrame: Phaser.GameObjects.Image | undefined;
 
     renderJoystickButtons() {
+        let circleYOffset = this.cameras.main.height / 2 + 360;
+        // .image(0, 0, "joystick_frame")
+        // .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
         this.circle1 = this.add
             .sprite(
                 this.cameras.main.width / 2 - 200,
-                this.cameras.main.height / 2 + 200,
+                circleYOffset,
                 "green_dot"
             )
-            .setDisplaySize(10, 10)
+            .setDisplaySize(0, 0)
             .setScrollFactor(0);
 
         this.outlineCircle1 = this.add
             .sprite(
                 this.cameras.main.width / 2 - 200,
-                this.cameras.main.height / 2 + 200,
+                circleYOffset,
                 "green_dot_outline"
             )
             .setScrollFactor(0)
@@ -1368,50 +1376,51 @@ export default class Game extends Phaser.Scene {
         this.circle2 = this.add
             .sprite(
                 this.cameras.main.width / 2 + 200,
-                this.cameras.main.height / 2 + 200,
+                circleYOffset,
                 "green_dot"
             )
-            .setDisplaySize(10, 10)
+            .setDisplaySize(0, 0)
             .setScrollFactor(0);
 
         this.outlineCircle2 = this.add
             .sprite(
                 this.cameras.main.width / 2 + 200,
-                this.cameras.main.height / 2 + 200,
+                circleYOffset,
                 "green_dot_outline"
             )
             .setScrollFactor(0)
             .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
+        circleYOffset += 150;
         this.circle3 = this.add
             .sprite(
-                this.cameras.main.width / 2 - 200,
-                this.cameras.main.height / 2 + 400,
+                this.cameras.main.width / 2 - 100,
+                circleYOffset,
                 "green_dot"
             )
-            .setDisplaySize(10, 10)
+            .setDisplaySize(0, 0)
             .setScrollFactor(0);
 
         this.outlineCircle3 = this.add
             .sprite(
-                this.cameras.main.width / 2 - 200,
-                this.cameras.main.height / 2 + 400,
+                this.cameras.main.width / 2 - 100,
+                circleYOffset,
                 "green_dot_outline"
             )
             .setScrollFactor(0)
             .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
         this.circle4 = this.add
             .sprite(
-                this.cameras.main.width / 2 + 200,
-                this.cameras.main.height / 2 + 400,
+                this.cameras.main.width / 2 + 100,
+                circleYOffset,
                 "green_dot"
             )
-            .setDisplaySize(10, 10)
+            .setDisplaySize(0, 0)
             .setScrollFactor(0);
 
         this.outlineCircle4 = this.add
             .sprite(
-                this.cameras.main.width / 2 + 200,
-                this.cameras.main.height / 2 + 400,
+                this.cameras.main.width / 2 + 100,
+                circleYOffset,
                 "green_dot_outline"
             )
             .setScrollFactor(0)
@@ -1434,13 +1443,51 @@ export default class Game extends Phaser.Scene {
             this.outlineCircle3,
             this.outlineCircle4,
         ];
+        const fxs = this.outlineCircles.map((c) => {
+            c.preFX?.setPadding(32);
+            return c.preFX?.addGlow(0xffffff, 0, 0, true, 0.1, 32);
+        });
+        this.tweens.add({
+            targets: fxs,
+            outerStrength: 10,
+        });
         [...this.innerCircles, ...this.outlineCircles].map((c) => {
+            c.setDepth(10);
             c.setAlpha(0);
         });
         this.events.on("destroy", () => {
             this.setTimeouts.map((timeout) => clearTimeout(timeout));
             this.setIntervals.map((interval) => clearInterval(interval));
         });
+        const frameHeight = this.cameras.main.height / 3;
+        this.joystickFrame = this.add
+            .image(
+                this.cameras.main.width / 2,
+                this.cameras.main.height / 2 + frameHeight,
+                "joystick_frame"
+            )
+            .setDepth(9)
+            .setScrollFactor(0)
+            .setDisplaySize(this.cameras.main.width, frameHeight)
+            .setAlpha(0);
+        // this.joystickHolder = this.add
+        //     .container(
+        //         this.cameras.main.width / 2,
+        //         this.cameras.main.height / 2 + frameHeight,
+        //         [
+        //             this.circle1,
+        //             this.outlineCircle1,
+        //             this.circle2,
+        //             this.outlineCircle2,
+        //             this.circle3,
+        //             this.outlineCircle3,
+        //             this.circle4,
+        //             this.outlineCircle4,
+        //         ]
+        //     )
+        //     .setDepth(999999)
+        //     .setDisplaySize(this.cameras.main.width, frameHeight)
+        //     .setScrollFactor(0);
     }
 
     hideJoystickButtons() {
@@ -1450,6 +1497,10 @@ export default class Game extends Phaser.Scene {
         this.outlineCircles.map((c) => {
             c.setAlpha(0);
         });
+        this.innerCircles.map((c) => {
+            c.removeListener("pointerdown");
+        });
+        this.joystickFrame?.setAlpha(0);
     }
     showJoystickButtons() {
         this.innerCircles.map((c) => {
@@ -1458,22 +1509,47 @@ export default class Game extends Phaser.Scene {
         this.outlineCircles.map((c) => {
             c.setAlpha(1);
         });
+        this.joystickFrame?.setAlpha(1);
     }
-
+    boostMultipler: number = 0;
+    tapResultLabel: Phaser.GameObjects.Text | undefined;
+    tapResultLabelTimer: NodeJS.Timeout | undefined;
     // update(time: number, delta: number): void {
     update(): void {
         const currentTime = getToneCurrentTime();
         const nextTapTiming =
             this.showTapTimings[this.currentTapIndex] -
             this.circleShouldFillIn / 1000;
-        if (this.tapScore > 50) {
+
+        if (this.tapScore >= 40) {
             this.isBoosted = true;
+            this.boostMultipler = this.marbles[0].velocity.y;
+            // this.marbleTrailParticles[0].setConfig({
+            //     color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
+            //     colorEase: "quad.out",
+            //     lifespan: 2400,
+            //     angle: { min: -100, max: -80 },
+            //     // scale: { start: 1, end: 0, ease: "sine.out" },
+            //     scale: this.marbleTrailParticles[0].scale,
+            //     speed: { min: 250, max: 350 },
+            //     advance: 2000,
+            //     blendMode: "ADD",
+            //     follow: this.marbles[0].position,
+            // });
+            this.marbleTrailParticles[0].setConfig({
+                color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
+                colorEase: "quad.out",
+                lifespan: 2400,
+                angle: { min: -100, max: -80 },
+                scale: { start: 1, end: 0, ease: "sine.out" },
+                speed: { min: 250, max: 350 },
+                advance: 2000,
+                blendMode: "ADD",
+            });
             this.tapScore = 0;
             this.hideJoystickButtons();
-            // this.currentTapIndex = 0;
-            // alert("Booster");
-            this.matter.world.setGravity(0, this.initialGravity * 8);
-            const boosterLabel = this.add
+            this.tapResultLabel?.destroy();
+            this.tapResultLabel = this.add
                 .text(
                     this.cameras.main.width / 2,
                     this.cameras.main.height / 2,
@@ -1483,24 +1559,25 @@ export default class Game extends Phaser.Scene {
                         color: "white",
                         stroke: "rgba(0,0,0,1)",
                         strokeThickness: 6,
+                        backgroundColor: "rgba(0,0,0,1)",
                     }
                 )
                 .setScrollFactor(0);
-            boosterLabel.setPosition(
-                boosterLabel.x - boosterLabel.width / 2,
-                boosterLabel.y - boosterLabel.height / 2
+            this.tapResultLabel?.setPosition(
+                this.tapResultLabel.x - this.tapResultLabel.width / 2,
+                this.tapResultLabel.y - this.tapResultLabel.height / 2
             );
-
-            setTimeout(() => {
-                this.matter.world.setGravity(0, this.initialGravity);
-                boosterLabel.destroy();
+            if (this.tapResultLabelTimer) {
+                clearTimeout(this.tapResultLabelTimer);
+            }
+            this.tapResultLabelTimer = setTimeout(() => {
+                // this.matter.world.setGravity(0, this.initialGravity);
+                this.tapResultLabel?.destroy();
             }, 2000);
-            // setTimeout(() => {
-            //     this.isBoosted = false;
-            // }, 2000);
         }
         if (currentTime >= nextTapTiming) {
             const _currentTapIndex = this.currentTapIndex;
+            // console.log("Current Tap Idx: ", _currentTapIndex);
             this.currentTapIndex++;
             if (!this.isBoosted) {
                 this.showJoystickButtons();
@@ -1510,13 +1587,16 @@ export default class Game extends Phaser.Scene {
                         (c) => c !== circleToFill
                     );
                     circleToFill.setInteractive();
-                    circleToFill.on("pointerdown", () => {
+                    circleToFill.once("pointerdown", () => {
+                        // Hide the Circle
+                        circleToFill.setDisplaySize(0, 0);
+                        circleToFill.setAlpha(0);
                         // Add a Label at the center of the screen with scrollFactor 0
                         const newCurrentTime = getToneCurrentTime();
                         const expectedTapTime =
                             this.allTapTimings[_currentTapIndex];
                         const difference = expectedTapTime - newCurrentTime;
-                        console.log("difference: ", difference);
+
                         const resultText =
                             difference < 0.5
                                 ? "Perfect"
@@ -1529,7 +1609,8 @@ export default class Game extends Phaser.Scene {
                                 : resultText === "Good"
                                 ? 5
                                 : 0;
-                        const resultLabel = this.add
+                        this.tapResultLabel?.destroy();
+                        this.tapResultLabel = this.add
                             .text(
                                 this.cameras.main.width / 2,
                                 this.cameras.main.height / 2,
@@ -1544,22 +1625,26 @@ export default class Game extends Phaser.Scene {
                                             : "red",
                                     stroke: "rgba(0,0,0,1)",
                                     strokeThickness: 6,
+                                    backgroundColor: "rgba(0,0,0,1)",
                                 }
                             )
                             .setScrollFactor(0);
-                        resultLabel.setPosition(
-                            resultLabel.x - resultLabel.width / 2,
-                            resultLabel.y - resultLabel.height / 2
+                        this.tapResultLabel.setPosition(
+                            this.tapResultLabel.x -
+                                this.tapResultLabel.width / 2,
+                            this.tapResultLabel.y -
+                                this.tapResultLabel.height / 2
                         );
+                        if (this.tapResultLabelTimer) {
+                            clearTimeout(this.tapResultLabelTimer);
+                        }
                         // Destroy the label after 1 second
-                        const timeout = setTimeout(() => {
-                            resultLabel.destroy();
+                        this.tapResultLabelTimer = setTimeout(() => {
+                            this.tapResultLabel?.destroy();
                         }, 500);
-                        this.setTimeouts.push(timeout);
-                        circleToFill.off("pointerdown");
                         circleToFill.removeInteractive();
+                        this.availableCircles.push(circleToFill);
                     });
-                    // circleToFill.setDisplaySize(0, 0);
                     // Gradually Increase the radius of the circle to be 80
                     // Create a SetInterval
                     const interval = setInterval(() => {
@@ -1587,10 +1672,35 @@ export default class Game extends Phaser.Scene {
                     // }
                 }
             }
-            if (_currentTapIndex % 7 === 0) {
-                this.isBoosted = false;
-                // this.hideJoystickButtons();
-            }
+            // if (_currentTapIndex % 7 === 0) {
+            //     console.log("Test: ", _currentTapIndex);
+            //     // this.isBoosted = false;
+            //     // this.marbleTrailParticles[0].setConfig({
+            //     //     ...this.trailConfig,
+            //     //     scale: this.marbleTrailParticles[0].scale,
+            //     //     follow: this.marbles[0].position,
+            //     // });
+            //     // this.marbleTrailParticles[0].destroy();
+            //     // this.hideJoystickButtons();
+            // }
+        }
+        if (this.isBoosted && this.boostMultipler < 20) {
+            const firstMarble = this.marbles[0]; // TODO: User chosen marble
+            this.matter.body.setVelocity(firstMarble, {
+                x: firstMarble.velocity.x,
+                y: this.boostMultipler,
+            });
+            this.boostMultipler += 0.1;
+        } else if (this.boostMultipler >= 20) {
+            this.isBoosted = false;
+            this.boostMultipler = 0;
+            this.marbleTrailParticles[0].destroy();
+            this.marbleTrailParticles[0] = this.add
+                .particles(0, 0, "trail", {
+                    ...this.trailConfig,
+                    follow: this.marbles[0].position,
+                })
+                .setDepth(0);
         }
 
         if (this.damageMultipliyer === 1) {
@@ -1709,77 +1819,78 @@ export default class Game extends Phaser.Scene {
             //     c.setAngle(c.angle - 2);
             //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
             // });
-            if (this.isInstrumentPlaying && this.isRotating === false) {
-                /*
-        let largest = -Infinity;
-        let secondLargest = -Infinity;
-        let largestIndex = -1;
-        let finishedPositions = [];
-        let voicesPositions = [];
+            //     if (this.isInstrumentPlaying && this.isRotating === false) {
+            //         /*
+            // let largest = -Infinity;
+            // let secondLargest = -Infinity;
+            // let largestIndex = -1;
+            // let finishedPositions = [];
+            // let voicesPositions = [];
 
-        for (let i = 0; i < this.marbles.length; i++) {
-          const y = this.marbles[i].position.y;
-          voicesPositions.push(y);
-          if (y < this.finishLineOffset) {
-            finishedPositions.push(y);
-            if (y > largest) {
-              secondLargest = largest;
-              largest = y;
-              largestIndex = i;
-            } else if (y > secondLargest) {
-              secondLargest = y;
-            }
-          }
-        }
-        */
-                const unFinishedPositions = [];
-                const finishedPositions = [];
-                const voicesPositions = [];
-                for (let i = 0; i < this.marbles.length; i++) {
-                    const y = this.marbles[i].position.y;
-                    voicesPositions.push(y);
-                    if (y < this.finishLineOffset) {
-                        unFinishedPositions.push(y);
-                    } else if (y > this.finishLineOffset) {
-                        finishedPositions.push(y);
-                    }
-                }
-                // Above is the refactored code
-                // const voicesPositions = this.marbles.map((m) => m.position.y);
-                // const unFinishedPositions = voicesPositions.filter(
-                //   (y) => y < this.finishLineOffset
-                // );
-                // const finishedPositions = voicesPositions.filter(
-                //   (y) => y > this.finishLineOffset
-                // );
+            // for (let i = 0; i < this.marbles.length; i++) {
+            //   const y = this.marbles[i].position.y;
+            //   voicesPositions.push(y);
+            //   if (y < this.finishLineOffset) {
+            //     finishedPositions.push(y);
+            //     if (y > largest) {
+            //       secondLargest = largest;
+            //       largest = y;
+            //       largestIndex = i;
+            //     } else if (y > secondLargest) {
+            //       secondLargest = y;
+            //     }
+            //   }
+            // }
+            // */
+            //         const unFinishedPositions = [];
+            //         const finishedPositions = [];
+            //         const voicesPositions = [];
+            //         for (let i = 0; i < this.marbles.length; i++) {
+            //             const y = this.marbles[i].position.y;
+            //             voicesPositions.push(y);
+            //             if (y < this.finishLineOffset) {
+            //                 unFinishedPositions.push(y);
+            //             } else if (y > this.finishLineOffset) {
+            //                 finishedPositions.push(y);
+            //             }
+            //         }
+            //         // Above is the refactored code
+            //         // const voicesPositions = this.marbles.map((m) => m.position.y);
+            //         // const unFinishedPositions = voicesPositions.filter(
+            //         //   (y) => y < this.finishLineOffset
+            //         // );
+            //         // const finishedPositions = voicesPositions.filter(
+            //         //   (y) => y > this.finishLineOffset
+            //         // );
 
-                if (this.winnerIdx === -1 && finishedPositions.length) {
-                    this.winnerIdx = voicesPositions.indexOf(
-                        finishedPositions[0]
-                    );
-                }
-                const largest = Math.max(...unFinishedPositions);
-                const largestIndex = voicesPositions.findIndex(
-                    (v) => v === largest
-                );
-                const secondLargest = Math.max(
-                    ...unFinishedPositions.filter((p) => p !== largest)
-                );
-                if (largestIndex === -1) {
-                    this.isGameOver = true;
-                    return;
-                }
-                if (
-                    this.prevVoiceIdx !== largestIndex &&
-                    largest > secondLargest + this.marbleRadius
-                )
-                    this.throttledUpdate(largestIndex);
-                // else if (secondLargest >= largest - this.marbleRadius * 2)
-                //   this.throttledUpdate(secondLargestIndex, false);
-                if (this.autoScroll) {
-                    this.cameras.main.scrollY = largest - 300 * this.dpr;
-                }
-            }
+            //         if (this.winnerIdx === -1 && finishedPositions.length) {
+            //             this.winnerIdx = voicesPositions.indexOf(
+            //                 finishedPositions[0]
+            //             );
+            //         }
+            //         const largest = Math.max(...unFinishedPositions);
+            //         const largestIndex = voicesPositions.findIndex(
+            //             (v) => v === largest
+            //         );
+            //         const secondLargest = Math.max(
+            //             ...unFinishedPositions.filter((p) => p !== largest)
+            //         );
+            //         if (largestIndex === -1) {
+            //             this.isGameOver = true;
+            //             return;
+            //         }
+            //         if (
+            //             this.prevVoiceIdx !== largestIndex &&
+            //             largest > secondLargest + this.marbleRadius
+            //         )
+            //             this.throttledUpdate(largestIndex);
+            //         // else if (secondLargest >= largest - this.marbleRadius * 2)
+            //         //   this.throttledUpdate(secondLargestIndex, false);
+            //         if (this.autoScroll) {
+            //             // this.cameras.main.startFollow(this.marblesImages[0]);
+            //             // this.cameras.main.scrollY = largest - 300 * this.dpr;
+            //         }
+            //     }
 
             // Optimised Code
             // let largest = -Infinity;

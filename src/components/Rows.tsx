@@ -20,6 +20,7 @@ import {
     orderBy,
     DocumentData,
     QuerySnapshot,
+    documentId,
 } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { useCollection } from "react-firebase-hooks/firestore";
@@ -30,6 +31,13 @@ import Settings from "@mui/icons-material/Settings";
 import { createRandomNumber } from "../helpers";
 
 const getRowsQuery = (recordsLimit: number, isLatest: boolean) => {
+    return query(
+        collection(db, "covers"),
+        where(documentId(), "in", [
+            "lsUBEcaYfOidpvjUxpz1",
+            "YE7LMzWbCKgkLgSKVX9Q",
+        ])
+    );
     if (isLatest) {
         return query(
             collection(db, "covers"),
