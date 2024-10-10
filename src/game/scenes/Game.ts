@@ -7,10 +7,13 @@ import {
 import _ from "lodash";
 import { GameVoiceInfo, ObstacleNames } from "./Preloader";
 import { BodyType } from "matter";
-import { duplicateArrayElemToN } from "../../helpers";
+import {
+    createBeatsGroupWithInterval,
+    duplicateArrayElemToN,
+    getBeatsArray,
+} from "../../helpers";
 import { EventBus } from "../EventBus";
 import { IGameDataParams } from "../PhaserGame";
-import { Circle } from "@mui/icons-material";
 
 export default class Game extends Phaser.Scene {
     constructor() {
@@ -102,6 +105,19 @@ export default class Game extends Phaser.Scene {
         // .sort(() => Math.random() - 0.5);
         this.coverDocId = data.coverDocId;
         this.musicStartOffset = data.musicStartOffset;
+        this.allTapTimings = getBeatsArray(
+            this.coverDocId,
+            this.musicStartOffset
+        );
+        this.circleShouldFillInMs =
+            (this.allTapTimings[1] - this.allTapTimings[0]) * 1000;
+        this.showTapTimings = createBeatsGroupWithInterval(
+            this.allTapTimings,
+            this.beatsGroupLength,
+            4,
+            12
+        );
+
         this.noOfRaceTracks = data.noOfRaceTracks || 5;
         this.selectedTracks = duplicateArrayElemToN(
             data.selectedTracks,
@@ -1308,37 +1324,11 @@ export default class Game extends Phaser.Scene {
     setIntervals: NodeJS.Timeout[] = [];
     setTimeouts: NodeJS.Timeout[] = [];
     tapTimings: number[] = [];
-    circleShouldFillIn = 1250;
-    // allTapTimings = [
-    //     12.36, 13.61, 14.86, 16.11, 17.31, 18.56, 19.8, 21.05, 22.26, 23.51,
-    //     24.75, 26, 27.21, 28.46, 29.7, 30.95, 32.16, 33.41, 34.65, 35.9, 37.11,
-    //     38.36, 39.6, 40.85, 42.05, 43.3, 44.55, 45.8, 47, 48.25, 49.5, 50.75,
-    //     51.95, 53.2, 54.44, 55.69, 56.9, 58.15, 59.39, 60.64, 61.85, 63.1,
-    //     64.34, 65.59, 66.8, 68.05, 69.29, 70.54, 71.74, 72.99, 74.24, 75.49,
-    //     76.69, 77.94, 79.18, 80.43, 81.64, 82.89, 84.14,
-    // ];
-    allTapTimings = [
-        12.36, 12.99, 13.61, 14.23, 14.86, 15.46, 16.06, 16.69, 17.31, 17.94,
-        18.56, 19.17, 19.8, 20.41, 21.01, 21.64, 22.26, 22.89, 23.51, 24.12,
-        24.75, 25.36, 25.96, 26.59, 27.21, 27.84, 28.46, 29.07, 29.7, 30.31,
-        30.91, 31.53, 32.16, 32.78, 33.4, 34.02, 34.65, 35.26, 35.85, 36.48,
-        37.11, 37.73, 38.35, 38.97, 39.6, 40.2, 40.8, 41.43, 42.05, 42.68, 43.3,
-        43.91, 44.55, 45.15, 45.75, 46.38, 47.0, 47.63, 48.25, 48.86, 49.5,
-        50.1, 50.7, 51.33, 51.95, 52.58, 53.2, 53.81, 54.44, 55.05, 55.65,
-        56.28, 56.9, 57.52, 58.15, 58.76, 59.39, 60.0, 60.6, 61.23, 61.85,
-        62.47, 63.09, 63.71, 64.34, 64.95, 65.55, 66.17, 66.8, 67.42, 68.05,
-        68.66, 69.29, 69.89, 70.5, 71.12, 71.74, 72.37, 72.99, 73.61, 74.24,
-        74.84, 75.44, 76.07, 76.69, 77.31, 77.94, 78.55, 79.18, 79.79, 80.39,
-        81.02, 81.64, 82.27, 82.89, 83.51, 84.14, 84.74, 85.34, 85.96, 86.58,
-    ];
-    showTapTimings = [12.36, 29.7, 51.95, 72.99]
-        .map((startTime) => {
-            const startIdx = this.allTapTimings.indexOf(startTime);
-
-            return this.allTapTimings.slice(startIdx, startIdx + 7);
-        })
-        .flat();
+    allTapTimings: number[] = [];
+    circleShouldFillInMs = 0;
+    showTapTimings: number[] = [];
     currentTapIndex = 0;
+    beatsGroupLength = 8;
 
     availableCircles: Phaser.GameObjects.Sprite[] = [];
     innerCircles: Phaser.GameObjects.Sprite[] = [];
@@ -1489,8 +1479,10 @@ export default class Game extends Phaser.Scene {
         //     .setDisplaySize(this.cameras.main.width, frameHeight)
         //     .setScrollFactor(0);
     }
+    isJoystickButtonsShown = false;
 
     hideJoystickButtons() {
+        this.isJoystickButtonsShown = false;
         this.innerCircles.map((c) => {
             c.setAlpha(0);
         });
@@ -1503,6 +1495,7 @@ export default class Game extends Phaser.Scene {
         this.joystickFrame?.setAlpha(0);
     }
     showJoystickButtons() {
+        this.isJoystickButtonsShown = true;
         this.innerCircles.map((c) => {
             c.setAlpha(1);
         });
@@ -1519,23 +1512,11 @@ export default class Game extends Phaser.Scene {
         const currentTime = getToneCurrentTime();
         const nextTapTiming =
             this.showTapTimings[this.currentTapIndex] -
-            this.circleShouldFillIn / 1000;
+            this.circleShouldFillInMs / 1000;
 
         if (this.tapScore >= 40) {
             this.isBoosted = true;
             this.boostMultipler = this.marbles[0].velocity.y;
-            // this.marbleTrailParticles[0].setConfig({
-            //     color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
-            //     colorEase: "quad.out",
-            //     lifespan: 2400,
-            //     angle: { min: -100, max: -80 },
-            //     // scale: { start: 1, end: 0, ease: "sine.out" },
-            //     scale: this.marbleTrailParticles[0].scale,
-            //     speed: { min: 250, max: 350 },
-            //     advance: 2000,
-            //     blendMode: "ADD",
-            //     follow: this.marbles[0].position,
-            // });
             this.marbleTrailParticles[0].setConfig({
                 color: [0xfacc22, 0xf89800, 0xf83600, 0x9f0404],
                 colorEase: "quad.out",
@@ -1575,8 +1556,8 @@ export default class Game extends Phaser.Scene {
                 this.tapResultLabel?.destroy();
             }, 2000);
         }
+        const _currentTapIndex = this.currentTapIndex;
         if (currentTime >= nextTapTiming) {
-            const _currentTapIndex = this.currentTapIndex;
             // console.log("Current Tap Idx: ", _currentTapIndex);
             this.currentTapIndex++;
             if (!this.isBoosted) {
@@ -1651,7 +1632,7 @@ export default class Game extends Phaser.Scene {
                         if (circleToFill) {
                             const radiuToIncreasePerMs =
                                 this.buttonRadius /
-                                (this.circleShouldFillIn / 10);
+                                (this.circleShouldFillInMs / 10);
 
                             circleToFill.setDisplaySize(
                                 circleToFill.displayWidth +
@@ -1667,22 +1648,25 @@ export default class Game extends Phaser.Scene {
                         this.availableCircles.push(circleToFill);
                         circleToFill.removeInteractive();
                         clearInterval(interval);
-                    }, this.circleShouldFillIn);
+                    }, this.circleShouldFillInMs);
                     this.setTimeouts.push(timeout);
                     // }
                 }
             }
-            // if (_currentTapIndex % 7 === 0) {
-            //     console.log("Test: ", _currentTapIndex);
-            //     // this.isBoosted = false;
-            //     // this.marbleTrailParticles[0].setConfig({
-            //     //     ...this.trailConfig,
-            //     //     scale: this.marbleTrailParticles[0].scale,
-            //     //     follow: this.marbles[0].position,
-            //     // });
-            //     // this.marbleTrailParticles[0].destroy();
-            //     // this.hideJoystickButtons();
-            // }
+        }
+        if (
+            _currentTapIndex &&
+            _currentTapIndex % this.beatsGroupLength === 0 &&
+            this.isJoystickButtonsShown
+        ) {
+            // this.isBoosted = false;
+            // this.marbleTrailParticles[0].setConfig({
+            //     ...this.trailConfig,
+            //     scale: this.marbleTrailParticles[0].scale,
+            //     follow: this.marbles[0].position,
+            // });
+            // this.marbleTrailParticles[0].destroy();
+            this.hideJoystickButtons();
         }
         if (this.isBoosted && this.boostMultipler < 20) {
             const firstMarble = this.marbles[0]; // TODO: User chosen marble
@@ -1819,78 +1803,78 @@ export default class Game extends Phaser.Scene {
             //     c.setAngle(c.angle - 2);
             //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
             // });
-            //     if (this.isInstrumentPlaying && this.isRotating === false) {
-            //         /*
-            // let largest = -Infinity;
-            // let secondLargest = -Infinity;
-            // let largestIndex = -1;
-            // let finishedPositions = [];
-            // let voicesPositions = [];
+            if (this.isInstrumentPlaying && this.isRotating === false) {
+                //         /*
+                // let largest = -Infinity;
+                // let secondLargest = -Infinity;
+                // let largestIndex = -1;
+                // let finishedPositions = [];
+                // let voicesPositions = [];
 
-            // for (let i = 0; i < this.marbles.length; i++) {
-            //   const y = this.marbles[i].position.y;
-            //   voicesPositions.push(y);
-            //   if (y < this.finishLineOffset) {
-            //     finishedPositions.push(y);
-            //     if (y > largest) {
-            //       secondLargest = largest;
-            //       largest = y;
-            //       largestIndex = i;
-            //     } else if (y > secondLargest) {
-            //       secondLargest = y;
-            //     }
-            //   }
-            // }
-            // */
-            //         const unFinishedPositions = [];
-            //         const finishedPositions = [];
-            //         const voicesPositions = [];
-            //         for (let i = 0; i < this.marbles.length; i++) {
-            //             const y = this.marbles[i].position.y;
-            //             voicesPositions.push(y);
-            //             if (y < this.finishLineOffset) {
-            //                 unFinishedPositions.push(y);
-            //             } else if (y > this.finishLineOffset) {
-            //                 finishedPositions.push(y);
-            //             }
-            //         }
-            //         // Above is the refactored code
-            //         // const voicesPositions = this.marbles.map((m) => m.position.y);
-            //         // const unFinishedPositions = voicesPositions.filter(
-            //         //   (y) => y < this.finishLineOffset
-            //         // );
-            //         // const finishedPositions = voicesPositions.filter(
-            //         //   (y) => y > this.finishLineOffset
-            //         // );
+                // for (let i = 0; i < this.marbles.length; i++) {
+                //   const y = this.marbles[i].position.y;
+                //   voicesPositions.push(y);
+                //   if (y < this.finishLineOffset) {
+                //     finishedPositions.push(y);
+                //     if (y > largest) {
+                //       secondLargest = largest;
+                //       largest = y;
+                //       largestIndex = i;
+                //     } else if (y > secondLargest) {
+                //       secondLargest = y;
+                //     }
+                //   }
+                // }
+                // */
+                const unFinishedPositions = [];
+                const finishedPositions = [];
+                const voicesPositions = [];
+                for (let i = 0; i < this.marbles.length; i++) {
+                    const y = this.marbles[i].position.y;
+                    voicesPositions.push(y);
+                    if (y < this.finishLineOffset) {
+                        unFinishedPositions.push(y);
+                    } else if (y > this.finishLineOffset) {
+                        finishedPositions.push(y);
+                    }
+                }
+                // Above is the refactored code
+                // const voicesPositions = this.marbles.map((m) => m.position.y);
+                // const unFinishedPositions = voicesPositions.filter(
+                //   (y) => y < this.finishLineOffset
+                // );
+                // const finishedPositions = voicesPositions.filter(
+                //   (y) => y > this.finishLineOffset
+                // );
 
-            //         if (this.winnerIdx === -1 && finishedPositions.length) {
-            //             this.winnerIdx = voicesPositions.indexOf(
-            //                 finishedPositions[0]
-            //             );
-            //         }
-            //         const largest = Math.max(...unFinishedPositions);
-            //         const largestIndex = voicesPositions.findIndex(
-            //             (v) => v === largest
-            //         );
-            //         const secondLargest = Math.max(
-            //             ...unFinishedPositions.filter((p) => p !== largest)
-            //         );
-            //         if (largestIndex === -1) {
-            //             this.isGameOver = true;
-            //             return;
-            //         }
-            //         if (
-            //             this.prevVoiceIdx !== largestIndex &&
-            //             largest > secondLargest + this.marbleRadius
-            //         )
-            //             this.throttledUpdate(largestIndex);
-            //         // else if (secondLargest >= largest - this.marbleRadius * 2)
-            //         //   this.throttledUpdate(secondLargestIndex, false);
-            //         if (this.autoScroll) {
-            //             // this.cameras.main.startFollow(this.marblesImages[0]);
-            //             // this.cameras.main.scrollY = largest - 300 * this.dpr;
-            //         }
-            //     }
+                if (this.winnerIdx === -1 && finishedPositions.length) {
+                    this.winnerIdx = voicesPositions.indexOf(
+                        finishedPositions[0]
+                    );
+                }
+                const largest = Math.max(...unFinishedPositions);
+                const largestIndex = voicesPositions.findIndex(
+                    (v) => v === largest
+                );
+                const secondLargest = Math.max(
+                    ...unFinishedPositions.filter((p) => p !== largest)
+                );
+                if (largestIndex === -1) {
+                    this.isGameOver = true;
+                    return;
+                }
+                if (
+                    this.prevVoiceIdx !== largestIndex &&
+                    largest > secondLargest + this.marbleRadius
+                )
+                    this.throttledUpdate(largestIndex);
+                // else if (secondLargest >= largest - this.marbleRadius * 2)
+                //   this.throttledUpdate(secondLargestIndex, false);
+                if (this.autoScroll) {
+                    // this.cameras.main.startFollow(this.marblesImages[0]);
+                    // this.cameras.main.scrollY = largest - 300 * this.dpr;
+                }
+            }
 
             // Optimised Code
             // let largest = -Infinity;
