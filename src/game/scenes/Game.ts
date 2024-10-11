@@ -98,6 +98,8 @@ export default class Game extends Phaser.Scene {
     };
     showObstacles: boolean = false;
     initialGravity: number = 0;
+    perfectTapTime: number = 0;
+    goodTapTime: number = 0;
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
@@ -111,6 +113,8 @@ export default class Game extends Phaser.Scene {
         );
         this.circleShouldFillInMs =
             (this.allTapTimings[1] - this.allTapTimings[0]) * 3 * 1000;
+        this.perfectTapTime = this.circleShouldFillInMs / 3 / 1000;
+        this.goodTapTime = this.circleShouldFillInMs / 2 / 1000;
         this.showTapTimings = createBeatsGroupWithInterval(
             this.allTapTimings,
             this.beatsGroupLength,
@@ -1341,6 +1345,7 @@ export default class Game extends Phaser.Scene {
     buttonRadius = 40 * this.dpr;
     joystickHolder: Phaser.GameObjects.Container | undefined;
     joystickFrame: Phaser.GameObjects.Image | undefined;
+    hasGroupPassed = true;
 
     renderJoystickButtons() {
         const frameHeight = this.cameras.main.height / 3;
@@ -1493,10 +1498,12 @@ export default class Game extends Phaser.Scene {
         this.innerCircles.map((c) => {
             c.removeListener("pointerdown");
         });
+        this.joystickFrame?.setTint(undefined);
         this.joystickFrame?.setAlpha(0);
     }
     showJoystickButtons() {
         this.isJoystickButtonsShown = true;
+        this.hasGroupPassed = false;
         this.innerCircles.map((c) => {
             c.setAlpha(1);
         });
@@ -1511,11 +1518,9 @@ export default class Game extends Phaser.Scene {
     // update(time: number, delta: number): void {
     update(): void {
         const currentTime = getToneCurrentTime();
-        const nextTapTiming =
-            this.showTapTimings[this.currentTapIndex] -
-            this.circleShouldFillInMs / 1000;
 
         if (this.tapScore >= 40) {
+            this.tapScore = 0;
             this.isBoosted = true;
             this.boostMultipler = this.marbles[0].velocity.y;
             this.marbleTrailParticles[0].setConfig({
@@ -1528,36 +1533,38 @@ export default class Game extends Phaser.Scene {
                 advance: 2000,
                 blendMode: "ADD",
             });
-            this.tapScore = 0;
             this.hideJoystickButtons();
-            this.tapResultLabel?.destroy();
-            this.tapResultLabel = this.add
-                .text(
-                    this.cameras.main.width / 2,
-                    this.cameras.main.height / 2,
-                    "Boosted",
-                    {
-                        fontSize: `${42 * this.dpr}px`,
-                        color: "white",
-                        stroke: "rgba(0,0,0,1)",
-                        strokeThickness: 6,
-                        backgroundColor: "rgba(0,0,0,1)",
-                    }
-                )
-                .setScrollFactor(0);
-            this.tapResultLabel?.setPosition(
-                this.tapResultLabel.x - this.tapResultLabel.width / 2,
-                this.tapResultLabel.y - this.tapResultLabel.height / 2
-            );
-            if (this.tapResultLabelTimer) {
-                clearTimeout(this.tapResultLabelTimer);
-            }
-            this.tapResultLabelTimer = setTimeout(() => {
-                // this.matter.world.setGravity(0, this.initialGravity);
-                this.tapResultLabel?.destroy();
-            }, 2000);
+            // this.tapResultLabel?.destroy();
+            // this.tapResultLabel = this.add
+            //     .text(
+            //         this.cameras.main.width / 2,
+            //         this.cameras.main.height / 2,
+            //         "Boosted",
+            //         {
+            //             fontSize: `${42 * this.dpr}px`,
+            //             color: "white",
+            //             stroke: "rgba(0,0,0,1)",
+            //             strokeThickness: 6,
+            //             backgroundColor: "rgba(0,0,0,1)",
+            //         }
+            //     )
+            //     .setScrollFactor(0);
+            // this.tapResultLabel?.setPosition(
+            //     this.tapResultLabel.x - this.tapResultLabel.width / 2,
+            //     this.tapResultLabel.y - this.tapResultLabel.height / 2
+            // );
+            // if (this.tapResultLabelTimer) {
+            //     clearTimeout(this.tapResultLabelTimer);
+            // }
+            // this.tapResultLabelTimer = setTimeout(() => {
+            //     // this.matter.world.setGravity(0, this.initialGravity);
+            //     this.tapResultLabel?.destroy();
+            // }, 2000);
         }
         const _currentTapIndex = this.currentTapIndex;
+        const nextTapTiming =
+            this.showTapTimings[_currentTapIndex] -
+            this.circleShouldFillInMs / 1000;
         if (currentTime >= nextTapTiming) {
             // console.log("Current Tap Idx: ", _currentTapIndex);
             this.currentTapIndex++;
@@ -1576,13 +1583,12 @@ export default class Game extends Phaser.Scene {
                         // Add a Label at the center of the screen with scrollFactor 0
                         const newCurrentTime = getToneCurrentTime();
                         const expectedTapTime =
-                            this.allTapTimings[_currentTapIndex];
+                            this.showTapTimings[_currentTapIndex];
                         const difference = expectedTapTime - newCurrentTime;
-
                         const resultText =
-                            difference < this.circleShouldFillInMs / 3
+                            difference < this.perfectTapTime
                                 ? "Perfect"
-                                : difference < this.circleShouldFillInMs / 2
+                                : difference < this.goodTapTime
                                 ? "Good"
                                 : "Miss";
                         this.tapScore +=
@@ -1591,38 +1597,52 @@ export default class Game extends Phaser.Scene {
                                 : resultText === "Good"
                                 ? 5
                                 : 0;
-                        this.tapResultLabel?.destroy();
-                        this.tapResultLabel = this.add
-                            .text(
-                                this.cameras.main.width / 2,
-                                this.cameras.main.height / 2,
-                                resultText,
-                                {
-                                    fontSize: `${42 * this.dpr}px`,
-                                    color:
-                                        resultText === "Perfect"
-                                            ? "green"
-                                            : resultText === "Good"
-                                            ? "yellow"
-                                            : "red",
-                                    stroke: "rgba(0,0,0,1)",
-                                    strokeThickness: 6,
-                                    backgroundColor: "rgba(0,0,0,1)",
-                                }
-                            )
-                            .setScrollFactor(0);
-                        this.tapResultLabel.setPosition(
-                            this.tapResultLabel.x -
-                                this.tapResultLabel.width / 2,
-                            this.tapResultLabel.y -
-                                this.tapResultLabel.height / 2
+                        // Set green/success tint to the joystick frame
+                        // green: #00ff00
+                        // red: #ff0000
+                        // yellow: #ffff00
+                        this.joystickFrame?.setTint(
+                            resultText === "Perfect"
+                                ? 0xffff00
+                                : resultText === "Good"
+                                ? 0xffff00
+                                : 0xff0000
                         );
+                        // this.tapResultLabel?.destroy();
+                        // this.tapResultLabel = this.add
+                        //     .text(
+                        //         this.cameras.main.width / 2,
+                        //         this.cameras.main.height / 2,
+                        //         resultText,
+                        //         {
+                        //             fontSize: `${42 * this.dpr}px`,
+                        //             color:
+                        //                 resultText === "Perfect"
+                        //                     ? "green"
+                        //                     : resultText === "Good"
+                        //                     ? "yellow"
+                        //                     : "red",
+                        //             stroke: "rgba(0,0,0,1)",
+                        //             strokeThickness: 6,
+                        //             backgroundColor: "rgba(0,0,0,1)",
+                        //         }
+                        //     )
+                        //     .setScrollFactor(0);
+                        // this.tapResultLabel.setPosition(
+                        //     this.tapResultLabel.x -
+                        //         this.tapResultLabel.width / 2,
+                        //     this.tapResultLabel.y -
+                        //         this.tapResultLabel.height / 2
+                        // );
                         if (this.tapResultLabelTimer) {
+                            // this.joystickFrame?.setTint(undefined);
                             clearTimeout(this.tapResultLabelTimer);
                         }
+
                         // Destroy the label after 1 second
                         this.tapResultLabelTimer = setTimeout(() => {
-                            this.tapResultLabel?.destroy();
+                            this.joystickFrame?.setTint(undefined);
+                            // this.tapResultLabel?.destroy();
                         }, 500);
                         circleToFill.removeInteractive();
                         this.availableCircles.push(circleToFill);
@@ -1658,9 +1678,10 @@ export default class Game extends Phaser.Scene {
         if (
             _currentTapIndex &&
             _currentTapIndex % this.beatsGroupLength === 0 &&
-            this.isJoystickButtonsShown
+            this.hasGroupPassed === false
         ) {
-            // this.isBoosted = false;
+            this.hasGroupPassed = true;
+            // console.log("Group Passed");
             // this.marbleTrailParticles[0].setConfig({
             //     ...this.trailConfig,
             //     scale: this.marbleTrailParticles[0].scale,
@@ -1669,14 +1690,23 @@ export default class Game extends Phaser.Scene {
             // this.marbleTrailParticles[0].destroy();
             this.hideJoystickButtons();
         }
-        if (this.isBoosted && this.boostMultipler < 20) {
+        if (
+            this.isBoosted &&
+            this.boostMultipler < 20 &&
+            this.boostMultipler > 0
+        ) {
             const firstMarble = this.marbles[0]; // TODO: User chosen marble
             this.matter.body.setVelocity(firstMarble, {
                 x: firstMarble.velocity.x,
                 y: this.boostMultipler,
             });
             this.boostMultipler += 0.1;
-        } else if (this.boostMultipler >= 20) {
+        }
+        if (
+            this.isBoosted &&
+            this.boostMultipler >= 20 &&
+            this.hasGroupPassed
+        ) {
             this.isBoosted = false;
             this.boostMultipler = 0;
             this.marbleTrailParticles[0].destroy();
