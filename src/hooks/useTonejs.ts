@@ -98,7 +98,9 @@ const downloadAudioFiles = async (
         onProgress(progress);
     }
 };
-
+const getToneCurrentTime = () => {
+    return Tone.Transport.seconds;
+};
 const initializeTone = async () => {
     if (!isToneInitialized) {
         isToneInitialized = true;
@@ -220,5 +222,6 @@ export {
     stopPlayer,
     getToneStatus,
     stopAndDestroyPlayers,
+    getToneCurrentTime,
 };
 

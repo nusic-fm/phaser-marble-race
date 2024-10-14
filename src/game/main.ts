@@ -17,7 +17,17 @@ const config: Phaser.Types.Core.GameConfig = {
             // debug: true,
         },
     },
-    pixelArt: true,
+    // pixelArt: true,
+    // antialias: false,
+    // scale: {
+    //     mode: Phaser.Scale.FIT,
+    // },
+    // render: {
+    //     pixelArt: true,
+    // },
+    // mode: Phaser.Scale.FIT,
+    // autoRound: false,
+    powerPreference: "high-performance",
     scene: [Preloader, GameScene],
 };
 
@@ -26,9 +36,10 @@ const StartGame = (parent: string, data: IGameDataParams) => {
         config.physics.matter.gravity.y = data.gravityY;
     const game = new Game({
         ...config,
-        width: data.width,
-        height: (data.width * 16) / 9,
+        width: data.dprAdjustedWidth,
+        height: data.dprAdjustedHeight,
         parent,
+        // scale: { mode: Phaser.Scale.FIT, autoRound: true },
     });
     game.scene.start("preloader", data);
     // // Add an event listener to apply the border radius once the game canvas is created
