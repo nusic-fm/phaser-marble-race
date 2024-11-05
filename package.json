@@ -21,7 +21,7 @@
         "typescript"
     ],
     "scripts": {
-        "dev": "vite --config vite/config.dev.mjs --port 3000",
+        "dev": "vite --config vite/config.dev.mjs --port 3000 --host 0.0.0.0",
         "build": "vite build --config vite/config.prod.mjs"
     },
     "dependencies": {
@@ -38,6 +38,7 @@
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "react-firebase-hooks": "^5.1.1",
+        "react-router-dom": "^6.26.1",
         "tone": "^15.0.4",
         "use-indexeddb": "^2.0.2",
         "webfontloader": "^1.6.28"
@@ -58,3 +59,4 @@
         "vite": "^5.3.1"
     }
 }
+

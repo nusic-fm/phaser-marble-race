@@ -1,7 +1,8 @@
-import { forwardRef, useLayoutEffect, useRef, useState } from "react";
+import { forwardRef, useLayoutEffect, useRef } from "react";
 import StartGame from "./main";
 import { GameVoiceInfo } from "./scenes/Preloader";
-import * as Tone from "tone";
+// import * as Tone from "tone";
+import { Box } from "@mui/material";
 
 export interface IRefPhaserGame {
     game: Phaser.Game | null;
@@ -25,19 +26,23 @@ export interface IGameDataParams {
     trailEndSize: number;
     recordDuration: number;
     isRecord: boolean;
+    height?: number;
+    dprAdjustedWidth?: number;
+    dprAdjustedHeight?: number;
+    showObstacles?: boolean;
 }
 
 interface IProps extends IGameDataParams {
     currentActiveScene?: (scene_instance: Phaser.Scene) => void;
 }
-const downloadVideo = (videoUrl: string, name: string) => {
-    const link = document.createElement("a");
-    link.href = videoUrl;
-    link.download = `${name}.webm`; // Set the file name for download
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-};
+// const downloadVideo = (videoUrl: string, name: string) => {
+//     const link = document.createElement("a");
+//     link.href = videoUrl;
+//     link.download = `${name}.webm`; // Set the file name for download
+//     document.body.appendChild(link);
+//     link.click();
+//     document.body.removeChild(link);
+// };
 
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
     function PhaserGame(
@@ -50,7 +55,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             selectedTracks,
             noOfRaceTracks,
             gravityY,
-            width,
+            // width,
             enableMotion,
             trailPath,
             trailsLifeSpace,
@@ -61,55 +66,60 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         },
         ref
     ) {
+        const width = 414;
+        const height = (width * 16) / 10;
         const game = useRef<Phaser.Game | null>(null!);
 
-        const [mediaRecorder, setMediaRecorder] =
-            useState<null | MediaRecorder>(null);
-        const [isRecording, setIsRecording] = useState(false);
+        // const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
+        // const [, setIsRecording] = useState(false);
+        // const [dpr] = useState(window.devicePixelRatio);
 
-        const startRecording = (canvas: HTMLCanvasElement) => {
-            // const canvas = canvasRef.current;
-            const canvasStream = canvas.captureStream(120); // 30 FPS
-            const audioCtx = Tone.getContext().rawContext;
-            const dest = (audioCtx as any).createMediaStreamDestination();
-            Tone.getDestination().connect(dest);
-            const audioStream = dest.stream;
+        // const startRecording = (canvas: HTMLCanvasElement) => {
+        //     // const canvas = canvasRef.current;
+        //     const canvasStream = canvas.captureStream(120); // 30 FPS
+        //     const audioCtx = Tone.getContext().rawContext;
+        //     const dest = (audioCtx as any).createMediaStreamDestination();
+        //     Tone.getDestination().connect(dest);
+        //     const audioStream = dest.stream;
 
-            // navigator.mediaDevices
-            //     .getUserMedia({ audio: true })
-            //     .then((micStream) => {
-            // Combine the canvas video stream and the audio stream
-            const combinedStream = new MediaStream([
-                ...canvasStream.getTracks(),
-                ...audioStream.getTracks(),
-            ]);
+        //     // navigator.mediaDevices
+        //     //     .getUserMedia({ audio: true })
+        //     //     .then((micStream) => {
+        //     // Combine the canvas video stream and the audio stream
+        //     const combinedStream = new MediaStream([
+        //         ...canvasStream.getTracks(),
+        //         ...audioStream.getTracks(),
+        //     ]);
 
-            const recorder = new MediaRecorder(combinedStream, {
-                mimeType: "video/webm; codecs=vp9,opus",
-            });
+        //     const recorder = new MediaRecorder(combinedStream, {
+        //         mimeType: "video/webm; codecs=vp9,opus",
+        //     });
 
-            const chunks: Blob[] = [];
-            recorder.ondataavailable = (e) => chunks.push(e.data);
-            recorder.onstop = () => {
-                const blob = new Blob(chunks, { type: "video/webm" });
-                downloadVideo(URL.createObjectURL(blob), coverDocId);
-            };
+        //     const chunks: Blob[] = [];
+        //     recorder.ondataavailable = (e) => chunks.push(e.data);
+        //     recorder.onstop = () => {
+        //         const blob = new Blob(chunks, { type: "video/webm" });
+        //         downloadVideo(URL.createObjectURL(blob), coverDocId);
+        //     };
 
-            recorder.start();
-            setMediaRecorder(recorder);
-            setIsRecording(true);
+        //     recorder.start();
+        //     setMediaRecorder(recorder);
+        //     setIsRecording(true);
 
-            setTimeout(() => {
-                stopRecording(recorder);
-            }, recordDuration * 1000);
-        };
+        //     setTimeout(() => {
+        //         stopRecording(recorder);
+        //     }, recordDuration * 1000);
+        // };
 
-        const stopRecording = (recorder: MediaRecorder) => {
-            recorder.stop();
-            setIsRecording(false);
-        };
+        // const stopRecording = (recorder: MediaRecorder) => {
+        //     recorder.stop();
+        //     setIsRecording(false);
+        // };
 
         useLayoutEffect(() => {
+            // const dprAdjustedWidth = width * dpr;
+            // const dprAdjustedHeight = height * dpr;
+
             game.current = StartGame("game-container", {
                 voices,
                 coverDocId,
@@ -119,7 +129,10 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                 selectedTracks,
                 noOfRaceTracks,
                 gravityY,
+                // dprAdjustedWidth,
+                // dprAdjustedHeight,
                 width,
+                height,
                 enableMotion,
                 trailPath,
                 trailsLifeSpace,
@@ -134,9 +147,9 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             } else if (ref) {
                 ref.current = { game: game.current, scene: null };
             }
-            if (game.current && isRecord) {
-                startRecording(game.current.canvas);
-            }
+            // if (game.current && isRecord) {
+            //     startRecording(game.current.canvas);
+            // }
 
             return () => {
                 if (game.current) {
@@ -148,7 +161,19 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             };
         }, [ref]);
 
-        return <div id="game-container" style={{ height: "100%" }}></div>;
+        return (
+            <Box
+                id="game-container"
+                sx={{
+                    height: "100%",
+                    "& canvas": {
+                        width,
+                        height,
+                        // border: "1px solid red",
+                    },
+                }}
+            ></Box>
+        );
     }
 );
 
