@@ -336,28 +336,28 @@ function App() {
                                     {ready && coverDoc ? (
                                         <PhaserGame
                                             ref={phaserRef}
-                                            // voices={selectedVoices}
-                                            // coverDocId={selectedCoverDocId}
-                                            // musicStartOffset={
-                                            //     coverDoc?.sections?.at(
-                                            //         startSectionIdx - 1
-                                            //     )?.start || 0
-                                            // }
-                                            // skinPath={selectedSkinPath}
+                                            voices={selectedVoices}
+                                            coverDocId={selectedCoverDocId}
+                                            musicStartOffset={
+                                                coverDoc?.sections?.at(
+                                                    startSectionIdx - 1
+                                                )?.start || 0
+                                            }
+                                            skinPath={selectedSkinPath}
                                             backgroundPath={selectedBackground}
-                                            // selectedTracks={[
-                                            //     ...selectedTracksList,
-                                            // ].slice(0, noOfRaceTracks)}
-                                            // noOfRaceTracks={noOfRaceTracks}
-                                            // gravityY={marbleSpeed}
-                                            // width={canvasElemWidth}
-                                            // enableMotion={enableMotion}
-                                            // trailPath={selectedTrailPath}
-                                            // trailsLifeSpace={trailsLifeSpace}
-                                            // trailEndSize={trailEndSize}
-                                            // trailsOpacity={trailsOpacity}
-                                            // recordDuration={recordDuration}
-                                            // isRecord={isRecord}
+                                            selectedTracks={[
+                                                ...selectedTracksList,
+                                            ].slice(0, noOfRaceTracks)}
+                                            noOfRaceTracks={noOfRaceTracks}
+                                            gravityY={marbleSpeed}
+                                            width={canvasElemWidth}
+                                            enableMotion={enableMotion}
+                                            trailPath={selectedTrailPath}
+                                            trailsLifeSpace={trailsLifeSpace}
+                                            trailEndSize={trailEndSize}
+                                            trailsOpacity={trailsOpacity}
+                                            recordDuration={recordDuration}
+                                            isRecord={isRecord}
                                         />
                                     ) : (
                                         <Stack
@@ -820,28 +820,28 @@ function App() {
                         {ready && coverDoc ? (
                             <PhaserGame
                                 ref={phaserRef}
-                                // voices={selectedVoices}
-                                // coverDocId={selectedCoverDocId}
-                                // musicStartOffset={
-                                //     coverDoc?.sections?.at(startSectionIdx - 1)
-                                //         ?.start || 0
-                                // }
-                                // skinPath={selectedSkinPath}
+                                voices={selectedVoices}
+                                coverDocId={selectedCoverDocId}
+                                musicStartOffset={
+                                    coverDoc?.sections?.at(startSectionIdx - 1)
+                                        ?.start || 0
+                                }
+                                skinPath={selectedSkinPath}
                                 backgroundPath={selectedBackground}
-                                // selectedTracks={[...selectedTracksList].slice(
-                                //     0,
-                                //     noOfRaceTracks
-                                // )}
-                                // noOfRaceTracks={noOfRaceTracks}
-                                // gravityY={marbleSpeed}
-                                // width={canvasElemWidth}
-                                // enableMotion={enableMotion}
-                                // trailPath={selectedTrailPath}
-                                // trailsLifeSpace={trailsLifeSpace}
-                                // trailEndSize={trailEndSize}
-                                // trailsOpacity={trailsOpacity}
-                                // recordDuration={recordDuration}
-                                // isRecord={isRecord}
+                                selectedTracks={[...selectedTracksList].slice(
+                                    0,
+                                    noOfRaceTracks
+                                )}
+                                noOfRaceTracks={noOfRaceTracks}
+                                gravityY={marbleSpeed}
+                                width={canvasElemWidth}
+                                enableMotion={enableMotion}
+                                trailPath={selectedTrailPath}
+                                trailsLifeSpace={trailsLifeSpace}
+                                trailEndSize={trailEndSize}
+                                trailsOpacity={trailsOpacity}
+                                recordDuration={recordDuration}
+                                isRecord={isRecord}
                             />
                         ) : (
                             <Stack

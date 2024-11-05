@@ -1,6 +1,6 @@
 import { forwardRef, useLayoutEffect, useRef } from "react";
 import StartGame from "./main";
-// import { GameVoiceInfo } from "./scenes/Preloader";
+import { GameVoiceInfo } from "./scenes/Preloader";
 // import * as Tone from "tone";
 import { Box } from "@mui/material";
 
@@ -10,26 +10,26 @@ export interface IRefPhaserGame {
 }
 
 export interface IGameDataParams {
-    // voices: GameVoiceInfo[];
-    // coverDocId: string;
-    // musicStartOffset: number;
-    // skinPath: string;
+    voices: GameVoiceInfo[];
+    coverDocId: string;
+    musicStartOffset: number;
+    skinPath: string;
     backgroundPath: string;
-    // selectedTracks: string[];
-    // noOfRaceTracks: number;
-    // gravityY: number;
-    // width: number;
-    // enableMotion: boolean;
-    // trailPath: string;
-    // trailsLifeSpace: number;
-    // trailsOpacity: number;
-    // trailEndSize: number;
-    // recordDuration: number;
-    // isRecord: boolean;
-    // height?: number;
-    // dprAdjustedWidth?: number;
-    // dprAdjustedHeight?: number;
-    // showObstacles?: boolean;
+    selectedTracks: string[];
+    noOfRaceTracks: number;
+    gravityY: number;
+    width: number;
+    enableMotion: boolean;
+    trailPath: string;
+    trailsLifeSpace: number;
+    trailsOpacity: number;
+    trailEndSize: number;
+    recordDuration: number;
+    isRecord: boolean;
+    height?: number;
+    dprAdjustedWidth?: number;
+    dprAdjustedHeight?: number;
+    showObstacles?: boolean;
 }
 
 interface IProps extends IGameDataParams {
@@ -47,22 +47,22 @@ interface IProps extends IGameDataParams {
 export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
     function PhaserGame(
         {
-            // voices,
-            // coverDocId,
-            // musicStartOffset,
-            // skinPath,
+            voices,
+            coverDocId,
+            musicStartOffset,
+            skinPath,
             backgroundPath,
-            // selectedTracks,
-            // noOfRaceTracks,
-            // gravityY,
+            selectedTracks,
+            noOfRaceTracks,
+            gravityY,
             // width,
-            // enableMotion,
-            // trailPath,
-            // trailsLifeSpace,
-            // trailsOpacity,
-            // trailEndSize,
-            // recordDuration,
-            // isRecord,
+            enableMotion,
+            trailPath,
+            trailsLifeSpace,
+            trailsOpacity,
+            trailEndSize,
+            recordDuration,
+            isRecord,
         },
         ref
     ) {
@@ -121,25 +121,25 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             // const dprAdjustedHeight = height * dpr;
 
             game.current = StartGame("game-container", {
-                // voices,
-                // coverDocId,
-                // musicStartOffset,
-                // skinPath,
+                voices,
+                coverDocId,
+                musicStartOffset,
+                skinPath,
                 backgroundPath,
-                // selectedTracks,
-                // noOfRaceTracks,
-                // gravityY,
+                selectedTracks,
+                noOfRaceTracks,
+                gravityY,
                 // dprAdjustedWidth,
                 // dprAdjustedHeight,
-                // width,
-                // height,
-                // enableMotion,
-                // trailPath,
-                // trailsLifeSpace,
-                // trailsOpacity,
-                // trailEndSize,
-                // recordDuration,
-                // isRecord,
+                width,
+                height,
+                enableMotion,
+                trailPath,
+                trailsLifeSpace,
+                trailsOpacity,
+                trailEndSize,
+                recordDuration,
+                isRecord,
             });
 
             if (typeof ref === "function") {
