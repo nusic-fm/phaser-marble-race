@@ -32,12 +32,12 @@ const config: Phaser.Types.Core.GameConfig = {
 };
 
 const StartGame = (parent: string, data: IGameDataParams) => {
-    if (data.gravityY && config.physics?.matter?.gravity)
-        config.physics.matter.gravity.y = data.gravityY;
+    // if (data.gravityY && config.physics?.matter?.gravity)
+    //     config.physics.matter.gravity.y = data.gravityY;
     const game = new Game({
         ...config,
-        width: data.dprAdjustedWidth,
-        height: data.dprAdjustedHeight,
+        width: 414,
+        height: 670,
         parent,
         // scale: { mode: Phaser.Scale.FIT, autoRound: true },
     });

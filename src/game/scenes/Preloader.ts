@@ -18,7 +18,7 @@ export default class Preloader extends Phaser.Scene {
 
     preload() {
         console.log("Preloader...");
-        // this.load.image("background", this.params.backgroundPath);
+        this.load.image("background", this.params.backgroundPath);
     }
 
     create() {
