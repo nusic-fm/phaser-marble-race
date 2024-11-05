@@ -39,10 +39,11 @@ export default class Preloader extends Phaser.Scene {
         this.load.image("hammer_2", "assets/sprite/weapons/hammer_level_2.png");
         if (this.params.enableMotion)
             this.load.image("center_logo", "assets/transparent_logo.png");
-        // this.load.json(
-        //     "screen_sprite_data",
-        //     "assets/sprite/screen_sprite.json"
-        // );
+        if (this.params.voices.length) {
+            this.params.voices.map((voice) => {
+                this.load.image(`resized_${voice.id}`, voice.avatar);
+            });
+        }
         this.params.selectedTracks.map((trackNo) => {
             switch (trackNo) {
                 case "01":
