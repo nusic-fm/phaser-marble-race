@@ -2,6 +2,7 @@ import { forwardRef, useLayoutEffect, useRef, useState } from "react";
 import StartGame from "./main";
 import { GameVoiceInfo } from "./scenes/Preloader";
 import * as Tone from "tone";
+import { Box } from "@mui/material";
 
 export interface IRefPhaserGame {
     game: Phaser.Game | null;
@@ -25,6 +26,10 @@ export interface IGameDataParams {
     trailEndSize: number;
     recordDuration: number;
     isRecord: boolean;
+    height?: number;
+    dprAdjustedWidth?: number;
+    dprAdjustedHeight?: number;
+    showObstacles?: boolean;
 }
 
 interface IProps extends IGameDataParams {
@@ -61,11 +66,12 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         },
         ref
     ) {
+        const height = (width * 16) / 10;
         const game = useRef<Phaser.Game | null>(null!);
 
-        const [mediaRecorder, setMediaRecorder] =
-            useState<null | MediaRecorder>(null);
-        const [isRecording, setIsRecording] = useState(false);
+        const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
+        const [, setIsRecording] = useState(false);
+        const [dpr] = useState(2);
 
         const startRecording = (canvas: HTMLCanvasElement) => {
             // const canvas = canvasRef.current;
@@ -110,6 +116,9 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
         };
 
         useLayoutEffect(() => {
+            const dprAdjustedWidth = width * dpr;
+            const dprAdjustedHeight = height * dpr;
+
             game.current = StartGame("game-container", {
                 voices,
                 coverDocId,
@@ -119,7 +128,10 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
                 selectedTracks,
                 noOfRaceTracks,
                 gravityY,
+                dprAdjustedWidth,
+                dprAdjustedHeight,
                 width,
+                height,
                 enableMotion,
                 trailPath,
                 trailsLifeSpace,
@@ -148,7 +160,19 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
             };
         }, [ref]);
 
-        return <div id="game-container" style={{ height: "100%" }}></div>;
+        return (
+            <Box
+                id="game-container"
+                sx={{
+                    height: "100%",
+                    "& canvas": {
+                        width,
+                        height,
+                        // border: "1px solid red",
+                    },
+                }}
+            ></Box>
+        );
     }
 );
 
