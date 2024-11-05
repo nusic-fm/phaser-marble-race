@@ -71,7 +71,7 @@ export const PhaserGame = forwardRef<IRefPhaserGame, IProps>(
 
         const [, setMediaRecorder] = useState<null | MediaRecorder>(null);
         const [, setIsRecording] = useState(false);
-        const [dpr] = useState(window.devicePixelRatio);
+        const [dpr] = useState(2);
 
         const startRecording = (canvas: HTMLCanvasElement) => {
             // const canvas = canvasRef.current;

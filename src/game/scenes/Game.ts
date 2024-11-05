@@ -85,7 +85,7 @@ export default class Game extends Phaser.Scene {
     level2Hammer: Phaser.GameObjects.Sprite | undefined;
     canvasWidth: number = 0;
     canvasHeight: number = 0;
-    dpr: number = window.devicePixelRatio || 2;
+    dpr: number = 2;
     trailConfig = {
         speed: { min: -50, max: 50 },
         scale: {
@@ -136,7 +136,7 @@ export default class Game extends Phaser.Scene {
         this.trailConfig.scale.end = data.trailEndSize;
         this.trailConfig.lifespan = data.trailsLifeSpace;
         this.trailConfig.alpha = data.trailsOpacity;
-        this.dpr = window.devicePixelRatio || 2;
+        this.dpr = 2;
         this.showObstacles = data.showObstacles || false;
         this.initialGravity = data.gravityY || 0;
     }
