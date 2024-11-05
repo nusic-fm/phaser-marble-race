@@ -21,7 +21,7 @@ import SelectTracks from "./components/SelectTracks";
 import SelectVoices from "./components/SelectVoices";
 import { IRefPhaserGame, PhaserGame } from "./game/PhaserGame";
 import { GameVoiceInfo } from "./game/scenes/Preloader";
-import { downloadAudioFiles, stopAndDestroyPlayers } from "./hooks/useTonejs";
+// import { downloadAudioFiles, stopAndDestroyPlayers } from "./hooks/useTonejs";
 import { CoverV1 } from "./services/db/coversV1.service";
 import {
     listAllTrackBackgrounds,
@@ -142,7 +142,7 @@ function App() {
             );
 
             if (quite) {
-                stopAndDestroyPlayers();
+                // stopAndDestroyPlayers();
                 setDownloadProgress(0);
                 phaserRef.current?.game?.destroy(true);
                 setReady(false);
@@ -202,28 +202,28 @@ function App() {
         });
         if ((_coverDoc || coverDoc) && (_coverId || selectedCoverDocId)) {
             setIsDownloading(true);
-            await downloadAudioFiles(
-                [
-                    `https://voxaudio.nusic.fm/covers/${
-                        _coverId || selectedCoverDocId
-                    }/instrumental.mp3`,
-                    ...(_coverDoc
-                        ? _coverDoc.voices.slice(0, 5)
-                        : selectedVoices
-                    )
-                        .map((v) => v.id)
-                        .map(
-                            (v) =>
-                                `https://voxaudio.nusic.fm/covers/${
-                                    _coverId || selectedCoverDocId
-                                }/${v}.mp3`
-                        ),
-                ],
-                (progress: number) => {
-                    console.log("progress", progress);
-                    setDownloadProgress(progress);
-                }
-            );
+            // await downloadAudioFiles(
+            //     [
+            //         `https://voxaudio.nusic.fm/covers/${
+            //             _coverId || selectedCoverDocId
+            //         }/instrumental.mp3`,
+            //         ...(_coverDoc
+            //             ? _coverDoc.voices.slice(0, 5)
+            //             : selectedVoices
+            //         )
+            //             .map((v) => v.id)
+            //             .map(
+            //                 (v) =>
+            //                     `https://voxaudio.nusic.fm/covers/${
+            //                         _coverId || selectedCoverDocId
+            //                     }/${v}.mp3`
+            //             ),
+            //     ],
+            //     (progress: number) => {
+            //         console.log("progress", progress);
+            //         setDownloadProgress(progress);
+            //     }
+            // );
             setIsDownloading(false);
             setReady(true);
         }
@@ -336,28 +336,28 @@ function App() {
                                     {ready && coverDoc ? (
                                         <PhaserGame
                                             ref={phaserRef}
-                                            voices={selectedVoices}
-                                            coverDocId={selectedCoverDocId}
-                                            musicStartOffset={
-                                                coverDoc?.sections?.at(
-                                                    startSectionIdx - 1
-                                                )?.start || 0
-                                            }
-                                            skinPath={selectedSkinPath}
+                                            // voices={selectedVoices}
+                                            // coverDocId={selectedCoverDocId}
+                                            // musicStartOffset={
+                                            //     coverDoc?.sections?.at(
+                                            //         startSectionIdx - 1
+                                            //     )?.start || 0
+                                            // }
+                                            // skinPath={selectedSkinPath}
                                             backgroundPath={selectedBackground}
-                                            selectedTracks={[
-                                                ...selectedTracksList,
-                                            ].slice(0, noOfRaceTracks)}
-                                            noOfRaceTracks={noOfRaceTracks}
-                                            gravityY={marbleSpeed}
-                                            width={canvasElemWidth}
-                                            enableMotion={enableMotion}
-                                            trailPath={selectedTrailPath}
-                                            trailsLifeSpace={trailsLifeSpace}
-                                            trailEndSize={trailEndSize}
-                                            trailsOpacity={trailsOpacity}
-                                            recordDuration={recordDuration}
-                                            isRecord={isRecord}
+                                            // selectedTracks={[
+                                            //     ...selectedTracksList,
+                                            // ].slice(0, noOfRaceTracks)}
+                                            // noOfRaceTracks={noOfRaceTracks}
+                                            // gravityY={marbleSpeed}
+                                            // width={canvasElemWidth}
+                                            // enableMotion={enableMotion}
+                                            // trailPath={selectedTrailPath}
+                                            // trailsLifeSpace={trailsLifeSpace}
+                                            // trailEndSize={trailEndSize}
+                                            // trailsOpacity={trailsOpacity}
+                                            // recordDuration={recordDuration}
+                                            // isRecord={isRecord}
                                         />
                                     ) : (
                                         <Stack
@@ -449,7 +449,7 @@ function App() {
                                     size="small"
                                     onClick={() => {
                                         phaserRef.current?.game?.destroy(true);
-                                        stopAndDestroyPlayers();
+                                        // stopAndDestroyPlayers();
                                         setDownloadProgress(0);
                                         setReady(false);
                                     }}
@@ -820,28 +820,28 @@ function App() {
                         {ready && coverDoc ? (
                             <PhaserGame
                                 ref={phaserRef}
-                                voices={selectedVoices}
-                                coverDocId={selectedCoverDocId}
-                                musicStartOffset={
-                                    coverDoc?.sections?.at(startSectionIdx - 1)
-                                        ?.start || 0
-                                }
-                                skinPath={selectedSkinPath}
+                                // voices={selectedVoices}
+                                // coverDocId={selectedCoverDocId}
+                                // musicStartOffset={
+                                //     coverDoc?.sections?.at(startSectionIdx - 1)
+                                //         ?.start || 0
+                                // }
+                                // skinPath={selectedSkinPath}
                                 backgroundPath={selectedBackground}
-                                selectedTracks={[...selectedTracksList].slice(
-                                    0,
-                                    noOfRaceTracks
-                                )}
-                                noOfRaceTracks={noOfRaceTracks}
-                                gravityY={marbleSpeed}
-                                width={canvasElemWidth}
-                                enableMotion={enableMotion}
-                                trailPath={selectedTrailPath}
-                                trailsLifeSpace={trailsLifeSpace}
-                                trailEndSize={trailEndSize}
-                                trailsOpacity={trailsOpacity}
-                                recordDuration={recordDuration}
-                                isRecord={isRecord}
+                                // selectedTracks={[...selectedTracksList].slice(
+                                //     0,
+                                //     noOfRaceTracks
+                                // )}
+                                // noOfRaceTracks={noOfRaceTracks}
+                                // gravityY={marbleSpeed}
+                                // width={canvasElemWidth}
+                                // enableMotion={enableMotion}
+                                // trailPath={selectedTrailPath}
+                                // trailsLifeSpace={trailsLifeSpace}
+                                // trailEndSize={trailEndSize}
+                                // trailsOpacity={trailsOpacity}
+                                // recordDuration={recordDuration}
+                                // isRecord={isRecord}
                             />
                         ) : (
                             <Stack
@@ -898,7 +898,7 @@ function App() {
                                 size="small"
                                 onClick={() => {
                                     phaserRef.current?.game?.destroy(true);
-                                    stopAndDestroyPlayers();
+                                    // stopAndDestroyPlayers();
                                     setDownloadProgress(0);
                                     setReady(false);
                                 }}
