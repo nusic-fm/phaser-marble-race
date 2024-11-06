@@ -371,7 +371,7 @@ export const createBeatsGroupWithInterval = (
     for (let i = 0; i < noOfGroups; i++) {
         for (let j = 0; j < groupLength; j++) {
             resultShowBeats.push(beatsArray[beatIndex]);
-            beatIndex += createRandomNumber(1, 3);
+            beatIndex += createRandomNumber(2, 4);
         }
         beatIndex += groupInterval;
     }

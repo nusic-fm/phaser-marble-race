@@ -90,6 +90,12 @@ export default class Preloader extends Phaser.Scene {
             "joystick_frame",
             "assets/sprite/rhythmicpads/joystick_frame.jpg"
         );
+        this.load.image("tap", "assets/sprite/rhythmicpads/tile_finish.png");
+        // this.load.image(
+        //     "tile_track",
+        //     "assets/sprite/rhythmicpads/tile_track.png"
+        // );
+        this.load.image("tile", "assets/sprite/rhythmicpads/tile.png");
         this.load.image("background", this.params.backgroundPath);
         ObstacleNames.map((name) => {
             this.load.image(

@@ -112,16 +112,16 @@ export default class Game extends Phaser.Scene {
             this.musicStartOffset
         );
         this.circleShouldFillInMs =
-            (this.allTapTimings[1] - this.allTapTimings[0]) * 3 * 1000;
+            (this.allTapTimings[4] - this.allTapTimings[0]) * 3000;
         this.perfectTapTime = this.circleShouldFillInMs / 3 / 1000;
         this.goodTapTime = this.circleShouldFillInMs / 2 / 1000;
         this.showTapTimings = createBeatsGroupWithInterval(
-            this.allTapTimings,
-            this.beatsGroupLength,
-            4,
-            12
+            this.allTapTimings.slice(this.beatsGroupLength * 3),
+            this.beatsGroupLength, // 8 Chances to tap
+            4, // No of Tries
+            12 // Gap between Tries
         );
-
+        console.log({ showTapTimings: this.showTapTimings });
         this.noOfRaceTracks = data.noOfRaceTracks || 5;
         this.selectedTracks = duplicateArrayElemToN(
             data.selectedTracks,
@@ -692,7 +692,7 @@ export default class Game extends Phaser.Scene {
             .setScale(this.dpr * (this.canvasWidth / (512 - 100)));
         // .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        startOffset += baseSprite.height * this.dpr;
+        startOffset += baseSprite.height * this.dpr - 400;
         this.increaseSizeScreenOffset.push(startOffset);
         startOffset += 300;
         return startOffset;
@@ -1347,170 +1347,86 @@ export default class Game extends Phaser.Scene {
     joystickFrame: Phaser.GameObjects.Image | undefined;
     hasGroupPassed = true;
 
+    // leftTap: Phaser.GameObjects.Image | undefined;
+    // rightTap: Phaser.GameObjects.Image | undefined;
+    finishTap: Phaser.GameObjects.Image | undefined;
+    tiles: Phaser.GameObjects.Image[] = [];
+
     renderJoystickButtons() {
-        const frameHeight = this.cameras.main.height / 3;
-        let circleYOffset =
-            this.cameras.main.height / 2 + frameHeight - this.buttonRadius;
-        // .image(0, 0, "joystick_frame")
-        // .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-        this.circle1 = this.add
-            .sprite(
-                this.cameras.main.width / 2 - 200,
-                circleYOffset,
-                "green_dot"
-            )
-            .setDisplaySize(0, 0)
-            .setScrollFactor(0);
-
-        this.outlineCircle1 = this.add
-            .sprite(
-                this.cameras.main.width / 2 - 200,
-                circleYOffset,
-                "green_dot_outline"
-            )
-            .setScrollFactor(0)
-            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-        this.circle2 = this.add
-            .sprite(
-                this.cameras.main.width / 2 + 200,
-                circleYOffset,
-                "green_dot"
-            )
-            .setDisplaySize(0, 0)
-            .setScrollFactor(0);
-
-        this.outlineCircle2 = this.add
-            .sprite(
-                this.cameras.main.width / 2 + 200,
-                circleYOffset,
-                "green_dot_outline"
-            )
-            .setScrollFactor(0)
-            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-        circleYOffset += this.buttonRadius * 2;
-        this.circle3 = this.add
-            .sprite(
-                this.cameras.main.width / 2 - this.buttonRadius,
-                circleYOffset,
-                "green_dot"
-            )
-            .setDisplaySize(0, 0)
-            .setScrollFactor(0);
-
-        this.outlineCircle3 = this.add
-            .sprite(
-                this.cameras.main.width / 2 - this.buttonRadius,
-                circleYOffset,
-                "green_dot_outline"
-            )
-            .setScrollFactor(0)
-            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-        this.circle4 = this.add
-            .sprite(
-                this.cameras.main.width / 2 + this.buttonRadius,
-                circleYOffset,
-                "green_dot"
-            )
-            .setDisplaySize(0, 0)
-            .setScrollFactor(0);
-
-        this.outlineCircle4 = this.add
-            .sprite(
-                this.cameras.main.width / 2 + this.buttonRadius,
-                circleYOffset,
-                "green_dot_outline"
-            )
-            .setScrollFactor(0)
-            .setDisplaySize(this.buttonRadius * 2, this.buttonRadius * 2);
-        this.availableCircles = [
-            this.circle1,
-            this.circle2,
-            this.circle3,
-            this.circle4,
-        ];
-        this.innerCircles = [
-            this.circle1,
-            this.circle2,
-            this.circle3,
-            this.circle4,
-        ];
-        this.outlineCircles = [
-            this.outlineCircle1,
-            this.outlineCircle2,
-            this.outlineCircle3,
-            this.outlineCircle4,
-        ];
-        const fxs = this.outlineCircles.map((c) => {
-            c.preFX?.setPadding(32);
-            return c.preFX?.addGlow(0xffffff, 0, 0, true, 0.1, 32);
-        });
-        this.tweens.add({
-            targets: fxs,
-            outerStrength: 10,
-        });
-        [...this.innerCircles, ...this.outlineCircles].map((c) => {
-            c.setDepth(10);
-            c.setAlpha(0);
-        });
-        this.events.on("destroy", () => {
-            this.setTimeouts.map((timeout) => clearTimeout(timeout));
-            this.setIntervals.map((interval) => clearInterval(interval));
-        });
-        this.joystickFrame = this.add
-            .image(
-                this.cameras.main.width / 2,
-                this.cameras.main.height / 2 + frameHeight,
-                "joystick_frame"
-            )
-            .setDepth(9)
-            .setScrollFactor(0)
-            .setDisplaySize(this.cameras.main.width, frameHeight)
-            .setAlpha(0);
-        // this.joystickHolder = this.add
-        //     .container(
-        //         this.cameras.main.width / 2,
-        //         this.cameras.main.height / 2 + frameHeight,
-        //         [
-        //             this.circle1,
-        //             this.outlineCircle1,
-        //             this.circle2,
-        //             this.outlineCircle2,
-        //             this.circle3,
-        //             this.outlineCircle3,
-        //             this.circle4,
-        //             this.outlineCircle4,
-        //         ]
+        console.log("Camera width: ", this.cameras.main.width);
+        console.log("Camera height: ", this.cameras.main.height);
+        // const trackWidth = 140 * this.dpr;
+        const trackHeight = 660 * this.dpr;
+        // this.add
+        //     .sprite(trackWidth / 2, trackHeight / 2, "tile_track")
+        //     .setScrollFactor(0)
+        //     .setDepth(99)
+        //     .setAlpha(0.7)
+        //     .setDisplaySize(trackWidth, trackHeight);
+        // this.add
+        //     .image(
+        //         this.cameras.main.width - trackWidth / 2,
+        //         trackHeight / 2,
+        //         "tile_track"
         //     )
-        //     .setDepth(999999)
-        //     .setDisplaySize(this.cameras.main.width, frameHeight)
-        //     .setScrollFactor(0);
+        //     .setScrollFactor(0)
+        //     .setDepth(99)
+        //     .setAlpha(0.7)
+        //     .setDisplaySize(trackWidth, trackHeight);
+
+        // this.leftTap = this.add
+        //     .image(trackWidth / 2, this.centerY + trackHeight / 3, "tap")
+        //     .setScrollFactor(0)
+        //     .setDepth(100)
+        //     .setDisplaySize(trackWidth + 50, 48 * this.dpr);
+        // this.rightTap = this.add
+        //     .image(
+        //         this.cameras.main.width - trackWidth / 2,
+        //         this.centerY + trackHeight / 3,
+        //         "tap"
+        //     )
+        //     .setScrollFactor(0)
+        //     .setDepth(100)
+        //     .setDisplaySize(trackWidth + 50, 48 * this.dpr);
+        this.finishTap = this.add
+            .sprite(this.centerX, this.centerY + trackHeight / 3, "tap")
+            .setScrollFactor(0)
+            .setDepth(99)
+            .setAlpha(0)
+            .setScale(this.dpr);
     }
     isJoystickButtonsShown = false;
 
     hideJoystickButtons() {
+        this.finishTap?.setAlpha(0);
         this.isJoystickButtonsShown = false;
-        this.innerCircles.map((c) => {
-            c.setAlpha(0);
+        this.tiles.map((t) => {
+            t.destroy();
         });
-        this.outlineCircles.map((c) => {
-            c.setAlpha(0);
-        });
-        this.innerCircles.map((c) => {
-            c.removeListener("pointerdown");
-        });
-        this.joystickFrame?.setTint(undefined);
-        this.joystickFrame?.setAlpha(0);
+        this.tiles = [];
+        // this.innerCircles.map((c) => {
+        //     c.setAlpha(0);
+        // });
+        // this.outlineCircles.map((c) => {
+        //     c.setAlpha(0);
+        // });
+        // this.innerCircles.map((c) => {
+        //     c.removeListener("pointerdown");
+        // });
+        // this.joystickFrame?.setTint(undefined);
+        // this.joystickFrame?.setAlpha(0);
     }
     showJoystickButtons() {
+        this.finishTap?.setAlpha(1);
         this.isJoystickButtonsShown = true;
         this.hasGroupPassed = false;
-        this.innerCircles.map((c) => {
-            c.setAlpha(1);
-        });
-        this.outlineCircles.map((c) => {
-            c.setAlpha(1);
-        });
-        this.joystickFrame?.setAlpha(1);
+        // this.innerCircles.map((c) => {
+        //     c.setAlpha(1);
+        // });
+        // this.outlineCircles.map((c) => {
+        //     c.setAlpha(1);
+        // });
+        // this.joystickFrame?.setAlpha(1);
     }
     boostMultipler: number = 0;
     tapResultLabel: Phaser.GameObjects.Text | undefined;
@@ -1534,146 +1450,247 @@ export default class Game extends Phaser.Scene {
                 blendMode: "ADD",
             });
             this.hideJoystickButtons();
-            // this.tapResultLabel?.destroy();
-            // this.tapResultLabel = this.add
-            //     .text(
-            //         this.cameras.main.width / 2,
-            //         this.cameras.main.height / 2,
-            //         "Boosted",
-            //         {
-            //             fontSize: `${42 * this.dpr}px`,
-            //             color: "white",
-            //             stroke: "rgba(0,0,0,1)",
-            //             strokeThickness: 6,
-            //             backgroundColor: "rgba(0,0,0,1)",
-            //         }
-            //     )
-            //     .setScrollFactor(0);
-            // this.tapResultLabel?.setPosition(
-            //     this.tapResultLabel.x - this.tapResultLabel.width / 2,
-            //     this.tapResultLabel.y - this.tapResultLabel.height / 2
-            // );
-            // if (this.tapResultLabelTimer) {
-            //     clearTimeout(this.tapResultLabelTimer);
-            // }
-            // this.tapResultLabelTimer = setTimeout(() => {
-            //     // this.matter.world.setGravity(0, this.initialGravity);
-            //     this.tapResultLabel?.destroy();
-            // }, 2000);
+            this.tapResultLabel?.destroy();
+            this.tapResultLabel = this.add
+                .text(
+                    this.cameras.main.width / 2,
+                    this.cameras.main.height / 2,
+                    "Boosted",
+                    {
+                        fontSize: `${42 * this.dpr}px`,
+                        color: "green",
+                        stroke: "rgba(0,0,0,1)",
+                        strokeThickness: 6,
+                    }
+                )
+                .setScrollFactor(0);
+            this.tapResultLabel?.setPosition(
+                this.tapResultLabel.x - this.tapResultLabel.width / 2,
+                this.tapResultLabel.y - this.tapResultLabel.height / 2
+            );
+            if (this.tapResultLabelTimer) {
+                clearTimeout(this.tapResultLabelTimer);
+            }
+            this.tapResultLabelTimer = setTimeout(() => {
+                // this.matter.world.setGravity(0, this.initialGravity);
+                this.tapResultLabel?.destroy();
+            }, 2000);
         }
         const _currentTapIndex = this.currentTapIndex;
         const nextTapTiming =
             this.showTapTimings[_currentTapIndex] -
             this.circleShouldFillInMs / 1000;
-        if (currentTime >= nextTapTiming) {
-            // console.log("Current Tap Idx: ", _currentTapIndex);
+        if (nextTapTiming > 0 && currentTime >= nextTapTiming) {
             this.currentTapIndex++;
             if (!this.isBoosted) {
                 this.showJoystickButtons();
-                const circleToFill = _.sample(this.availableCircles);
-                if (circleToFill) {
-                    this.availableCircles = this.availableCircles.filter(
-                        (c) => c !== circleToFill
-                    );
-                    circleToFill.setInteractive();
-                    circleToFill.once("pointerdown", () => {
-                        // Hide the Circle
-                        circleToFill.setDisplaySize(0, 0);
-                        circleToFill.setAlpha(0);
-                        // Add a Label at the center of the screen with scrollFactor 0
-                        const newCurrentTime = getToneCurrentTime();
-                        const expectedTapTime =
-                            this.showTapTimings[_currentTapIndex];
-                        const difference = expectedTapTime - newCurrentTime;
+                const currentX = _.sample([
+                    100,
+                    this.centerX,
+                    this.cameras.main.width - 100,
+                ]);
+                const tile = this.add
+                    .image(currentX, 0, "tile")
+                    .setDepth(101)
+                    .setScrollFactor(0)
+                    .setDisplaySize(200, 300)
+                    .setInteractive();
+                this.tiles.push(tile);
+                tile.once("pointerdown", () => {
+                    if (this.finishTap) {
+                        tile.setAlpha(0.2);
+                        setTimeout(() => {
+                            tile.destroy();
+                        }, 200);
+                        const tileY = tile.y;
+                        const targetY = this.finishTap.y;
+                        const delta = targetY - tileY;
                         const resultText =
-                            difference < this.perfectTapTime
+                            delta < 150
                                 ? "Perfect"
-                                : difference < this.goodTapTime
-                                ? "Good"
-                                : "Miss";
+                                : delta < 500
+                                ? "Great"
+                                : "Too Early";
                         this.tapScore +=
                             resultText === "Perfect"
                                 ? 10
-                                : resultText === "Good"
+                                : resultText === "Great"
                                 ? 5
                                 : 0;
-                        // Set green/success tint to the joystick frame
-                        // green: #00ff00
-                        // red: #ff0000
-                        // yellow: #ffff00
-                        this.joystickFrame?.setTint(
-                            resultText === "Perfect"
-                                ? 0xffff00
-                                : resultText === "Good"
-                                ? 0xffff00
-                                : 0xff0000
-                        );
-                        // this.tapResultLabel?.destroy();
-                        // this.tapResultLabel = this.add
-                        //     .text(
-                        //         this.cameras.main.width / 2,
-                        //         this.cameras.main.height / 2,
-                        //         resultText,
-                        //         {
-                        //             fontSize: `${42 * this.dpr}px`,
-                        //             color:
-                        //                 resultText === "Perfect"
-                        //                     ? "green"
-                        //                     : resultText === "Good"
-                        //                     ? "yellow"
-                        //                     : "red",
-                        //             stroke: "rgba(0,0,0,1)",
-                        //             strokeThickness: 6,
-                        //             backgroundColor: "rgba(0,0,0,1)",
-                        //         }
-                        //     )
-                        //     .setScrollFactor(0);
-                        // this.tapResultLabel.setPosition(
-                        //     this.tapResultLabel.x -
-                        //         this.tapResultLabel.width / 2,
-                        //     this.tapResultLabel.y -
-                        //         this.tapResultLabel.height / 2
-                        // );
+
                         if (this.tapResultLabelTimer) {
-                            // this.joystickFrame?.setTint(undefined);
                             clearTimeout(this.tapResultLabelTimer);
                         }
+                        this.tapResultLabel?.destroy();
+                        this.tapResultLabel = this.add
+                            .text(
+                                this.cameras.main.width / 2,
+                                this.cameras.main.height / 2,
+                                resultText,
+                                {
+                                    fontSize: `${42 * this.dpr}px`,
+                                    color:
+                                        resultText === "Perfect"
+                                            ? "green"
+                                            : resultText === "Great"
+                                            ? "yellow"
+                                            : "red",
+                                    stroke: "rgba(0,0,0,1)",
+                                    strokeThickness: 6,
+                                }
+                            )
+                            .setDepth(101)
+                            .setScrollFactor(0);
+                        this.tapResultLabel?.setPosition(
+                            this.tapResultLabel.x -
+                                this.tapResultLabel.width / 2,
+                            this.tapResultLabel.y -
+                                this.tapResultLabel.height / 2
+                        );
+                        // Add bounce using tween
+                        this.tweens.add({
+                            targets: this.tapResultLabel,
+                            y: this.tapResultLabel.y - 100,
+                            duration: 100,
+                            ease: "bounce.out",
+                            // Add glow effect
+                            glow: {
+                                color: 0xffffff,
+                                intensity: 0.5,
+                            },
+                        });
 
                         // Destroy the label after 1 second
                         this.tapResultLabelTimer = setTimeout(() => {
-                            this.joystickFrame?.setTint(undefined);
-                            // this.tapResultLabel?.destroy();
+                            this.tapResultLabel?.destroy();
                         }, 500);
-                        circleToFill.removeInteractive();
-                        this.availableCircles.push(circleToFill);
-                    });
-                    // Gradually Increase the radius of the circle to be 80
-                    // Create a SetInterval
-                    const interval = setInterval(() => {
-                        if (circleToFill) {
-                            const radiuToIncreasePerMs =
-                                this.buttonRadius /
-                                (this.circleShouldFillInMs / 10);
+                    }
+                });
+                const interval = setInterval(() => {
+                    const distanceToFall =
+                        (this.cameras.main.height * this.dpr) /
+                        (this.circleShouldFillInMs / 10);
 
-                            circleToFill.setDisplaySize(
-                                circleToFill.displayWidth +
-                                    radiuToIncreasePerMs * 2,
-                                circleToFill.displayHeight +
-                                    radiuToIncreasePerMs * 2
-                            );
-                        }
-                    }, 10);
-                    this.setIntervals.push(interval);
-                    const timeout = setTimeout(() => {
-                        circleToFill.setDisplaySize(0, 0);
-                        this.availableCircles.push(circleToFill);
-                        circleToFill.removeInteractive();
-                        clearInterval(interval);
-                    }, this.circleShouldFillInMs);
-                    this.setTimeouts.push(timeout);
-                    // }
-                }
+                    tile.setPosition(tile.x, tile.y + distanceToFall);
+                }, 10);
+                this.setIntervals.push(interval);
+                const timeout = setTimeout(() => {
+                    tile.setDisplaySize(0, 0);
+                    // circleToFill.removeInteractive();
+                    clearInterval(interval);
+                }, this.circleShouldFillInMs);
+                this.setTimeouts.push(timeout);
+                // if (circleToFill) {
+                //     this.availableCircles = this.availableCircles.filter(
+                //         (c) => c !== circleToFill
+                //     );
+                //     circleToFill.setInteractive();
+                //     circleToFill.once("pointerdown", () => {
+                //         // Hide the Circle
+                //         circleToFill.setDisplaySize(0, 0);
+                //         circleToFill.setAlpha(0);
+                //         // Add a Label at the center of the screen with scrollFactor 0
+                //         const newCurrentTime = getToneCurrentTime();
+                //         const expectedTapTime =
+                //             this.showTapTimings[_currentTapIndex];
+                //         const difference = expectedTapTime - newCurrentTime;
+                //         const resultText =
+                //             difference < this.perfectTapTime
+                //                 ? "Perfect"
+                //                 : difference < this.goodTapTime
+                //                 ? "Good"
+                //                 : "Miss";
+                //         this.tapScore +=
+                //             resultText === "Perfect"
+                //                 ? 10
+                //                 : resultText === "Good"
+                //                 ? 5
+                //                 : 0;
+                //         // Set green/success tint to the joystick frame
+                //         // green: #00ff00
+                //         // red: #ff0000
+                //         // yellow: #ffff00
+                //         this.joystickFrame?.setTint(
+                //             resultText === "Perfect"
+                //                 ? 0xffff00
+                //                 : resultText === "Good"
+                //                 ? 0xffff00
+                //                 : 0xff0000
+                //         );
+                //         // this.tapResultLabel?.destroy();
+                //         // this.tapResultLabel = this.add
+                //         //     .text(
+                //         //         this.cameras.main.width / 2,
+                //         //         this.cameras.main.height / 2,
+                //         //         resultText,
+                //         //         {
+                //         //             fontSize: `${42 * this.dpr}px`,
+                //         //             color:
+                //         //                 resultText === "Perfect"
+                //         //                     ? "green"
+                //         //                     : resultText === "Good"
+                //         //                     ? "yellow"
+                //         //                     : "red",
+                //         //             stroke: "rgba(0,0,0,1)",
+                //         //             strokeThickness: 6,
+                //         //             backgroundColor: "rgba(0,0,0,1)",
+                //         //         }
+                //         //     )
+                //         //     .setScrollFactor(0);
+                //         // this.tapResultLabel.setPosition(
+                //         //     this.tapResultLabel.x -
+                //         //         this.tapResultLabel.width / 2,
+                //         //     this.tapResultLabel.y -
+                //         //         this.tapResultLabel.height / 2
+                //         // );
+                //         if (this.tapResultLabelTimer) {
+                //             // this.joystickFrame?.setTint(undefined);
+                //             clearTimeout(this.tapResultLabelTimer);
+                //         }
+
+                //         // Destroy the label after 1 second
+                //         this.tapResultLabelTimer = setTimeout(() => {
+                //             this.joystickFrame?.setTint(undefined);
+                //             // this.tapResultLabel?.destroy();
+                //         }, 500);
+                //         circleToFill.removeInteractive();
+                //         this.availableCircles.push(circleToFill);
+                //     });
+                //     // Gradually Increase the radius of the circle to be 80
+                //     // Create a SetInterval
+                //     const interval = setInterval(() => {
+                //         if (circleToFill) {
+                //             const radiuToIncreasePerMs =
+                //                 this.buttonRadius /
+                //                 (this.circleShouldFillInMs / 10);
+
+                //             circleToFill.setDisplaySize(
+                //                 circleToFill.displayWidth +
+                //                     radiuToIncreasePerMs * 2,
+                //                 circleToFill.displayHeight +
+                //                     radiuToIncreasePerMs * 2
+                //             );
+                //         }
+                //     }, 10);
+                //     this.setIntervals.push(interval);
+                //     const timeout = setTimeout(() => {
+                //         circleToFill.setDisplaySize(0, 0);
+                //         this.availableCircles.push(circleToFill);
+                //         circleToFill.removeInteractive();
+                //         clearInterval(interval);
+                //     }, this.circleShouldFillInMs);
+                //     this.setTimeouts.push(timeout);
+                //     // }
+                // }
             }
+        } else if (
+            (this.finishTap &&
+                this.tiles[this.tiles.length - 1]?.y >
+                    this.finishTap?.y + 300) ||
+            (!this.tiles[this.tiles.length - 1]?.visible &&
+                this.isJoystickButtonsShown)
+        ) {
+            this.hideJoystickButtons();
         }
         if (
             _currentTapIndex &&
@@ -1688,7 +1705,7 @@ export default class Game extends Phaser.Scene {
             //     follow: this.marbles[0].position,
             // });
             // this.marbleTrailParticles[0].destroy();
-            this.hideJoystickButtons();
+            // this.hideJoystickButtons();
         }
         if (
             this.isBoosted &&
