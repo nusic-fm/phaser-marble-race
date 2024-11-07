@@ -90,7 +90,14 @@ export default class Preloader extends Phaser.Scene {
             "joystick_frame",
             "assets/sprite/rhythmicpads/joystick_frame.jpg"
         );
-        this.load.image("tap", "assets/sprite/rhythmicpads/tile_finish.png");
+        this.load.image(
+            "tile_finish",
+            "assets/sprite/rhythmicpads/tile_finish.png"
+        );
+        this.load.image(
+            "booster_powerup",
+            "assets/sprite/rhythmicpads/booster_powerup.png"
+        );
         // this.load.image(
         //     "tile_track",
         //     "assets/sprite/rhythmicpads/tile_track.png"

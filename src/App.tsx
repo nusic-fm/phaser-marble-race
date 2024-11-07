@@ -67,17 +67,15 @@ function App() {
             if (localTracks) {
                 const arr = JSON.parse(localTracks);
                 // unique array
-                return [...new Set(arr)].filter((t) =>
-                    tracks.includes(t as string)
-                ) as string[];
+                return ["01", "01", "01", "01"];
             }
-            return tracks?.slice(0, 10);
+            return ["01", "01", "01", "01"];
         }
     );
     const [selectedVoices, setSelectedVoices] = useState<GameVoiceInfo[]>([]);
     const [downloadProgress, setDownloadProgress] = useState(0);
     const [startSectionIdx, setStartSectionIdx] = useState(1);
-    const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
+    const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
     const [marbleSpeed, setMarbleSpeed] = useState(0.8);
     const theme = useTheme();
     const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
@@ -336,7 +334,7 @@ function App() {
                                     {ready && coverDoc ? (
                                         <PhaserGame
                                             ref={phaserRef}
-                                            voices={selectedVoices}
+                                            voices={selectedVoices.slice(0, 2)}
                                             coverDocId={selectedCoverDocId}
                                             musicStartOffset={
                                                 coverDoc?.sections?.at(
