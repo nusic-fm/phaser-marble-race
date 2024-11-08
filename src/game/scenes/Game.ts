@@ -114,7 +114,7 @@ export default class Game extends Phaser.Scene {
             this.coverDocId,
             this.musicStartOffset
         );
-        this.circleShouldFillInMs = 2000;
+        this.circleShouldFillInMs = 1250;
         this.perfectTapTime = this.circleShouldFillInMs / 3 / 1000;
         this.goodTapTime = this.circleShouldFillInMs / 2 / 1000;
         this.showTapTimings = createBeatsGroupWithInterval(
@@ -1364,18 +1364,18 @@ export default class Game extends Phaser.Scene {
         const currentTime = getToneCurrentTime();
         const targetY = this.centerY * 1.5;
         this.showRhythmPads = true;
+        const travelBufferTime = this.circleShouldFillInMs / 1000;
         const availableBeats = this.allTapTimings.filter(
-            (t) => t > currentTime + this.circleShouldFillInMs / 1000
+            (t) => t > currentTime + travelBufferTime
         );
-        // .slice(0, this.beatsGroupLength);
         const nextSetOfBeats = [];
-        let beatIndex = createRandomNumber(4, 8);
+        let beatIndex = 0;
         for (let i = 0; i < this.beatsGroupLength; i++) {
             nextSetOfBeats.push(availableBeats[beatIndex]);
-            beatIndex += createRandomNumber(2, 4);
+            beatIndex += createRandomNumber(1, 3);
         }
         const animationStartTimes = nextSetOfBeats.map(
-            (bt) => bt - this.circleShouldFillInMs / 1000
+            (bt) => bt - travelBufferTime
         );
         this.finishTap = this.add
             .sprite(this.centerX, targetY, "tile_finish")
@@ -1392,9 +1392,9 @@ export default class Game extends Phaser.Scene {
         });
         animationStartTimes.map((startTime) => {
             const currentX = _.sample([
-                100,
-                this.centerX,
-                this.cameras.main.width - 100,
+                175,
+                // this.centerX,
+                this.cameras.main.width - 175,
             ]);
             const tile = this.add
                 .image(currentX, 0, "tile")
