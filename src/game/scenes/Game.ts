@@ -822,7 +822,10 @@ export default class Game extends Phaser.Scene {
         this.createTextureMask(xOffset, yOffset, baseSprite);
         [
             [100 * this.dpr, startOffset + 350 * this.dpr],
-            [310 * this.dpr, startOffset + 260 * this.dpr],
+            [
+                (this.canvasWidth / 414) * 310 * this.dpr,
+                startOffset + 260 * this.dpr,
+            ],
         ].map(([x, y]) => {
             this.powerups.push(
                 this.matter.add
@@ -1362,7 +1365,7 @@ export default class Game extends Phaser.Scene {
 
     startRhythmicGame() {
         const currentTime = getToneCurrentTime();
-        const targetY = this.centerY * 1.5;
+        const targetY = this.cameras.main.height - (98 / 2) * this.dpr;
         this.showRhythmPads = true;
         const travelBufferTime = this.circleShouldFillInMs / 1000;
         const availableBeats = this.allTapTimings.filter(
@@ -1390,17 +1393,20 @@ export default class Game extends Phaser.Scene {
                 this.finishTap?.setVisible(true);
             },
         });
+        // const finishTapWidth = this.finishTap?.width ?? 403;
+        // if 125 is for 344
+        // then what is it for 344 * this.dpr?
+        // answer: 125 * this.dpr
+
+        const leftOffset = this.centerX - 125 * this.dpr;
+        const righOffset = this.centerX + 125 * this.dpr;
         animationStartTimes.map((startTime) => {
-            const currentX = _.sample([
-                175,
-                // this.centerX,
-                this.cameras.main.width - 175,
-            ]);
+            const currentX = _.sample([leftOffset, righOffset]);
             const tile = this.add
                 .image(currentX, 0, "tile")
                 .setDepth(101)
                 .setScrollFactor(0)
-                .setDisplaySize(200, 300)
+                .setScale(this.dpr)
                 .setInteractive()
                 .setVisible(false);
             tile.once("pointerdown", () => {
@@ -1466,7 +1472,7 @@ export default class Game extends Phaser.Scene {
             });
             const tween = this.tweens.add({
                 targets: tile,
-                y: targetY,
+                y: this.cameras.main.height + tile.height / 2,
                 duration: this.circleShouldFillInMs,
                 delay: (startTime - currentTime) * 1000,
                 ease: "Linear",
