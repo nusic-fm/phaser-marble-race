@@ -33,18 +33,17 @@ import TuneIcon from "@mui/icons-material/Tune";
 import { createRandomNumber, formatSecondsTohr } from "./helpers";
 import axios from "axios";
 import Close from "@mui/icons-material/Close";
-
 export const tracks = [
     "01",
-    "02",
+    // "02",
     "03",
     "06",
     "07",
-    "11",
-    "14",
+    // "11",
+    // "14",
     "16",
-    "21",
-    "22",
+    // "21",
+    // "22",
 ];
 
 function App() {
@@ -68,16 +67,16 @@ function App() {
             if (localTracks) {
                 const arr = JSON.parse(localTracks);
                 // unique array
-                return [...new Set(arr)] as string[];
+                return ["01", "01", "01", "01"];
             }
-            return tracks?.slice(0, 10);
+            return ["01", "01", "01", "01"];
         }
     );
     const [selectedVoices, setSelectedVoices] = useState<GameVoiceInfo[]>([]);
     const [downloadProgress, setDownloadProgress] = useState(0);
-    const [startSectionIdx, setStartSectionIdx] = useState(3);
-    const [noOfRaceTracks, setNoOfRaceTracks] = useState(6);
-    const [marbleSpeed, setMarbleSpeed] = useState(0.2);
+    const [startSectionIdx, setStartSectionIdx] = useState(1);
+    const [noOfRaceTracks, setNoOfRaceTracks] = useState(10);
+    const [marbleSpeed, setMarbleSpeed] = useState(0.8);
     const theme = useTheme();
     const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
     const canvasElemWidth = window.innerWidth > 414 ? 414 : window.innerWidth;
@@ -249,7 +248,7 @@ function App() {
                 ]
             );
             setBgPaths(nonMotionBgPaths);
-            setMotionBgPaths(motionBgPaths);
+            // setMotionBgPaths(motionBgPaths);
         })();
         (async () => {
             const _trailsPath = await listAllTrails();
@@ -335,7 +334,7 @@ function App() {
                                     {ready && coverDoc ? (
                                         <PhaserGame
                                             ref={phaserRef}
-                                            voices={selectedVoices}
+                                            voices={selectedVoices.slice(0, 2)}
                                             coverDocId={selectedCoverDocId}
                                             musicStartOffset={
                                                 coverDoc?.sections?.at(
@@ -538,9 +537,9 @@ function App() {
                                     <Typography>Speed</Typography>
                                     <Slider
                                         sx={{ width: 200 }}
-                                        min={0.1}
-                                        step={0.1}
-                                        max={0.8}
+                                        min={0.2}
+                                        step={0.2}
+                                        max={2}
                                         value={marbleSpeed}
                                         onChange={(_, val) =>
                                             setMarbleSpeed(val as number)
@@ -964,9 +963,9 @@ function App() {
                             <Typography>Speed</Typography>
                             <Slider
                                 sx={{ width: 200 }}
-                                min={0.1}
-                                step={0.1}
-                                max={0.8}
+                                min={0.2}
+                                step={0.2}
+                                max={2}
                                 value={marbleSpeed}
                                 onChange={(_, val) =>
                                     setMarbleSpeed(val as number)
@@ -1087,7 +1086,7 @@ function App() {
                                     }}
                                 />
                             ))}
-                            {motionBgPaths.map((path) => (
+                            {/* {motionBgPaths.map((path) => (
                                 <img
                                     key={path}
                                     src={path}
@@ -1108,7 +1107,7 @@ function App() {
                                         setEnableMotion(true);
                                     }}
                                 />
-                            ))}
+                            ))} */}
                         </Stack>
                         <SelectTracks
                             setSelectedTracksList={setSelectedTracksList}
