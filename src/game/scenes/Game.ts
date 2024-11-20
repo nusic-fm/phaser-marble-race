@@ -13,6 +13,10 @@ export default class Game extends Phaser.Scene {
     constructor() {
         super("game");
         this.throttledUpdate = _.throttle(this.throttledUpdate.bind(this), 10); // Throttle interval in milliseconds
+        this.throttledUpdateGif = _.throttle(
+            this.throttledUpdateGif.bind(this),
+            100
+        ); // Throttle interval in milliseconds
     }
     public sky: Phaser.Physics.Matter.Image | undefined;
     public marbles: MatterJS.BodyType[] = [];
@@ -61,8 +65,8 @@ export default class Game extends Phaser.Scene {
     largeCircle: Phaser.Physics.Matter.Image | undefined;
     isRotating = true;
     baseAngle = 0;
-    centerX = 256 - 94 / 2;
-    centerY = 256;
+    centerX = 0;
+    centerY = 0;
     radius = 100;
     angleIncrement = (2 * Math.PI) / 5;
     countdownText: Phaser.GameObjects.Text | undefined;
@@ -73,7 +77,10 @@ export default class Game extends Phaser.Scene {
     marbleTrailParticles: Phaser.GameObjects.Particles.ParticleEmitter[] = [];
     trailConfig = {
         speed: { min: -50, max: 50 },
-        scale: { start: 1, end: 0.5 },
+        scale: {
+            start: window.devicePixelRatio,
+            end: window.devicePixelRatio * 0.5,
+        },
         blendMode: "ADD",
         lifespan: 400,
         alpha: 0.5,
@@ -81,6 +88,8 @@ export default class Game extends Phaser.Scene {
     damageMultipliyer: number = 1;
     level1Hammer: Phaser.GameObjects.Sprite | undefined;
     level2Hammer: Phaser.GameObjects.Sprite | undefined;
+    canvasWidth: number = 0;
+    canvasHeight: number = 0;
 
     init(data: IGameDataParams) {
         // Sort the voices randomly
@@ -92,9 +101,11 @@ export default class Game extends Phaser.Scene {
             data.selectedTracks,
             this.noOfRaceTracks
         );
-        this.marbleRadius = data.width >= 414 ? 23 : 22;
         this.enableMotion = data.enableMotion;
-
+        this.canvasWidth = data.width;
+        this.marbleRadius =
+            (22 / 414) * this.canvasWidth * window.devicePixelRatio;
+        if (data.height) this.canvasHeight = data.height;
         this.centerX = this.cameras.main.width / 2;
         this.centerY = this.cameras.main.height / 2;
         this.trailConfig.scale.end = data.trailEndSize;
@@ -108,6 +119,25 @@ export default class Game extends Phaser.Scene {
         marbleRacePlayVocals(this.coverDocId, this.voices[index].id);
     }
 
+    throttledUpdateGif(largestIndex: number) {
+        // Switch between mouth and normal image on each update to create a singing animation effect
+        const marbleImage = this.marblesImages[largestIndex];
+        const voiceId = this.voices[largestIndex].id;
+        const isMouthOpen =
+            marbleImage.texture.key === `resized_${voiceId}_mouth`;
+        const newTexture = isMouthOpen
+            ? `resized_${voiceId}`
+            : `resized_${voiceId}_mouth`;
+        // const newSize = this.marbleRadius * 2;
+
+        marbleImage.setTexture(newTexture);
+        marbleImage.setDisplaySize(
+            this.marbleRadius * 2,
+            this.marbleRadius * 2
+        );
+        marbleImage.setOrigin(0.5, 0.5);
+    }
+
     createTextureMask = (
         xOffset: number,
         yOffset: number,
@@ -115,6 +145,11 @@ export default class Game extends Phaser.Scene {
     ) => {
         // Create the texture sprite
         const textureSprite = this.add.sprite(xOffset, yOffset, "textureImage");
+        // textureSprite.setScale(
+        //     (this.canvasWidth / textureSprite.width) * window.devicePixelRatio,
+        //     (this.canvasHeight / textureSprite.height) * window.devicePixelRatio
+        // );
+        textureSprite.setScale(window.devicePixelRatio);
 
         // Use the base sprite's texture as a mask for the texture sprite
         const mask = new Phaser.Display.Masks.BitmapMask(this, baseSprite);
@@ -124,6 +159,53 @@ export default class Game extends Phaser.Scene {
         baseSprite.setVisible(false);
     };
 
+    handleDamage(target: Phaser.Physics.Matter.Sprite, e: any) {
+        // Logic for handling damage
+        console.log("Damage dealt to the target!");
+        if (this.damageMultipliyer) {
+            target.setScale(target.scale / (1.1 * this.damageMultipliyer));
+            const particleConfig = {
+                speed: { min: -50, max: 50 },
+                scale: { start: 0.01, end: 0.1 },
+                blendMode: "ADD",
+                // lifespan: 400,
+                alpha: 0.5,
+                particleBringToTop: true,
+            };
+            const particle = this.add.particles(
+                e.worldX,
+                e.worldY,
+                "whack",
+                particleConfig
+            );
+            // Add an event listener to destroy the emitter after the particles' lifespan
+            this.time.delayedCall(
+                200,
+                () => {
+                    // emitter.stop();
+                    particle.destroy(); // Destroys the particle manager and emitter
+                },
+                [],
+                this
+            );
+            // Play sound
+            if (this.damageMultipliyer === 1)
+                this.sound.play("low_whack", { volume: 0.5 });
+            else this.sound.play("high_whack", { volume: 0.5 });
+        }
+        if (target.scale <= 0.08) {
+            target.destroy();
+        }
+
+        // // Example: reduce health, show effects, etc.
+        // target.health = (target.health || 100) - 10; // Example: reduce health by 10
+        // console.log("Target health:", target.health);
+
+        // if (target.health <= 0) {
+        //     console.log("Target destroyed!");
+        //     target.destroy(); // Destroy the target if health is 0
+        // }
+    }
     createCrossScreen = (
         startOffset: number,
         canvasWidth: number,
@@ -131,82 +213,107 @@ export default class Game extends Phaser.Scene {
     ) => {
         // TODO: Scale the sprite
         startOffset += 151;
-        this.crossRightRotation.push(
-            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+        const l1CrossLeft = this.matter.add.sprite(
+            18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 18,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
+        l1CrossLeft.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l1CrossLeft);
+        const l1CrossRight = this.matter.add.sprite(
+            canvasWidth - 18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossRightRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 126,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossRightRotation.push(
-            this.matter.add.sprite(18, startOffset, "02_cross", undefined, {
+        l1CrossRight.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l1CrossRight);
+        startOffset += 200 * window.devicePixelRatio;
+        const l2CrossLeft = this.matter.add.sprite(
+            126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 18,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
-        );
-        startOffset += 151 + 40;
-        this.crossLeftRotation.push(
-            this.matter.add.sprite(126, startOffset, "02_cross", undefined, {
+        l2CrossLeft.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l2CrossLeft);
+        const l2CrossRight = this.matter.add.sprite(
+            canvasWidth - 126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
                 shape: miniShapes["02"],
                 isStatic: true,
-            })
+            }
         );
-        this.crossRightRotation.push(
-            this.matter.add.sprite(
-                canvasWidth - 126,
-                startOffset,
-                "02_cross",
-                undefined,
-                {
-                    shape: miniShapes["02"],
-                    isStatic: true,
-                }
-            )
+        l2CrossRight.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l2CrossRight);
+        startOffset += 200 * window.devicePixelRatio;
+        const l3CrossLeft = this.matter.add.sprite(
+            18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
         );
-        return startOffset + 250;
+        l3CrossLeft.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l3CrossLeft);
+        const l3CrossRight = this.matter.add.sprite(
+            canvasWidth - 18 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l3CrossRight.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l3CrossRight);
+        startOffset += 200 * window.devicePixelRatio;
+        const l4CrossLeft = this.matter.add.sprite(
+            126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l4CrossLeft.setScale(window.devicePixelRatio);
+        this.crossLeftRotation.push(l4CrossLeft);
+        const l4CrossRight = this.matter.add.sprite(
+            canvasWidth - 126 * window.devicePixelRatio,
+            startOffset,
+            "02_cross",
+            undefined,
+            {
+                shape: miniShapes["02"],
+                isStatic: true,
+            }
+        );
+        l4CrossRight.setScale(window.devicePixelRatio);
+        this.crossRightRotation.push(l4CrossRight);
+
+        return startOffset + 500 * window.devicePixelRatio;
     };
     createSeesawScreen = (
         xOffset: number,
@@ -215,27 +322,38 @@ export default class Game extends Phaser.Scene {
         miniShapes: any,
         obstaclesShapes: any
     ) => {
-        const scaleFactor = this.cameras.main.width / 414;
-        const yOffset = startOffset + 835 / 2;
+        // const scaleFactor = this.cameras.main.width / 414;
+
         const baseSprite = this.matter.add
-            .sprite(xOffset, yOffset, "prod_texture_loaded_06", undefined, {
+            .sprite(xOffset, startOffset, "prod_texture_loaded_06", undefined, {
                 shape: prodShapes["06"],
                 isStatic: true,
             })
-            .setScale(scaleFactor);
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
+        const yOffset = startOffset + baseSprite.height / 2;
+        baseSprite.setPosition(xOffset, yOffset);
         const seesawX = xOffset - 2;
-        const seesawY = yOffset - 130;
+        // 132 for 414 width
+        // 110 for 344 width
+        // FOrumula (132/414)*width + 30
+        const seesawContraintY = -(132 / 414) * this.canvasWidth;
+        const seesawY = yOffset + seesawContraintY;
         const seesaw = this.matter.add
             .sprite(seesawX, seesawY, "06b", undefined, {
                 shape: miniShapes["06b"],
                 // isStatic: true,
             })
-            .setScale(scaleFactor);
+            .setScale(window.devicePixelRatio);
         const contraint = this.matter.constraint.create({
             bodyA: seesaw.body as BodyType,
             bodyB: baseSprite.body as BodyType,
             pointA: { x: 0, y: 0 },
-            pointB: { x: -2, y: -130 * scaleFactor },
+            pointB: {
+                x: -2,
+                y: seesawContraintY * window.devicePixelRatio,
+            },
             stiffness: 1,
             length: 0,
         });
@@ -264,7 +382,9 @@ export default class Game extends Phaser.Scene {
                     frictionStatic: 0,
                 }
             )
-            .setScale(0.17);
+            .setScale(
+                (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
@@ -272,51 +392,8 @@ export default class Game extends Phaser.Scene {
         this.matter.world.add(contraint);
         this.createTextureMask(seesawX, seesawY, seesaw);
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        return startOffset + 840;
+        return startOffset + baseSprite.height * window.devicePixelRatio;
     };
-    handleDamage(target: Phaser.Physics.Matter.Sprite, e: any) {
-        // Logic for handling damage
-        console.log("Damage dealt to the target!");
-        if (this.damageMultipliyer) {
-            target.setScale(target.scale / (1.1 * this.damageMultipliyer));
-            const particleConfig = {
-                speed: { min: -50, max: 50 },
-                scale: { start: 1, end: 10 },
-                blendMode: "ADD",
-                // lifespan: 400,
-                alpha: 0.5,
-                particleBringToTop: true,
-            };
-            const particle = this.add.particles(
-                e.worldX,
-                e.worldY,
-                "trail",
-                particleConfig
-            );
-            // Add an event listener to destroy the emitter after the particles' lifespan
-            this.time.delayedCall(
-                200,
-                () => {
-                    // emitter.stop();
-                    particle.destroy(); // Destroys the particle manager and emitter
-                },
-                [],
-                this
-            );
-        }
-        if (target.scale <= 0.08) {
-            target.destroy();
-        }
-
-        // // Example: reduce health, show effects, etc.
-        // target.health = (target.health || 100) - 10; // Example: reduce health by 10
-        // console.log("Target health:", target.health);
-
-        // if (target.health <= 0) {
-        //     console.log("Target destroyed!");
-        //     target.destroy(); // Destroy the target if health is 0
-        // }
-    }
     createCircleBlockers = (
         xOffset: number,
         startOffset: number,
@@ -328,9 +405,11 @@ export default class Game extends Phaser.Scene {
                 shape: prodShapes["21"],
                 isStatic: true,
             })
-            .setScale(this.cameras.main.width / 414);
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        return startOffset + 880;
+        return startOffset + baseSprite.height * window.devicePixelRatio;
     };
     createStarRotations = (_startOffset: number, miniShapes: any) => {
         // TODO: Scale the sprite
@@ -355,101 +434,179 @@ export default class Game extends Phaser.Scene {
         // First Row
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(115 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((115 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
                 .setAngle(35)
         );
 
         this.rightRotatableStars.push(
-            this.matter.add.sprite(
-                305 + barWidth,
-                startOffset,
-                "mini_star",
-                undefined,
-                {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                }
-            )
+            this.matter.add
+                .sprite(
+                    ((305 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
         );
         // Second Row
-        startOffset += 165;
+        startOffset += 165 * window.devicePixelRatio;
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((10 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
                 .setAngle(5)
         );
         this.rightRotatableStars.push(
-            this.matter.add.sprite(
-                206 + barWidth,
-                startOffset,
-                "mini_star",
-                undefined,
-                {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                }
-            )
+            this.matter.add
+                .sprite(
+                    ((206 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(
+                    (1 / 414) * this.canvasWidth * window.devicePixelRatio
+                )
             // .setAngle()
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((400 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(35)
         );
         // Third Row
-        startOffset += 180;
+        startOffset += 180 * window.devicePixelRatio;
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(115 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((115 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(30)
         );
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(305 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((305 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(5)
         );
         // Fourth Row
-        startOffset += 160;
+        startOffset += 160 * window.devicePixelRatio;
         this.rightRotatableStars.push(
             this.matter.add
-                .sprite(10 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((10 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(8)
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(210 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((210 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(30)
         );
         this.leftRotatableStars.push(
             this.matter.add
-                .sprite(400 + barWidth, startOffset, "mini_star", undefined, {
-                    shape: miniShapes["14"],
-                    isStatic: true,
-                })
+                .sprite(
+                    ((400 / 414) * this.canvasWidth + barWidth) *
+                        window.devicePixelRatio,
+                    startOffset,
+                    "mini_star",
+                    undefined,
+                    {
+                        shape: miniShapes["14"],
+                        isStatic: true,
+                    }
+                )
+                .setScale(window.devicePixelRatio)
                 .setAngle(35)
         );
-        return startOffset + 149;
+        return startOffset + 500 * window.devicePixelRatio;
     };
 
     createStaticTriangles = (
@@ -460,11 +617,17 @@ export default class Game extends Phaser.Scene {
     ) => {
         const yOffset = startOffset + 833 / 2;
         const baseSprite = this.matter.add
-            .sprite(xOffset + 0, yOffset, "prod_texture_loaded_03", undefined, {
+            .sprite(xOffset, yOffset, "prod_texture_loaded_03", undefined, {
                 shape: prodShapes["03"],
                 isStatic: true,
             })
-            .setScale(this.cameras.main.width / 414);
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
+        // baseSprite.setScale(
+        //     (this.cameras.main.width / baseSprite.width) *
+        //         window.devicePixelRatio
+        // );
         this.createTextureMask(xOffset, yOffset, baseSprite);
 
         const randomObstaclePosition = _.sample([
@@ -476,28 +639,29 @@ export default class Game extends Phaser.Scene {
         ]);
 
         const randomObstacle = _.sample(ObstacleNames);
-        const target = this.matter.add
-            .sprite(
-                randomObstaclePosition[0],
-                randomObstaclePosition[1],
-                `obstacle_${randomObstacle}`,
-                undefined,
-                {
-                    shape: obstaclesShapes[
-                        randomObstacle as keyof typeof obstaclesShapes
-                    ],
-                    // angle: 124,
-                    friction: 0,
-                    frictionAir: 0,
-                    frictionStatic: 0,
-                }
-            )
-            .setScale(0.17);
+        const target = this.matter.add.sprite(
+            randomObstaclePosition[0],
+            randomObstaclePosition[1],
+            `obstacle_${randomObstacle}`,
+            undefined,
+            {
+                shape: obstaclesShapes[
+                    randomObstacle as keyof typeof obstaclesShapes
+                ],
+                // angle: 124,
+                friction: 0,
+                frictionAir: 0,
+                frictionStatic: 0,
+            }
+        );
+        target.setScale(
+            (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+        );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
         });
-        return startOffset + 1000;
+        return startOffset + baseSprite.height * window.devicePixelRatio;
     };
 
     createReduceSizeSlider = (
@@ -505,7 +669,7 @@ export default class Game extends Phaser.Scene {
         startOffset: number,
         prodShapes: any
     ) => {
-        this.reduceSizeScreenOffset.push(startOffset);
+        this.reduceSizeScreenOffset.push(startOffset - 400);
         const yOffset = startOffset + 833 / 2;
         const baseSprite = this.matter.add
             .sprite(
@@ -518,9 +682,12 @@ export default class Game extends Phaser.Scene {
                     isStatic: true,
                 }
             )
-            .setScale(this.cameras.main.width / 414);
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
+        // .setScale(this.cameras.main.width / 414);
         this.createTextureMask(xOffset, yOffset, baseSprite);
-        startOffset += 800;
+        startOffset += baseSprite.height * window.devicePixelRatio;
         this.increaseSizeScreenOffset.push(startOffset);
         startOffset += 300;
         return startOffset;
@@ -637,14 +804,16 @@ export default class Game extends Phaser.Scene {
         prodShapes: any,
         obstaclesShapes: any
     ) => {
-        const yOffset = startOffset + 835 / 2;
         const baseSprite = this.matter.add
-            .sprite(xOffset, yOffset, "prod_texture_loaded_01", undefined, {
+            .sprite(xOffset, startOffset, "prod_texture_loaded_01", undefined, {
                 shape: prodShapes["01"],
                 isStatic: true,
             })
-            .setScale(this.cameras.main.width / 414);
-        // .setDisplaySize(this.cameras.main.width + 96, 835);
+            .setScale(
+                window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+            );
+        const yOffset = startOffset + baseSprite.height / 2;
+        baseSprite.setPosition(baseSprite.x, yOffset);
         this.createTextureMask(xOffset, yOffset, baseSprite);
         const randomObstaclePosition = _.sample([
             [150, startOffset],
@@ -657,29 +826,31 @@ export default class Game extends Phaser.Scene {
             [this.centerX, startOffset + 600],
         ]);
         const randomObstacle = _.sample(ObstacleNames);
-        const target = this.matter.add
-            .sprite(
-                randomObstaclePosition[0],
-                randomObstaclePosition[1],
-                `obstacle_${randomObstacle}`,
-                undefined,
-                {
-                    shape: obstaclesShapes[
-                        randomObstacle as keyof typeof obstaclesShapes
-                    ],
-                    // angle: 124,
-                    friction: 0,
-                    frictionAir: 0,
-                    frictionStatic: 0,
-                }
-            )
-            .setScale(0.17);
+        const target = this.matter.add.sprite(
+            randomObstaclePosition[0],
+            randomObstaclePosition[1],
+            `obstacle_${randomObstacle}`,
+            undefined,
+            {
+                shape: obstaclesShapes[
+                    randomObstacle as keyof typeof obstaclesShapes
+                ],
+                // angle: 124,
+                friction: 0,
+                frictionAir: 0,
+                frictionStatic: 0,
+                // ignoreGravity: true,
+            }
+        );
+        target.setScale(
+            (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+        );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
         });
 
-        return startOffset + 835;
+        return startOffset + baseSprite.height * window.devicePixelRatio;
     };
     createZigzagSlider = (
         xOffset: number,
@@ -687,16 +858,30 @@ export default class Game extends Phaser.Scene {
         prodShapes: any,
         obstaclesShapes: any
     ) => {
-        const yOffset = startOffset + 833 / 2;
-        const baseSprite = this.matter.add
-            .sprite(xOffset, yOffset, "prod_texture_loaded_07", undefined, {
+        const baseSprite = this.matter.add.sprite(
+            xOffset,
+            startOffset,
+            "prod_texture_loaded_07",
+            undefined,
+            {
                 shape: prodShapes["07"],
                 isStatic: true,
-            })
-            .setScale(this.cameras.main.width / 414);
-        this.createTextureMask(xOffset, yOffset, baseSprite);
+            }
+        );
+        baseSprite.setPosition(
+            baseSprite.x,
+            startOffset + baseSprite.height / 2
+        );
+        baseSprite.setScale(
+            window.devicePixelRatio * (this.canvasWidth / (512 - 100))
+        );
+        this.createTextureMask(
+            xOffset,
+            startOffset + baseSprite.height / 2,
+            baseSprite
+        );
         const randomObstaclePosition = _.sample([
-            [150, startOffset],
+            [140, startOffset],
             [350, startOffset],
             [150, startOffset + 200],
             [350, startOffset + 200],
@@ -720,13 +905,15 @@ export default class Game extends Phaser.Scene {
                     frictionStatic: 0,
                 }
             )
-            .setScale(0.17);
+            .setScale(
+                (0.17 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         target.setInteractive();
         target.on("pointerdown", (e: any) => {
             this.handleDamage(target, e);
         });
 
-        return startOffset + 880;
+        return startOffset + baseSprite.height * window.devicePixelRatio;
     };
     createMarbles = (marbleRadius: number, miniShapes: any) => {
         this.largeCircle = this.matter.add.sprite(
@@ -740,6 +927,13 @@ export default class Game extends Phaser.Scene {
                 frictionStatic: 1,
                 friction: 1,
             }
+        );
+        // For Testing
+        // this.largeCircle.setScale(0.1);
+        // this.isRotating = false;
+        this.largeCircle.setScale(
+            (this.canvasWidth / this.largeCircle.width) *
+                window.devicePixelRatio
         );
         // .setScale(0.8);
         const xOffsetValues = [
@@ -764,9 +958,14 @@ export default class Game extends Phaser.Scene {
                     friction: 0,
                     frictionAir: 0,
                     frictionStatic: 0,
+                    // Add colors
+                    render: {
+                        fillColor: 0xff0000,
+                    },
                 }
             );
             this.marbles.push(circleBody);
+            // TODO: Add Trails back
             this.marbleTrailParticles.push(
                 this.add.particles(0, 0, "trail", {
                     ...this.trailConfig,
@@ -774,23 +973,24 @@ export default class Game extends Phaser.Scene {
                 })
             );
 
-            // circleBody.emitter = emitter;
-            // this.trailsGroup.push(this.add.group());
-            // this.trailGraphics.push(this.add.graphics());
-            // this.trailPoints.push([]);
-            // // Create an image and attach it to the circle body
+            // Create an image and attach it to the circle body
             const circleImage = this.add.image(
                 circleBody.position.x,
                 circleBody.position.y,
                 `resized_${v.id}`
             );
-
-            circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2); // Adjust size to match the physics body
+            circleImage.setDisplaySize(marbleRadius * 2, marbleRadius * 2);
             circleImage.setOrigin(0.5, 0.5);
+
+            // Ensure the image is visible
+            circleImage.setDepth(1);
+            circleImage.setVisible(true);
+
+            // Circle mask
             const maskShape = this.make.graphics();
             maskShape.fillStyle(0xffffff);
             maskShape.fillCircle(marbleRadius, marbleRadius, marbleRadius);
-            const mask = maskShape.createGeometryMask();
+            const mask = new Phaser.Display.Masks.GeometryMask(this, maskShape);
 
             // Apply the mask to the image
             circleImage.setMask(mask);
@@ -800,7 +1000,7 @@ export default class Game extends Phaser.Scene {
             // Create label for each circle
             let label = this.add.text(
                 circleImage.x,
-                circleImage.y - 80,
+                circleImage.y - 560,
                 this.voices[i].name,
                 {
                     fontSize: "32px",
@@ -814,7 +1014,7 @@ export default class Game extends Phaser.Scene {
         });
         this.countdownText = this.add
             .text(this.centerX, this.centerY - 100, "3", {
-                fontSize: "64px",
+                fontSize: `${64 * window.devicePixelRatio}px`,
                 color: "#ffffff",
             })
             .setOrigin(0.5);
@@ -824,7 +1024,7 @@ export default class Game extends Phaser.Scene {
         _startOffset: number,
         miniShapes: any
     ) => {
-        this.reduceSizeScreenOffset.push(_startOffset);
+        this.reduceSizeScreenOffset.push(_startOffset - 300);
         let startOffset = _startOffset + 200;
         let leftOffset = 20;
         let rightOffset = canvasWidth - 20;
@@ -835,11 +1035,14 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            leftOffset += 80;
+            leftOffset +=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
-        startOffset += 250;
+        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
         new Array(5).fill("").map(() => {
             this.horizontalCrossLeftRotation.push(
                 this.matter.add
@@ -847,12 +1050,15 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            rightOffset -= 80;
+            rightOffset -=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
         leftOffset = 20;
-        startOffset += 250;
+        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
         new Array(5).fill("").map(() => {
             this.horizontalCrossRightRotation.push(
                 this.matter.add
@@ -860,12 +1066,15 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            leftOffset += 80;
+            leftOffset +=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
         rightOffset = canvasWidth - 20;
-        startOffset += 250;
+        startOffset += (250 / 414) * this.canvasWidth * window.devicePixelRatio;
         new Array(5).fill("").map(() => {
             this.horizontalCrossLeftRotation.push(
                 this.matter.add
@@ -873,12 +1082,15 @@ export default class Game extends Phaser.Scene {
                         shape: miniShapes["02"],
                         isStatic: true,
                     })
-                    .setScale(0.8, 0.8)
+                    .setScale(
+                        (0.8 / 414) * this.canvasWidth * window.devicePixelRatio
+                    )
             );
-            rightOffset -= 80;
+            rightOffset -=
+                (80 / 414) * this.canvasWidth * window.devicePixelRatio;
         });
         this.increaseSizeScreenOffset.push(startOffset);
-        return startOffset + 230;
+        return startOffset + 500 * window.devicePixelRatio;
     };
     // createTrails = (voiceSprite: MatterJS.BodyType, i: number) => {
     //     const velocity = Math.sqrt(
@@ -941,8 +1153,12 @@ export default class Game extends Phaser.Scene {
 
     renderWeapons() {
         this.level1Hammer = this.add
-            .sprite(350, 550, "hammer_1")
-            .setScale(0.1)
+            .sprite(
+                350 * window.devicePixelRatio,
+                550 * window.devicePixelRatio,
+                "hammer_1"
+            )
+            .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
             .setScrollFactor(0)
             .setInteractive()
             .on("pointerdown", () => {
@@ -950,8 +1166,12 @@ export default class Game extends Phaser.Scene {
             });
 
         this.level2Hammer = this.add
-            .sprite(350, 630, "hammer_2")
-            .setScale(0.1)
+            .sprite(
+                350 * window.devicePixelRatio,
+                630 * window.devicePixelRatio,
+                "hammer_2"
+            )
+            .setScale((0.1 / 414) * this.canvasWidth * window.devicePixelRatio)
             .setScrollFactor(0)
             .setInteractive()
             .on("pointerdown", () => {
@@ -965,6 +1185,8 @@ export default class Game extends Phaser.Scene {
 
     create() {
         console.log("Game Scene...");
+        this.sound.add("low_whack", { loop: false, volume: 0.5 });
+        this.sound.add("high_whack", { loop: false, volume: 0.5 });
         // Center the background image
         const centerX = this.cameras.main.width / 2;
         if (!this.enableMotion) {
@@ -988,30 +1210,35 @@ export default class Game extends Phaser.Scene {
             // let scale = Math.max(scaleX, scaleY);
             // this.background.setScale(scale).setScrollFactor(0);
             this.background = this.add
-                .tileSprite(
-                    0,
-                    0,
-                    this.cameras.main.width,
-                    this.cameras.main.height,
-                    "background"
-                )
-                // .setScale(scale)
-                .setOrigin(0, 0)
-                .setScrollFactor(0);
+                .tileSprite(0, 0, 0, 0, "background")
+                .setScrollFactor(0)
+                .setOrigin(0, 0);
+            this.background.setScale(
+                (414 / this.background.width) * window.devicePixelRatio,
+                (736 / this.background.height) * window.devicePixelRatio
+            );
             this.add
                 .image(this.centerX, this.centerY, "center_logo")
                 .setDisplaySize(254, 84)
                 .setScrollFactor(0);
         }
         const siteUrl = this.add
-            .text(this.centerX, this.centerY + 100, "marblerace.ai", {
-                fontSize: "28px",
+            .text(this.centerX, this.centerY, "marblerace.ai", {
+                fontSize: `${28 * window.devicePixelRatio}px`,
                 color: "#ffffff",
                 stroke: "rgba(0,0,0,1)",
                 strokeThickness: 4,
             })
             .setScrollFactor(0);
-        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 50);
+        // Below line placed at the right position when setScale is not used
+        siteUrl.setPosition(siteUrl.x - siteUrl.width / 2, this.centerY + 100);
+
+        // siteUrl.setScale(window.devicePixelRatio);
+        // // Fix the position of the siteUrl when setScale is used
+        // siteUrl.setPosition(
+        //     siteUrl.x - siteUrl.width / 2,
+        //     siteUrl.y - siteUrl.height / 2
+        // );
         // Enable camera scrolling
         const canvasWidth = this.cameras.main.width;
 
@@ -1019,8 +1246,9 @@ export default class Game extends Phaser.Scene {
         var miniShapes = this.cache.json.get("mini_shapes");
         var obstaclesShapes = this.cache.json.get("obstacles_shapes");
 
-        let startOffset = 800;
-        const xOffset = canvasWidth / 2;
+        let startOffset = 800 * window.devicePixelRatio;
+        const xOffset = this.centerX;
+        // this.selectedTracks = ["06", "07", "03", "01", "16"];
         this.selectedTracks.map((trackNo) => {
             switch (trackNo) {
                 case "01":
@@ -1100,11 +1328,27 @@ export default class Game extends Phaser.Scene {
             }
         });
         const finishOffset = startOffset + 250;
-        this.add.image(centerX, finishOffset, "finish_line").setScale(0.2);
+        this.add.image(centerX, finishOffset, "finish_line").setScale(0.5);
+        // finishLineImage.setScale(
+        //     (this.canvasWidth / finishLineImage.width) *
+        //         window.devicePixelRatio,
+        //     window.devicePixelRatio
+        // );
+        // .setScale(window.devicePixelRatio);
         this.finishLineOffset = finishOffset;
-        // .setDisplaySize(960, 40);
-        this.cameras.main.setBounds(0, 0, canvasWidth, finishOffset + 250);
-        this.matter.world.setBounds(0, 0, canvasWidth, startOffset + 750);
+        // // .setDisplaySize(960, 40);
+        this.cameras.main.setBounds(
+            0,
+            0,
+            this.cameras.main.width,
+            finishOffset + 250
+        );
+        this.matter.world.setBounds(
+            0,
+            0,
+            this.cameras.main.width,
+            finishOffset + 800
+        );
 
         this.createMarbles(this.marbleRadius, miniShapes);
         this.crossLeftRotation.map((baseSprite) =>
@@ -1126,7 +1370,7 @@ export default class Game extends Phaser.Scene {
 
         let coundownValue = 3;
         // Start Countdown:
-        this.time.addEvent({
+        const clock = this.time.addEvent({
             delay: 1000,
             repeat: 2,
             callback: () => {
@@ -1148,35 +1392,7 @@ export default class Game extends Phaser.Scene {
                         }
                         this.isRotating = false;
                         this.countdownText.destroy();
-                        // const velocity = 2; // Adjust this value to set the desired release velocity
-
-                        // for (let i = 0; i < this.voices.length; i++) {
-                        //     const currentAngle =
-                        //         this.baseAngle + i * this.angleIncrement;
-                        //     const x =
-                        //         this.centerX +
-                        //         this.radius * Math.cos(currentAngle);
-                        //     const y =
-                        //         this.centerY +
-                        //         this.radius * Math.sin(currentAngle);
-
-                        //     // Set the new position of the circle
-                        //     this.matter.body.setPosition(
-                        //         this.marbles[i],
-                        //         { x, y },
-                        //         false
-                        //     );
-
-                        //     // Calculate the velocity components
-                        //     const velocityX = velocity * Math.cos(currentAngle);
-                        //     const velocityY = velocity * Math.sin(currentAngle);
-
-                        //     // Apply the velocity to the body
-                        //     this.matter.body.setVelocity(this.marbles[i], {
-                        //         x: velocityX,
-                        //         y: velocityY,
-                        //     });
-                        // }
+                        clock.destroy();
                     }
                 }
             },
@@ -1189,18 +1405,26 @@ export default class Game extends Phaser.Scene {
 
         this.renderWeapons();
     }
-    update(time: number, delta: number): void {
+    update(): void {
         if (this.damageMultipliyer === 1) {
             // Highlight level 1 hammer
-            this.level2Hammer?.setScale(0.1);
-            this.level1Hammer?.setScale(0.2);
+            this.level2Hammer?.setScale(
+                (0.1 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
+            this.level1Hammer?.setScale(
+                (0.2 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         } else if (this.damageMultipliyer === 1.5) {
             // Highlight level 2 hammer
-            this.level1Hammer?.setScale(0.1);
-            this.level2Hammer?.setScale(0.2);
+            this.level1Hammer?.setScale(
+                (0.1 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
+            this.level2Hammer?.setScale(
+                (0.2 / 414) * this.canvasWidth * window.devicePixelRatio
+            );
         }
-        if (this.enableMotion && !this.isRotating)
-            this.background.tilePositionX += 0.08;
+        // if (this.enableMotion && !this.isRotating)
+        //     this.background.tilePositionX += 0.08;
         if (this.marbles.length) {
             if (this.isRotating) {
                 // Update the base angle to create the circular motion
@@ -1211,162 +1435,197 @@ export default class Game extends Phaser.Scene {
                     0.15
                 );
             }
-            this.marbles.map((voiceBody, i) => {
+            // Optimize marble updates
+            for (let i = 0; i < this.marbles.length; i++) {
+                const voiceBody = this.marbles[i];
                 const marbleImage = this.marblesImages[i];
-                // if (this.isRotating) {
-                //     // // Update the position of each circle
-                //     // const currentAngle =
-                //     //     this.baseAngle + i * this.angleIncrement;
-                //     // const x =
-                //     //     this.centerX + this.radius * Math.cos(currentAngle);
-                //     // const y =
-                //     //     this.centerY + this.radius * Math.sin(currentAngle);
-                //     // // Set the new position of the circle
-                //     // this.matter.body.setPosition(voiceBody, { x, y }, false);
-                //     // // this.matter.body.setAngle(voiceBody, currentAngle, false);
-                //     // marbleImage.setPosition(x, y);
-                //     // // marbleImage.setRotation(voiceBody.angle);
-                //     // this.marblesMasks[i].setPosition(
-                //     //     voiceBody.position.x - voiceBody.circleRadius,
-                //     //     voiceBody.position.y - voiceBody.circleRadius
-                //     // );
-                //     // this.labels[i].setPosition(-100, -100);
-                // } else {
-                marbleImage.setPosition(
-                    voiceBody.position.x,
-                    voiceBody.position.y
-                );
-                marbleImage.setRotation(voiceBody.angle);
-                this.marblesMasks[i].setPosition(
-                    voiceBody.position.x - voiceBody.circleRadius,
-                    voiceBody.position.y - voiceBody.circleRadius
-                );
-                // this.marblesMasks[i].setRotation(voiceBody.angle);
-
-                this.labels[i]?.setPosition(
-                    voiceBody.position.x - this.labels[i].width / 2,
-                    voiceBody.position.y - 60
-                );
+                const marbleMask = this.marblesMasks[i];
+                const label = this.labels[i];
                 const currentCrossIndex =
                     this.currentMarblesSizeIndices[i.toString()];
-                if (
-                    this.heightReducedIndices.includes(i) &&
-                    voiceBody.position.y >
-                        this.increaseSizeScreenOffset[currentCrossIndex]
-                ) {
-                    this.currentMarblesSizeIndices[i.toString()] += 1;
-                    this.matter.body.scale(voiceBody, 2, 2);
-                    marbleImage.setDisplaySize(
-                        this.marbleRadius * 2,
-                        this.marbleRadius * 2
+
+                // Update marble image position and rotation
+                if (marbleImage) {
+                    marbleImage.setPosition(
+                        voiceBody.position.x,
+                        voiceBody.position.y
                     );
-                    this.marblesMasks[i].scale = 1;
+                    marbleImage.setRotation(voiceBody.angle);
+                }
+
+                // Update marble mask position
+                if (marbleMask) {
+                    marbleMask.setPosition(
+                        voiceBody.position.x - voiceBody.circleRadius,
+                        voiceBody.position.y - voiceBody.circleRadius
+                    );
+                }
+
+                // Update label position
+                if (label) {
+                    label.setPosition(
+                        voiceBody.position.x - label.width / 2,
+                        voiceBody.position.y - 60
+                    );
+                }
+
+                // Check for size changes
+                const isHeightReduced = this.heightReducedIndices.includes(i);
+                const y = voiceBody.position.y;
+
+                if (
+                    isHeightReduced &&
+                    y > this.increaseSizeScreenOffset[currentCrossIndex]
+                ) {
+                    // Increase size
+                    this.currentMarblesSizeIndices[i.toString()]++;
+                    this.matter.body.scale(voiceBody, 2, 2);
+                    if (marbleImage) {
+                        marbleImage.setDisplaySize(
+                            this.marbleRadius * 2,
+                            this.marbleRadius * 2
+                        );
+                    }
+                    if (marbleMask) marbleMask.scale = 1;
                     this.heightReducedIndices =
                         this.heightReducedIndices.filter((idx) => idx !== i);
-                    this.marbleTrailParticles[i].setConfig(this.trailConfig);
+                    // this.marbleTrailParticles[i].setConfig(this.trailConfig);
                 } else if (
-                    this.heightReducedIndices.includes(i) === false &&
-                    voiceBody.position.y >
-                        this.reduceSizeScreenOffset[currentCrossIndex] &&
-                    voiceBody.position.y <
-                        this.increaseSizeScreenOffset[currentCrossIndex]
+                    !isHeightReduced &&
+                    y > this.reduceSizeScreenOffset[currentCrossIndex] &&
+                    y < this.increaseSizeScreenOffset[currentCrossIndex]
                 ) {
+                    // Reduce size
                     this.heightReducedIndices.push(i);
                     this.matter.body.scale(voiceBody, 0.5, 0.5);
-                    marbleImage.setDisplaySize(
-                        this.marbleRadius,
-                        this.marbleRadius
-                    );
-                    this.marblesMasks[i].scale = 0.5;
-                    this.marbleTrailParticles[i].setConfig({
-                        ...this.trailConfig,
-                        scale: { start: 0.5, end: 0.01 },
-                    });
+                    if (marbleImage) {
+                        marbleImage.setDisplaySize(
+                            this.marbleRadius,
+                            this.marbleRadius
+                        );
+                    }
+                    if (marbleMask) marbleMask.scale = 0.5;
+                    // this.marbleTrailParticles[i].setConfig({
+                    //     ...this.trailConfig,
+                    //     scale: { start: 0.5, end: 0.01 },
+                    // });
                 }
-                // }
-                // this.createTrails(voiceBody, i);
-            });
-        }
-        this.crossRightRotation.map((c) => {
-            c.setAngle(c.angle + 2);
-            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        });
-        this.crossLeftRotation.map((c) => {
-            c.setAngle(c.angle - 2);
-            this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
-        });
-        if (this.isInstrumentPlaying && this.isRotating === false) {
-            const voicesPositions = this.marbles.map((m) => m.position.y);
-            const unFinishedPositions = voicesPositions.filter(
-                (y) => y < this.finishLineOffset
-            );
-            const largest = Math.max(...unFinishedPositions);
-            const secondLargest = Math.max(
-                ...unFinishedPositions.filter((p) => p !== largest)
-            );
-            const index = voicesPositions.findIndex((v) => v === largest);
-            // if (largest > this.finishLineOffset) {
-            //     // Find 2nd largest
-            //     index = voicesPositions.indexOf(
-            //         voicesPositions
-            //             .filter((v) => v !== largest)
-            //             .reduce((a, b) => (a > b ? a : b))
-            //     );
-            // }
-            if (index === -1) return;
-            if (
-                this.prevVoiceIdx !== index &&
-                largest > secondLargest + this.marbleRadius
-            )
-                this.throttledUpdate(index);
-            if (this.autoScroll) {
-                this.cameras.main.scrollY = largest - 300;
             }
-        }
-        this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
-        this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
-        this.horizontalCrossRightRotation.map((rs) =>
-            rs.setAngle(rs.angle + 2.5)
-        );
-        this.horizontalCrossLeftRotation.map((rs) =>
-            rs.setAngle(rs.angle - 2.5)
-        );
+            // TODO: Uncomment this
+            // this.crossRightRotation.map((c) => {
+            //     c.setAngle(c.angle + 2);
+            //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+            // });
+            // this.crossLeftRotation.map((c) => {
+            //     c.setAngle(c.angle - 2);
+            //     this.matter.body.setAngularVelocity(c.body as BodyType, 0.05);
+            // });
+            if (this.isInstrumentPlaying && this.isRotating === false) {
+                let largest = -Infinity;
+                let secondLargest = -Infinity;
+                let largestIndex = -1;
 
-        // Bars up/down motion
-        this.motionTimeForUpDownWard += delta;
-        this.upDownMotionElems.map(
-            ({
-                matter,
-                startX,
-                startY,
-                moveSpeed,
-                maxBottom,
-                maxTop,
-                direction,
-            }) => {
-                const amplitude = (maxBottom - maxTop) / 2;
-                const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
-                // // Calculate new y position using a sine wave for smooth up and down movement
-                // const range = maxBottom - maxTop;
-                // const midPoint = maxTop + range / 2;
-                // Calculate the new position considering the angle
-                if (direction === "right") {
-                    const newX =
-                        startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
-                    const newY =
-                        startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
-                    // Update the rectangle's y position using a sine wave
-                    matter.setPosition(newX, newY);
-                } else {
-                    const newX =
-                        startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
-                    const newY =
-                        startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
-                    // Update the rectangle's y position using a sine wave
-                    matter.setPosition(newX, newY);
+                for (let i = 0; i < this.marbles.length; i++) {
+                    const y = this.marbles[i].position.y;
+                    if (y < this.finishLineOffset) {
+                        if (y > largest) {
+                            secondLargest = largest;
+                            largest = y;
+                            largestIndex = i;
+                        } else if (y > secondLargest) {
+                            secondLargest = y;
+                        }
+                    }
+                }
+
+                if (largestIndex === -1) return;
+                if (
+                    this.prevVoiceIdx !== largestIndex &&
+                    largest > secondLargest + this.marbleRadius
+                ) {
+                    this.throttledUpdate(largestIndex);
+                    // // Remove previous mouth image using this.prevVoiceIdx
+                    // const prevMarbleImage =
+                    //     this.marblesImages[this.prevVoiceIdx];
+                    // const id = this.voices[this.prevVoiceIdx].id;
+                    // if (
+                    //     prevMarbleImage &&
+                    //     prevMarbleImage.texture.key === `resized_${id}_mouth`
+                    // ) {
+                    //     prevMarbleImage.setTexture(`resized_${id}`);
+                    //     prevMarbleImage.setDisplaySize(newSize, newSize);
+                    //     prevMarbleImage.setOrigin(0.5, 0.5);
+                    // }
+                }
+                this.throttledUpdateGif(largestIndex);
+                if (this.autoScroll) {
+                    this.cameras.main.scrollY = largest - 300;
                 }
             }
-        );
+
+            // Optimised Code
+            // let largest = -Infinity;
+            // let secondLargest = -Infinity;
+            // let index = -1;
+
+            // for (let i = 0; i < this.marbles.length; i++) {
+            //     const y = this.marbles[i].position.y;
+            //     if (y < this.finishLineOffset) {
+            //         if (y > largest) {
+            //             secondLargest = largest;
+            //             largest = y;
+            //             index = i;
+            //         } else if (y > secondLargest) {
+            //             secondLargest = y;
+            //         }
+            //     }
+            // }
+            // TODO: Uncomment this
+            // this.leftRotatableStars.map((rs) => rs.setAngle(rs.angle - 0.4));
+            // this.rightRotatableStars.map((rs) => rs.setAngle(rs.angle + 0.4));
+            // this.horizontalCrossRightRotation.map((rs) =>
+            //     rs.setAngle(rs.angle + 2.5)
+            // );
+            // this.horizontalCrossLeftRotation.map((rs) =>
+            //     rs.setAngle(rs.angle - 2.5)
+            // );
+
+            // Bars up/down motion
+            // this.motionTimeForUpDownWard += delta;
+            // this.upDownMotionElems.map(
+            //     ({
+            //         matter,
+            //         startX,
+            //         startY,
+            //         moveSpeed,
+            //         maxBottom,
+            //         maxTop,
+            //         direction,
+            //     }) => {
+            //         const amplitude = (maxBottom - maxTop) / 2;
+            //         const offset = amplitude * Math.sin(time * (moveSpeed * 0.01));
+            //         // // Calculate new y position using a sine wave for smooth up and down movement
+            //         // const range = maxBottom - maxTop;
+            //         // const midPoint = maxTop + range / 2;
+            //         // Calculate the new position considering the angle
+            //         if (direction === "right") {
+            //             const newX =
+            //                 startX + offset * Math.sin(Phaser.Math.DegToRad(7.1));
+            //             const newY =
+            //                 startY - offset * Math.cos(Phaser.Math.DegToRad(7.1));
+            //             // Update the rectangle's y position using a sine wave
+            //             matter.setPosition(newX, newY);
+            //         } else {
+            //             const newX =
+            //                 startX + offset * Math.sin(Phaser.Math.DegToRad(-7.1));
+            //             const newY =
+            //                 startY - offset * Math.cos(Phaser.Math.DegToRad(-7.1));
+            //             // Update the rectangle's y position using a sine wave
+            //             matter.setPosition(newX, newY);
+            //         }
+            //     }
+            // );
+        }
     }
 }
 
