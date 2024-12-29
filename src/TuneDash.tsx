@@ -13,7 +13,7 @@ const TuneDash = ({}: Props) => {
             top={0}
             left={isMobileView ? 0 : "50%"}
             height="100vh"
-            width={isMobileView ? "100vw" : "380px"}
+            width={isMobileView ? "100vw" : "450px"}
             sx={{
                 background: `url('/assets/splash.webp')`,
                 backgroundSize: "cover",
