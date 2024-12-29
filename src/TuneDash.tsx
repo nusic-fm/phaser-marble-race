@@ -1,20 +1,24 @@
-import { Button } from "@mui/material";
+import { Button, useMediaQuery, useTheme } from "@mui/material";
 import { Box } from "@mui/system";
 
 type Props = {};
 
 const TuneDash = ({}: Props) => {
+    const theme = useTheme();
+    const isMobileView = useMediaQuery(theme.breakpoints.down("md"));
+
     return (
         <Box
             position={"absolute"}
             top={0}
-            left={0}
+            left={isMobileView ? 0 : "50%"}
             height="100vh"
-            width={"100vw"}
+            width={isMobileView ? "100vw" : "380px"}
             sx={{
                 background: `url('/assets/splash.webp')`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
+                transform: isMobileView ? "unset" : "translateX(-50%)",
             }}
             display="flex"
             alignItems={"end"}
