@@ -26,7 +26,7 @@ const TuneDash = ({}: Props) => {
         >
             <Button
                 href="//t.me/tunedash_bot"
-                sx={{ mb: 2.5 }}
+                sx={{ mb: 12 }}
                 variant="contained"
                 color="warning"
                 size="large"
