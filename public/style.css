@@ -14,3 +14,19 @@ body {
     align-items: center;
 } */
 
+.focus-scale {
+    animation: focus-scale 1.6s linear infinite;
+}
+/* Scale up and down animation */
+@keyframes focus-scale {
+    0% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
